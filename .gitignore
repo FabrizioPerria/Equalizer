@@ -1,0 +1,11 @@
+**/Builds
+**/JuceLibraryCode
+**/.DS_Store
+**/CMakelists.txt
+.vscode
+cmake/
+build/
+libs/
+.cache/
+build.sh
+
