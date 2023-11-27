@@ -5,6 +5,10 @@
               maxBinaryFileSize="20971520" pluginManufacturerCode="FABP" pluginCode="JEQ1">
   <MAINGROUP id="Do3AsA" name="Equalizer">
     <GROUP id="{947A9606-09DB-5F3A-08CC-6B17C53CAE0F}" name="Source">
+      <GROUP id="{CE98CBDF-8DE1-DA86-8C69-BF52E9C7297A}" name="utils">
+        <FILE id="bIYYfe" name="FilterType.cpp" compile="1" resource="0" file="Source/utils/FilterType.cpp"/>
+        <FILE id="gR2Gmg" name="FilterType.h" compile="0" resource="0" file="Source/utils/FilterType.h"/>
+      </GROUP>
       <FILE id="IQfYle" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
       <FILE id="MmedG1" name="PluginProcessor.h" compile="0" resource="0"
