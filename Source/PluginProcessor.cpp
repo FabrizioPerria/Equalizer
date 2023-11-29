@@ -8,6 +8,8 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "utils/FilterParam.h"
+#include "utils/FilterType.h"
 
 //==============================================================================
 EqualizerAudioProcessor::EqualizerAudioProcessor()
@@ -166,7 +168,8 @@ bool EqualizerAudioProcessor::hasEditor() const
 
 juce::AudioProcessorEditor* EqualizerAudioProcessor::createEditor()
 {
-    return new EqualizerAudioProcessorEditor (*this);
+    return new juce::GenericAudioProcessorEditor (*this);
+    /* return new EqualizerAudioProcessorEditor (*this); */
 }
 
 //==============================================================================
@@ -188,4 +191,37 @@ void EqualizerAudioProcessor::setStateInformation (const void* data, int sizeInB
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new EqualizerAudioProcessor();
+}
+
+juce::AudioProcessorValueTreeState::ParameterLayout EqualizerAudioProcessor::createParameterLayout()
+{
+    juce::AudioProcessorValueTreeState::ParameterLayout layout;
+
+    const int numFilters = 1;
+
+    for (int i = 0; i < numFilters; ++i)
+    {
+        auto name = FilterInfo::getParameterName (i, FilterInfo::FilterParam::BYPASS);
+        layout.add (std::make_unique<juce::AudioParameterBool> (juce::ParameterID { name, 1 }, name, false));
+
+        name = FilterInfo::getParameterName (i, FilterInfo::FilterParam::FREQUENCY);
+        layout.add (std::make_unique<juce::AudioParameterFloat> (
+            juce::ParameterID { name, 1 }, name, juce::NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.25f), 20.0f));
+
+        name = FilterInfo::getParameterName (i, FilterInfo::FilterParam::Q);
+        layout.add (std::make_unique<juce::AudioParameterFloat> (
+            juce::ParameterID { name, 1 }, name, juce::NormalisableRange<float> (0.1f, 10.0f, 0.1f), 1.0f));
+
+        name = FilterInfo::getParameterName (i, FilterInfo::FilterParam::GAIN);
+        layout.add (std::make_unique<juce::AudioParameterFloat> (
+            juce::ParameterID { name, 1 }, name, juce::NormalisableRange<float> (-24.0f, 24.0f, 0.1f), 0.0f));
+
+        name = FilterInfo::getParameterName (i, FilterInfo::FilterParam::FILTER_TYPE);
+        layout.add (std::make_unique<juce::AudioParameterChoice> (juce::ParameterID { name, 1 },
+                                                                  name,
+                                                                  FilterInfo::getFilterTypeNames(),
+                                                                  static_cast<int> (FilterInfo::FilterType::ALLPASS)));
+    }
+
+    return layout;
 }
