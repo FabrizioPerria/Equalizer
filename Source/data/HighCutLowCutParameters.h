@@ -4,6 +4,6 @@
 
 struct HighCutLowCutParameters : public FilterParametersBase
 {
-	int order = 1;
-	bool isLowCut = false;
+    int order = 1;
+    bool isLowCut = false;
 };
