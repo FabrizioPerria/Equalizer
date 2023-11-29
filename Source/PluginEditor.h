@@ -8,13 +8,14 @@
 
 #pragma once
 
-#include <JuceHeader.h>
 #include "PluginProcessor.h"
+#include <JuceHeader.h>
+
 
 //==============================================================================
 /**
 */
-class EqualizerAudioProcessorEditor  : public juce::AudioProcessorEditor
+class EqualizerAudioProcessorEditor : public juce::AudioProcessorEditor
 {
 public:
     EqualizerAudioProcessorEditor (EqualizerAudioProcessor&);
