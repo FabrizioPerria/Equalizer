@@ -10,6 +10,8 @@
               file="Source/data/FilterParameters.h"/>
       </GROUP>
       <GROUP id="{CE98CBDF-8DE1-DA86-8C69-BF52E9C7297A}" name="utils">
+        <FILE id="OjzSog" name="CoefficientsMaker.h" compile="0" resource="0"
+              file="Source/utils/CoefficientsMaker.h"/>
         <FILE id="tBWZke" name="FilterParam.cpp" compile="1" resource="0" file="Source/utils/FilterParam.cpp"/>
         <FILE id="sGVlXw" name="FilterParam.h" compile="0" resource="0" file="Source/utils/FilterParam.h"/>
         <FILE id="bIYYfe" name="FilterType.cpp" compile="1" resource="0" file="Source/utils/FilterType.cpp"/>
