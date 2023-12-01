@@ -11,11 +11,11 @@ public:
     CoefficientsMaker() = delete;
     ~CoefficientsMaker() = delete;
 
-    static juce::dsp::IIR::Coefficients<T>::Ptr make (const FilterInfo::FilterType type,
-                                                      const float freq,
-                                                      const float q,
-                                                      const float gain,
-                                                      const double sampleRate)
+    static juce::dsp::IIR::Coefficients<T>::Ptr make (FilterInfo::FilterType type,
+                                                      float freq,
+                                                      float q,
+                                                      float gain,
+                                                      double sampleRate)
     {
         switch (type)
         {
@@ -47,20 +47,20 @@ public:
         }
     }
 
-    static juce::dsp::IIR::Coefficients<T>::Ptr make (const FilterParameters& params, const double sampleRate)
+    static juce::dsp::IIR::Coefficients<T>::Ptr make (const FilterParameters& params, double sampleRate)
     {
         return make (params.type, params.frequency, params.quality, params.gain, sampleRate);
     }
 
-    static juce::dsp::IIR::Coefficients<T>::Ptr make (const HighCutLowCutParameters& params, const double sampleRate)
+    static juce::dsp::IIR::Coefficients<T>::Ptr make (const HighCutLowCutParameters& params, double sampleRate)
     {
         if (params.isLowCut)
             return juce::dsp::FilterDesign<T>::designIIRHighpassHighOrderButterworthMethod (
                        params.frequency, sampleRate, params.order)
                 .getFirst();
-        else
-            return juce::dsp::FilterDesign<T>::designIIRLowpassHighOrderButterworthMethod (
-                       params.frequency, sampleRate, params.order)
-                .getFirst();
+
+        return juce::dsp::FilterDesign<T>::designIIRLowpassHighOrderButterworthMethod (
+                   params.frequency, sampleRate, params.order)
+            .getFirst();
     }
 };
