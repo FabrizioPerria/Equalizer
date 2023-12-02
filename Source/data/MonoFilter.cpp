@@ -7,7 +7,7 @@ static HighCutLowCutParameters oldHighCutLowCutParams[NUM_FILTERS];
 
 static void setBypassed (MonoFilter& filter, int filterIndex, bool bypassed)
 {
-    jassert (filterIndex < 0 || filterIndex >= NUM_FILTERS);
+    jassert (filterIndex >= 0 && filterIndex < NUM_FILTERS);
     switch (filterIndex)
     {
         case 0:
@@ -22,7 +22,7 @@ static void setBypassed (MonoFilter& filter, int filterIndex, bool bypassed)
 
 static void updateCoefficients (MonoFilter& filter, int filterIndex, Coefficients coefficients)
 {
-    jassert (filterIndex < 0 || filterIndex >= NUM_FILTERS);
+    jassert (filterIndex >= 0 && filterIndex < NUM_FILTERS);
     switch (filterIndex)
     {
         case 0:
