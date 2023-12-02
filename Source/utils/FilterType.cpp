@@ -1,4 +1,5 @@
 #include "FilterType.h"
+#include "utils/FilterParam.h"
 
 static std::map<FilterInfo::FilterType, juce::String> filterTypeMap = {
     { FilterInfo::FilterType::FIRST_ORDER_LOWPASS, "First Order Lowpass" },
@@ -13,6 +14,13 @@ static std::map<FilterInfo::FilterType, juce::String> filterTypeMap = {
     { FilterInfo::FilterType::HIGHSHELF, "Highshelf" },
     { FilterInfo::FilterType::PEAKFILTER, "Peakfilter" },
 };
+
+FilterInfo::FilterType FilterInfo::getFilterType (juce::AudioProcessorValueTreeState& apvts, int filterIndex)
+{
+    auto filterTypeParam =
+        apvts.getRawParameterValue (FilterInfo::getParameterName (filterIndex, FilterInfo::FilterParam::FILTER_TYPE));
+    return static_cast<FilterInfo::FilterType> (filterTypeParam->load());
+}
 
 juce::String FilterInfo::getFilterTypeName (FilterType filterType)
 {
