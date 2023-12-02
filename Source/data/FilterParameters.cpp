@@ -3,29 +3,38 @@
 
 FilterParametersBase FilterParametersBase::getParameters (const juce::AudioProcessorValueTreeState& apvts,
                                                           int filterIndex,
-                                                          double sampleRate)
+                                                          double hostSampleRate)
 {
-    auto bypassParam =
-        apvts.getRawParameterValue (FilterInfo::getParameterName (filterIndex, FilterInfo::FilterParam::BYPASS))->load()
-        > 0.5f;
-    auto frequencyParam =
-        apvts.getRawParameterValue (FilterInfo::getParameterName (filterIndex, FilterInfo::FilterParam::FREQUENCY))
+    auto bypassParamRaw =
+        apvts //
+            .getRawParameterValue (FilterInfo::getParameterName (filterIndex, FilterInfo::FilterParam::BYPASS))
             ->load();
-    auto qParam =
-        apvts.getRawParameterValue (FilterInfo::getParameterName (filterIndex, FilterInfo::FilterParam::Q))->load();
+    auto bypassParam = bypassParamRaw > 0.5f;
 
-    return FilterParametersBase { frequencyParam, bypassParam, qParam, sampleRate };
+    auto frequencyParam =
+        apvts //
+            .getRawParameterValue (FilterInfo::getParameterName (filterIndex, FilterInfo::FilterParam::FREQUENCY))
+            ->load();
+
+    auto qParam = //
+        apvts
+            .getRawParameterValue (FilterInfo::getParameterName (filterIndex, FilterInfo::FilterParam::Q)) //
+            ->load();
+
+    return FilterParametersBase { frequencyParam, bypassParam, qParam, hostSampleRate };
 }
 
 FilterParameters FilterParameters::getParameters (const juce::AudioProcessorValueTreeState& apvts,
                                                   int filterIndex,
                                                   FilterInfo::FilterType filterType,
-                                                  double sampleRate)
+                                                  double hostSampleRate)
 {
-    auto baseParams = FilterParametersBase::getParameters (apvts, filterIndex, sampleRate);
+    auto baseParams = FilterParametersBase::getParameters (apvts, filterIndex, hostSampleRate);
 
     auto gainParam =
-        apvts.getRawParameterValue (FilterInfo::getParameterName (filterIndex, FilterInfo::FilterParam::GAIN))->load();
+        apvts //
+            .getRawParameterValue (FilterInfo::getParameterName (filterIndex, FilterInfo::FilterParam::GAIN))
+            ->load();
 
     return FilterParameters { baseParams, filterType, gainParam };
 }
@@ -33,9 +42,9 @@ FilterParameters FilterParameters::getParameters (const juce::AudioProcessorValu
 HighCutLowCutParameters HighCutLowCutParameters::getParameters (const juce::AudioProcessorValueTreeState& apvts,
                                                                 int filterIndex,
                                                                 FilterInfo::FilterType filterType,
-                                                                double sampleRate)
+                                                                double hostSampleRate)
 {
-    auto baseParams = FilterParametersBase::getParameters (apvts, filterIndex, sampleRate);
+    auto baseParams = FilterParametersBase::getParameters (apvts, filterIndex, hostSampleRate);
     auto isLowCutParam = filterType == FilterInfo::FilterType::HIGHPASS;
     return HighCutLowCutParameters { baseParams, 1, isLowCutParam };
 }

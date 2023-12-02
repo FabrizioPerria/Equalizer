@@ -40,7 +40,8 @@ struct FilterParameters : FilterParametersBase
 
     bool operator== (const FilterParameters& other) const
     {
-        return type == other.type && juce::approximatelyEqual (gain, other.gain)
+        return type == other.type //
+               && juce::approximatelyEqual (gain, other.gain)
                && static_cast<const FilterParametersBase&> (*this) == static_cast<const FilterParametersBase&> (other);
     }
 
@@ -62,7 +63,8 @@ struct HighCutLowCutParameters : public FilterParametersBase
 
     bool operator== (const HighCutLowCutParameters& other) const
     {
-        return order == other.order && isLowCut == other.isLowCut
+        return order == other.order //
+               && isLowCut == other.isLowCut
                && static_cast<const FilterParametersBase&> (*this) == static_cast<const FilterParametersBase&> (other);
     }
 
