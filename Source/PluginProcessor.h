@@ -9,9 +9,7 @@
 #pragma once
 
 #include <JuceHeader.h>
-#include "data/Monofilter.h"
-#include "data/FilterParameters.h"
-#include "data/Monofilter.h"
+#include "data/MonoFilter.h"
 
 //==============================================================================
 /**
@@ -56,19 +54,10 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
-    juce::AudioProcessorValueTreeState apvts { *this, nullptr, "Params", createParameterLayout() };
+    juce::AudioProcessorValueTreeState apvts {*this, nullptr, "Params", createParameterLayout()};
 
 private:
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
-
-    Coefficients getCoefficientsForFilter (int filterIndex);
-
-    void updateFilters (int numFilters, const MonoFilter& leftChannel, const MonoFilter& rightChannel);
-
-    static const int NUM_FILTERS = 1;
-
-    FilterParameters oldFilterParams[NUM_FILTERS];
-    HighCutLowCutParameters oldHighCutLowCutParams[NUM_FILTERS];
 
     MonoFilter leftChain, rightChain;
 

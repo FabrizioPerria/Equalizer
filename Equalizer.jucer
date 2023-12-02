@@ -6,9 +6,12 @@
   <MAINGROUP id="Do3AsA" name="Equalizer">
     <GROUP id="{947A9606-09DB-5F3A-08CC-6B17C53CAE0F}" name="Source">
       <GROUP id="{DF623B76-4BBC-978B-59BD-4C329A2F163D}" name="data">
+        <FILE id="oRHJNO" name="FilterParameters.cpp" compile="1" resource="0"
+              file="Source/data/FilterParameters.cpp"/>
         <FILE id="o4VI1g" name="FilterParameters.h" compile="0" resource="0"
               file="Source/data/FilterParameters.h"/>
-        <FILE id="JqicIj" name="Monofilter.h" compile="0" resource="0" file="Source/data/Monofilter.h"/>
+        <FILE id="dN4jvM" name="MonoFilter.cpp" compile="1" resource="0" file="Source/data/MonoFilter.cpp"/>
+        <FILE id="p6onWM" name="MonoFilter.h" compile="0" resource="0" file="Source/data/MonoFilter.h"/>
       </GROUP>
       <GROUP id="{CE98CBDF-8DE1-DA86-8C69-BF52E9C7297A}" name="utils">
         <FILE id="OjzSog" name="CoefficientsMaker.h" compile="0" resource="0"

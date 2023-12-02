@@ -8,7 +8,6 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
-#include "utils/CoefficientsMaker.h"
 #include "utils/FilterParam.h"
 #include "utils/FilterType.h"
 
@@ -104,7 +103,7 @@ void EqualizerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBl
     leftChain.prepare (spec);
     rightChain.prepare (spec);
 
-    updateFilters (NUM_FILTERS, leftChain, rightChain);
+    updateFilters (apvts, leftChain, rightChain, sampleRate);
 }
 
 void EqualizerAudioProcessor::releaseResources()
@@ -152,7 +151,7 @@ void EqualizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     auto leftBlock = block.getSingleChannelBlock (0);
     auto rightBlock = block.getSingleChannelBlock (1);
 
-    updateFilters (NUM_FILTERS, leftChain, rightChain);
+    updateFilters (apvts, leftChain, rightChain, getSampleRate());
 
     leftChain.process (juce::dsp::ProcessContextReplacing<float> (leftBlock));
     rightChain.process (juce::dsp::ProcessContextReplacing<float> (rightBlock));
@@ -220,51 +219,4 @@ juce::AudioProcessorValueTreeState::ParameterLayout EqualizerAudioProcessor::cre
     }
 
     return layout;
-}
-
-void EqualizerAudioProcessor::updateFilters (int numFilters,
-                                             const MonoFilter& leftChannel,
-                                             const MonoFilter& rightChannel)
-{
-    for (int i = 0; i < numFilters; ++i)
-    {
-        auto coefficients = getCoefficientsForFilter (i);
-        if (coefficients != nullptr)
-        {
-            *leftChannel.template get<0>().coefficients = *coefficients;
-            *rightChannel.template get<0>().coefficients = *coefficients;
-        }
-    }
-}
-
-Coefficients EqualizerAudioProcessor::getCoefficientsForFilter (int filterIndex)
-{
-    auto baseParams = FilterParametersBase::getFilterParametersBase (apvts, filterIndex, getSampleRate());
-    auto filterType = FilterInfo::getFilterType (apvts, filterIndex);
-
-    Coefficients coefficients;
-    if (needsParametricParams (filterType))
-    {
-        auto gainParam =
-            apvts.getRawParameterValue (FilterInfo::getParameterName (filterIndex, FilterInfo::FilterParam::GAIN))
-                ->load();
-
-        auto params = FilterParameters { baseParams, filterType, gainParam };
-        if (params != oldFilterParams[filterIndex])
-        {
-            oldFilterParams[filterIndex] = params;
-            coefficients = CoefficientsMaker<float>::make (params, getSampleRate());
-        }
-    }
-    else
-    {
-        auto cutParams = HighCutLowCutParameters { baseParams, 1, filterType == FilterInfo::FilterType::HIGHPASS };
-        if (cutParams != oldHighCutLowCutParams[filterIndex])
-        {
-            oldHighCutLowCutParams[filterIndex] = cutParams;
-            coefficients = CoefficientsMaker<float>::make (cutParams, getSampleRate());
-        }
-    }
-
-    
 }

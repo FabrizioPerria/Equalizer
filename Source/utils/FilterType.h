@@ -19,7 +19,7 @@ enum class FilterType
     PEAKFILTER,
 };
 
-FilterType getFilterType (juce::AudioProcessorValueTreeState& apvts, int filterIndex);
+FilterType getFilterType (const juce::AudioProcessorValueTreeState& apvts, int filterIndex);
 juce::String getFilterTypeName (FilterType filterType);
 juce::StringArray getFilterTypeNames();
 } // namespace FilterInfo

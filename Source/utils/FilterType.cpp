@@ -15,7 +15,7 @@ static std::map<FilterInfo::FilterType, juce::String> filterTypeMap = {
     { FilterInfo::FilterType::PEAKFILTER, "Peakfilter" },
 };
 
-FilterInfo::FilterType FilterInfo::getFilterType (juce::AudioProcessorValueTreeState& apvts, int filterIndex)
+FilterInfo::FilterType FilterInfo::getFilterType (const juce::AudioProcessorValueTreeState& apvts, int filterIndex)
 {
     auto filterTypeParam =
         apvts.getRawParameterValue (FilterInfo::getParameterName (filterIndex, FilterInfo::FilterParam::FILTER_TYPE));
