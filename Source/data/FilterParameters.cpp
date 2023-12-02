@@ -17,7 +17,7 @@ FilterParametersBase FilterParametersBase::getParameters (const juce::AudioProce
             ->load();
 
     auto qParam = //
-        apvts
+        apvts //
             .getRawParameterValue (FilterInfo::getParameterName (filterIndex, FilterInfo::FilterParam::Q)) //
             ->load();
 
