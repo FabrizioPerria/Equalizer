@@ -8,8 +8,9 @@
 
 #pragma once
 
+#include "data/FilterParameters.h"
+#include "utils/FilterType.h"
 #include <JuceHeader.h>
-#include "data/MonoFilter.h"
 
 //==============================================================================
 /**
@@ -54,11 +55,37 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
-    juce::AudioProcessorValueTreeState apvts {*this, nullptr, "Params", createParameterLayout()};
+    juce::AudioProcessorValueTreeState apvts { *this, nullptr, "Params", createParameterLayout() };
+
+    using Filter = juce::dsp::IIR::Filter<float>;
+    using Coefficients = juce::dsp::IIR::Coefficients<float>::Ptr;
+    using MonoFilter = juce::dsp::ProcessorChain<Filter>;
 
 private:
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
 
+    static const std::map<FilterInfo::FilterType, juce::String> filterTypeMap;
+    FilterInfo::FilterType getFilterType (int filterIndex);
+    static juce::String getFilterTypeName (FilterInfo::FilterType filterType);
+    static juce::StringArray getFilterTypeNames();
+
+    FilterParametersBase getBaseParameters (int filterIndex);
+    FilterParameters getParametricParameters (int filterIndex, FilterInfo::FilterType filterType);
+    HighCutLowCutParameters getCutParameters (int filterIndex, FilterInfo::FilterType filterType);
+    bool needsParametricParams (FilterInfo::FilterType type);
+
+    void setBypassed (MonoFilter& filter, int filterIndex, bool bypassed);
+    void updateCoefficients (MonoFilter& filter, int filterIndex, Coefficients coefficients);
+
+    template <typename ParamsType>
+    void updateFilter (int filterIndex, ParamsType& oldParams, const ParamsType& newParams);
+
+    void updateFilters();
+
+    static const int NUM_FILTERS = 1;
+
+    std::array<FilterParameters, NUM_FILTERS> oldFilterParams;
+    std::array<HighCutLowCutParameters, NUM_FILTERS> oldHighCutLowCutParams;
     MonoFilter leftChain, rightChain;
 
     //==============================================================================

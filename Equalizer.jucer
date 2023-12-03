@@ -10,15 +10,12 @@
               file="Source/data/FilterParameters.cpp"/>
         <FILE id="o4VI1g" name="FilterParameters.h" compile="0" resource="0"
               file="Source/data/FilterParameters.h"/>
-        <FILE id="dN4jvM" name="MonoFilter.cpp" compile="1" resource="0" file="Source/data/MonoFilter.cpp"/>
-        <FILE id="p6onWM" name="MonoFilter.h" compile="0" resource="0" file="Source/data/MonoFilter.h"/>
       </GROUP>
       <GROUP id="{CE98CBDF-8DE1-DA86-8C69-BF52E9C7297A}" name="utils">
         <FILE id="OjzSog" name="CoefficientsMaker.h" compile="0" resource="0"
               file="Source/utils/CoefficientsMaker.h"/>
         <FILE id="tBWZke" name="FilterParam.cpp" compile="1" resource="0" file="Source/utils/FilterParam.cpp"/>
         <FILE id="sGVlXw" name="FilterParam.h" compile="0" resource="0" file="Source/utils/FilterParam.h"/>
-        <FILE id="bIYYfe" name="FilterType.cpp" compile="1" resource="0" file="Source/utils/FilterType.cpp"/>
         <FILE id="gR2Gmg" name="FilterType.h" compile="0" resource="0" file="Source/utils/FilterType.h"/>
       </GROUP>
       <FILE id="IQfYle" name="PluginProcessor.cpp" compile="1" resource="0"

@@ -2,7 +2,7 @@
 
 #include "data/FilterParameters.h"
 #include "utils/FilterType.h"
-#include <juce_dsp/juce_dsp.h>
+#include <JuceHeader.h>
 
 template <typename FloatType>
 struct CoefficientsMaker
@@ -10,11 +10,8 @@ struct CoefficientsMaker
     CoefficientsMaker() = delete;
     ~CoefficientsMaker() = delete;
 
-    static juce::dsp::IIR::Coefficients<FloatType>::Ptr make (FilterInfo::FilterType type,
-                                                      float freq,
-                                                      float q,
-                                                      float gain,
-                                                      double sampleRate)
+    static juce::dsp::IIR::Coefficients<FloatType>::Ptr
+        make (FilterInfo::FilterType type, float freq, float q, float gain, double sampleRate)
     {
         switch (type)
         {

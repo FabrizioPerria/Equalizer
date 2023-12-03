@@ -1,7 +1,6 @@
 #pragma once
 
-#include <juce_audio_processors/juce_audio_processors.h>
-#include <juce_core/juce_core.h>
+#include <JuceHeader.h>
 
 namespace FilterInfo
 {
@@ -19,8 +18,4 @@ enum class FilterType
     HIGHSHELF,
     PEAKFILTER,
 };
-
-FilterType getFilterType (const juce::AudioProcessorValueTreeState& apvts, int filterIndex);
-juce::String getFilterTypeName (FilterType filterType);
-juce::StringArray getFilterTypeNames();
 } // namespace FilterInfo
