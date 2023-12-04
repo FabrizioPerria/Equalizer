@@ -8,7 +8,6 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
-#include "utils/CoefficientsMaker.h"
 #include "utils/FilterParam.h"
 #include "utils/FilterType.h"
 
@@ -353,20 +352,6 @@ void EqualizerAudioProcessor::updateCoefficients (MonoFilter& filter, int filter
         default:
             jassertfalse;
             break;
-    }
-}
-
-template <typename ParamsType>
-void EqualizerAudioProcessor::updateFilter (int filterIndex, ParamsType& oldParams, const ParamsType& newParams)
-{
-    if (newParams != oldParams)
-    {
-        setBypassed (leftChain, filterIndex, newParams.bypassed);
-        setBypassed (rightChain, filterIndex, newParams.bypassed);
-        auto coefficients = CoefficientsMaker<float>::make (newParams, getSampleRate());
-        updateCoefficients (leftChain, filterIndex, coefficients);
-        updateCoefficients (rightChain, filterIndex, coefficients);
-        oldParams = newParams;
     }
 }
 

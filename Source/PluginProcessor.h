@@ -10,6 +10,7 @@
 
 #include "data/FilterParameters.h"
 #include "utils/FilterType.h"
+#include "utils/CoefficientsMaker.h"
 #include <JuceHeader.h>
 
 //==============================================================================
@@ -78,7 +79,18 @@ private:
     void updateCoefficients (MonoFilter& filter, int filterIndex, Coefficients coefficients);
 
     template <typename ParamsType>
-    void updateFilter (int filterIndex, ParamsType& oldParams, const ParamsType& newParams);
+    void updateFilter (int filterIndex, ParamsType& oldParams, const ParamsType& newParams)
+    {
+        if (newParams != oldParams)
+        {
+            setBypassed (leftChain, filterIndex, newParams.bypassed);
+            setBypassed (rightChain, filterIndex, newParams.bypassed);
+            auto coefficients = CoefficientsMaker<float>::make (newParams, getSampleRate());
+            updateCoefficients (leftChain, filterIndex, coefficients);
+            updateCoefficients (rightChain, filterIndex, coefficients);
+            oldParams = newParams;
+        }
+    }
 
     void updateFilters();
 
