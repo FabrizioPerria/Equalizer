@@ -1,6 +1,6 @@
 #pragma once
 
-#include <juce_core/juce_core.h>
+#include <JuceHeader.h>
 
 namespace FilterInfo
 {
@@ -18,7 +18,4 @@ enum class FilterType
     HIGHSHELF,
     PEAKFILTER,
 };
-
-juce::String getFilterTypeName (FilterType filterType);
-juce::StringArray getFilterTypeNames();
 } // namespace FilterInfo

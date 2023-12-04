@@ -1,6 +1,8 @@
 #pragma once
 
+#include "utils/FilterParam.h"
 #include "utils/FilterType.h"
+#include <JuceHeader.h>
 
 struct FilterParametersBase
 {
@@ -10,7 +12,7 @@ struct FilterParametersBase
     double sampleRate = 44100.0;
 };
 
-struct FilterParameters : public FilterParametersBase
+struct FilterParameters : FilterParametersBase
 {
     FilterInfo::FilterType type = FilterInfo::FilterType::ALLPASS;
     float gain = 0.0f;
@@ -22,3 +24,11 @@ struct HighCutLowCutParameters : public FilterParametersBase
     bool isLowCut = false;
 };
 
+bool operator== (const FilterParametersBase& lhs, const FilterParametersBase& rhs);
+bool operator!= (const FilterParametersBase& lhs, const FilterParametersBase& rhs);
+
+bool operator== (const FilterParameters& lhs, const FilterParameters& rhs);
+bool operator!= (const FilterParameters& lhs, const FilterParameters& rhs);
+
+bool operator== (const HighCutLowCutParameters& lhs, const HighCutLowCutParameters& rhs);
+bool operator!= (const HighCutLowCutParameters& lhs, const HighCutLowCutParameters& rhs);

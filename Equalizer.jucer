@@ -6,6 +6,8 @@
   <MAINGROUP id="Do3AsA" name="Equalizer">
     <GROUP id="{947A9606-09DB-5F3A-08CC-6B17C53CAE0F}" name="Source">
       <GROUP id="{DF623B76-4BBC-978B-59BD-4C329A2F163D}" name="data">
+        <FILE id="oRHJNO" name="FilterParameters.cpp" compile="1" resource="0"
+              file="Source/data/FilterParameters.cpp"/>
         <FILE id="o4VI1g" name="FilterParameters.h" compile="0" resource="0"
               file="Source/data/FilterParameters.h"/>
       </GROUP>
@@ -14,7 +16,6 @@
               file="Source/utils/CoefficientsMaker.h"/>
         <FILE id="tBWZke" name="FilterParam.cpp" compile="1" resource="0" file="Source/utils/FilterParam.cpp"/>
         <FILE id="sGVlXw" name="FilterParam.h" compile="0" resource="0" file="Source/utils/FilterParam.h"/>
-        <FILE id="bIYYfe" name="FilterType.cpp" compile="1" resource="0" file="Source/utils/FilterType.cpp"/>
         <FILE id="gR2Gmg" name="FilterType.h" compile="0" resource="0" file="Source/utils/FilterType.h"/>
       </GROUP>
       <FILE id="IQfYle" name="PluginProcessor.cpp" compile="1" resource="0"

@@ -95,8 +95,15 @@ void EqualizerAudioProcessor::changeProgramName (int index, const juce::String& 
 //==============================================================================
 void EqualizerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    // Use this method as the place to do any pre-playback
-    // initialisation that you need..
+    juce::dsp::ProcessSpec spec;
+    spec.sampleRate = sampleRate;
+    spec.maximumBlockSize = (uint32_t) samplesPerBlock;
+    spec.numChannels = 1;
+
+    leftChain.prepare (spec);
+    rightChain.prepare (spec);
+
+    updateFilters();
 }
 
 void EqualizerAudioProcessor::releaseResources()
@@ -137,27 +144,17 @@ void EqualizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     auto totalNumInputChannels = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
-    // In case we have more outputs than inputs, this code clears any output
-    // channels that didn't contain input data, (because these aren't
-    // guaranteed to be empty - they may contain garbage).
-    // This is here to avoid people getting screaming feedback
-    // when they first compile a plugin, but obviously you don't need to keep
-    // this code if your algorithm always overwrites all the output channels.
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    // Make sure to reset the state if your inner loop is processing
-    // the samples and the outer loop is handling the channels.
-    // Alternatively, you can process the samples with the channels
-    // interleaved by keeping the same state.
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
-    {
-        auto* channelData = buffer.getWritePointer (channel);
+    auto block = juce::dsp::AudioBlock<float> (buffer);
+    auto leftBlock = block.getSingleChannelBlock (0);
+    auto rightBlock = block.getSingleChannelBlock (1);
 
-        // ..do something to the data...
-    }
+    updateFilters();
+
+    leftChain.process (juce::dsp::ProcessContextReplacing<float> (leftBlock));
+    rightChain.process (juce::dsp::ProcessContextReplacing<float> (rightBlock));
 }
 
 //==============================================================================
@@ -175,15 +172,19 @@ juce::AudioProcessorEditor* EqualizerAudioProcessor::createEditor()
 //==============================================================================
 void EqualizerAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
-    // You should use this method to store your parameters in the memory block.
-    // You could do that either as raw data, or use the XML or ValueTree classes
-    // as intermediaries to make it easy to save and load complex data.
+    juce::MemoryOutputStream mos (destData, true);
+    apvts.state.writeToStream (mos);
 }
 
 void EqualizerAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
-    // You should use this method to restore your parameters from this memory block,
-    // whose contents will have been created by the getStateInformation() call.
+    auto tree = juce::ValueTree::readFromData (data, (size_t) sizeInBytes);
+
+    if (tree.isValid())
+    {
+        apvts.replaceState (tree);
+        updateFilters();
+    }
 }
 
 //==============================================================================
@@ -197,9 +198,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout EqualizerAudioProcessor::cre
 {
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
 
-    const int numFilters = 1;
-
-    for (int i = 0; i < numFilters; ++i)
+    for (int i = 0; i < NUM_FILTERS; ++i)
     {
         auto name = FilterInfo::getParameterName (i, FilterInfo::FilterParam::BYPASS);
         layout.add (std::make_unique<juce::AudioParameterBool> (juce::ParameterID { name, 1 }, name, false));
@@ -219,9 +218,156 @@ juce::AudioProcessorValueTreeState::ParameterLayout EqualizerAudioProcessor::cre
         name = FilterInfo::getParameterName (i, FilterInfo::FilterParam::FILTER_TYPE);
         layout.add (std::make_unique<juce::AudioParameterChoice> (juce::ParameterID { name, 1 },
                                                                   name,
-                                                                  FilterInfo::getFilterTypeNames(),
+                                                                  getFilterTypeNames(),
                                                                   static_cast<int> (FilterInfo::FilterType::ALLPASS)));
     }
 
     return layout;
+}
+
+const std::map<FilterInfo::FilterType, juce::String> EqualizerAudioProcessor::filterTypeMap = {
+    { FilterInfo::FilterType::FIRST_ORDER_LOWPASS, "First Order Lowpass" },
+    { FilterInfo::FilterType::FIRST_ORDER_HIGHPASS, "First Order Highpass" },
+    { FilterInfo::FilterType::FIRST_ORDER_ALLPASS, "First Order Allpass" },
+    { FilterInfo::FilterType::LOWPASS, "Lowpass" },
+    { FilterInfo::FilterType::HIGHPASS, "Highpass" },
+    { FilterInfo::FilterType::BANDPASS, "Bandpass" },
+    { FilterInfo::FilterType::NOTCH, "Notch" },
+    { FilterInfo::FilterType::ALLPASS, "Allpass" },
+    { FilterInfo::FilterType::LOWSHELF, "Lowshelf" },
+    { FilterInfo::FilterType::HIGHSHELF, "Highshelf" },
+    { FilterInfo::FilterType::PEAKFILTER, "Peakfilter" },
+};
+
+FilterInfo::FilterType EqualizerAudioProcessor::getFilterType (int filterIndex)
+{
+    auto filterTypeParam =
+        apvts.getRawParameterValue (FilterInfo::getParameterName (filterIndex, FilterInfo::FilterParam::FILTER_TYPE));
+    return static_cast<FilterInfo::FilterType> (filterTypeParam->load());
+}
+
+juce::String EqualizerAudioProcessor::getFilterTypeName (FilterInfo::FilterType filterType)
+{
+    auto it = filterTypeMap.find (filterType);
+    if (it != filterTypeMap.end())
+        return it->second;
+    return "Unknown";
+}
+
+juce::StringArray EqualizerAudioProcessor::getFilterTypeNames()
+{
+    juce::StringArray names;
+    for (auto& it : filterTypeMap)
+        names.add (it.second);
+    return names;
+}
+
+FilterParametersBase EqualizerAudioProcessor::getBaseParameters (int filterIndex)
+{
+    auto bypassParamRaw =
+        apvts //
+            .getRawParameterValue (FilterInfo::getParameterName (filterIndex, FilterInfo::FilterParam::BYPASS))
+            ->load();
+    auto bypassParam = bypassParamRaw > 0.5f;
+
+    auto frequencyParam =
+        apvts //
+            .getRawParameterValue (FilterInfo::getParameterName (filterIndex, FilterInfo::FilterParam::FREQUENCY))
+            ->load();
+
+    auto qParam =                                                                                          //
+        apvts                                                                                              //
+            .getRawParameterValue (FilterInfo::getParameterName (filterIndex, FilterInfo::FilterParam::Q)) //
+            ->load();
+
+    return FilterParametersBase { frequencyParam, bypassParam, qParam, getSampleRate() };
+}
+
+FilterParameters EqualizerAudioProcessor::getParametricParameters (int filterIndex, FilterInfo::FilterType filterType)
+{
+    auto baseParams = getBaseParameters (filterIndex);
+
+    auto gainParam =
+        apvts //
+            .getRawParameterValue (FilterInfo::getParameterName (filterIndex, FilterInfo::FilterParam::GAIN))
+            ->load();
+
+    return FilterParameters { baseParams, filterType, gainParam };
+}
+
+HighCutLowCutParameters EqualizerAudioProcessor::getCutParameters (int filterIndex, FilterInfo::FilterType filterType)
+{
+    auto baseParams = getBaseParameters (filterIndex);
+    auto isLowCutParam = filterType == FilterInfo::FilterType::HIGHPASS;
+    return HighCutLowCutParameters { baseParams, 1, isLowCutParam };
+}
+
+bool EqualizerAudioProcessor::needsParametricParams (FilterInfo::FilterType type)
+{
+    switch (type)
+    {
+        case FilterInfo::FilterType::FIRST_ORDER_LOWPASS:
+        case FilterInfo::FilterType::FIRST_ORDER_HIGHPASS:
+        case FilterInfo::FilterType::FIRST_ORDER_ALLPASS:
+        case FilterInfo::FilterType::BANDPASS:
+        case FilterInfo::FilterType::NOTCH:
+        case FilterInfo::FilterType::LOWSHELF:
+        case FilterInfo::FilterType::HIGHSHELF:
+        case FilterInfo::FilterType::ALLPASS:
+        case FilterInfo::FilterType::PEAKFILTER:
+            return true;
+        case FilterInfo::FilterType::LOWPASS:
+        case FilterInfo::FilterType::HIGHPASS:
+            return false;
+        default:
+            jassertfalse;
+            return false;
+    }
+}
+
+void EqualizerAudioProcessor::setBypassed (MonoFilter& filter, int filterIndex, bool bypassed)
+{
+    jassert (filterIndex >= 0 && filterIndex < NUM_FILTERS);
+    switch (filterIndex)
+    {
+        case 0:
+            filter.setBypassed<0> (bypassed);
+            break;
+
+        default:
+            jassertfalse;
+            break;
+    }
+}
+
+void EqualizerAudioProcessor::updateCoefficients (MonoFilter& filter, int filterIndex, Coefficients coefficients)
+{
+    jassert (filterIndex >= 0 && filterIndex < NUM_FILTERS);
+    switch (filterIndex)
+    {
+        case 0:
+            *filter.get<0>().coefficients = *coefficients;
+            break;
+
+        default:
+            jassertfalse;
+            break;
+    }
+}
+
+void EqualizerAudioProcessor::updateFilters()
+{
+    for (int i = 0; i < NUM_FILTERS; ++i)
+    {
+        auto filterType = getFilterType (i);
+
+        if (needsParametricParams (filterType))
+        {
+            updateFilter (i, oldFilterParams[i], getParametricParameters (i, filterType));
+        }
+        else
+        {
+            updateFilter (i, oldHighCutLowCutParams[i], getCutParameters (i, filterType));
+        }
+    }
 }
