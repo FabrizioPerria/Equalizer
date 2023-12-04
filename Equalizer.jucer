@@ -5,6 +5,19 @@
               maxBinaryFileSize="20971520" pluginManufacturerCode="FABP" pluginCode="JEQ1">
   <MAINGROUP id="Do3AsA" name="Equalizer">
     <GROUP id="{947A9606-09DB-5F3A-08CC-6B17C53CAE0F}" name="Source">
+      <GROUP id="{DF623B76-4BBC-978B-59BD-4C329A2F163D}" name="data">
+        <FILE id="oRHJNO" name="FilterParameters.cpp" compile="1" resource="0"
+              file="Source/data/FilterParameters.cpp"/>
+        <FILE id="o4VI1g" name="FilterParameters.h" compile="0" resource="0"
+              file="Source/data/FilterParameters.h"/>
+      </GROUP>
+      <GROUP id="{CE98CBDF-8DE1-DA86-8C69-BF52E9C7297A}" name="utils">
+        <FILE id="OjzSog" name="CoefficientsMaker.h" compile="0" resource="0"
+              file="Source/utils/CoefficientsMaker.h"/>
+        <FILE id="tBWZke" name="FilterParam.cpp" compile="1" resource="0" file="Source/utils/FilterParam.cpp"/>
+        <FILE id="sGVlXw" name="FilterParam.h" compile="0" resource="0" file="Source/utils/FilterParam.h"/>
+        <FILE id="gR2Gmg" name="FilterType.h" compile="0" resource="0" file="Source/utils/FilterType.h"/>
+      </GROUP>
       <FILE id="IQfYle" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
       <FILE id="MmedG1" name="PluginProcessor.h" compile="0" resource="0"
@@ -36,9 +49,9 @@
                extraDefs="JUCE_SILENCE_XCODE_15_LINKER_WARNING" postbuildCommand="#$HOME/JUCE/extras/AudioPluginHost/Builds/MacOSX/build/Debug/AudioPluginHost.app/Contents/MacOS/AudioPluginHost">
       <CONFIGURATIONS>
         <CONFIGURATION isDebug="1" name="Debug" targetName="Equalizer" recommendedWarnings="LLVM"
-                       macOSDeploymentTarget="10.13" osxCompatibility="10.13 SDK"/>
+                       macOSDeploymentTarget="10.13" osxCompatibility="10.13 SDK" headerPath="../../Source"/>
         <CONFIGURATION isDebug="0" name="Release" targetName="Equalizer" recommendedWarnings="LLVM"
-                       macOSDeploymentTarget="10.13" osxCompatibility="10.13 SDK"/>
+                       macOSDeploymentTarget="10.13" osxCompatibility="10.13 SDK" headerPath="../../Source"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_audio_basics" path="../../JUCE/modules"/>
