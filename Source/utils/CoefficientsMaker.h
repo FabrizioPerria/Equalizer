@@ -10,8 +10,11 @@ struct CoefficientsMaker
     CoefficientsMaker() = delete;
     ~CoefficientsMaker() = delete;
 
-    static juce::dsp::IIR::Coefficients<FloatType>::Ptr
-        make (FilterInfo::FilterType type, float freq, float q, float gain, double sampleRate)
+    static juce::dsp::IIR::Coefficients<FloatType>::Ptr make (FilterInfo::FilterType type, //
+                                                              float freq,
+                                                              float q,
+                                                              float gain,
+                                                              double sampleRate)
     {
         switch (type)
         {
@@ -50,13 +53,10 @@ struct CoefficientsMaker
 
     static juce::dsp::IIR::Coefficients<FloatType>::Ptr make (const HighCutLowCutParameters& params, double sampleRate)
     {
+        using FilterDesign = juce::dsp::FilterDesign<FloatType>;
         if (params.isLowCut)
-            return juce::dsp::FilterDesign<FloatType>::designIIRHighpassHighOrderButterworthMethod (
-                       params.frequency, sampleRate, params.order)
-                .getFirst();
+            return FilterDesign::designIIRHighpassHighOrderButterworthMethod (params.frequency, sampleRate, params.order).getFirst();
 
-        return juce::dsp::FilterDesign<FloatType>::designIIRLowpassHighOrderButterworthMethod (
-                   params.frequency, sampleRate, params.order)
-            .getFirst();
+        return FilterDesign::designIIRLowpassHighOrderButterworthMethod (params.frequency, sampleRate, params.order).getFirst();
     }
 };

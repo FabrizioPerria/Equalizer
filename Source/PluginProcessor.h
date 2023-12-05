@@ -9,8 +9,8 @@
 #pragma once
 
 #include "data/FilterParameters.h"
-#include "utils/FilterType.h"
 #include "utils/CoefficientsMaker.h"
+#include "utils/FilterType.h"
 #include <JuceHeader.h>
 
 //==============================================================================
@@ -69,6 +69,8 @@ private:
     FilterInfo::FilterType getFilterType (int filterIndex);
     static juce::String getFilterTypeName (FilterInfo::FilterType filterType);
     static juce::StringArray getFilterTypeNames();
+
+    float getRawParameter (int filterIndex, FilterInfo::FilterParam filterParameter);
 
     FilterParametersBase getBaseParameters (int filterIndex);
     FilterParameters getParametricParameters (int filterIndex, FilterInfo::FilterType filterType);

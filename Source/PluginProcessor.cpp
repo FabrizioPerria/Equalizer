@@ -201,19 +201,28 @@ juce::AudioProcessorValueTreeState::ParameterLayout EqualizerAudioProcessor::cre
     for (int i = 0; i < NUM_FILTERS; ++i)
     {
         auto name = FilterInfo::getParameterName (i, FilterInfo::FilterParam::BYPASS);
-        layout.add (std::make_unique<juce::AudioParameterBool> (juce::ParameterID { name, 1 }, name, false));
+        layout.add (std::make_unique<juce::AudioParameterBool> (juce::ParameterID { name, 1 }, //
+                                                                name,
+                                                                false));
 
         name = FilterInfo::getParameterName (i, FilterInfo::FilterParam::FREQUENCY);
-        layout.add (std::make_unique<juce::AudioParameterFloat> (
-            juce::ParameterID { name, 1 }, name, juce::NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.25f), 20.0f));
+        auto range = juce::NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.25f);
+        layout.add (std::make_unique<juce::AudioParameterFloat> (juce::ParameterID { name, 1 }, //
+                                                                 name,
+                                                                 range,
+                                                                 20.0f));
 
         name = FilterInfo::getParameterName (i, FilterInfo::FilterParam::Q);
-        layout.add (std::make_unique<juce::AudioParameterFloat> (
-            juce::ParameterID { name, 1 }, name, juce::NormalisableRange<float> (0.1f, 10.0f, 0.1f), 1.0f));
+        layout.add (std::make_unique<juce::AudioParameterFloat> (juce::ParameterID { name, 1 },
+                                                                 name,
+                                                                 juce::NormalisableRange<float> (0.1f, 10.0f, 0.1f),
+                                                                 1.0f));
 
         name = FilterInfo::getParameterName (i, FilterInfo::FilterParam::GAIN);
-        layout.add (std::make_unique<juce::AudioParameterFloat> (
-            juce::ParameterID { name, 1 }, name, juce::NormalisableRange<float> (-24.0f, 24.0f, 0.1f), 0.0f));
+        layout.add (std::make_unique<juce::AudioParameterFloat> (juce::ParameterID { name, 1 },
+                                                                 name,
+                                                                 juce::NormalisableRange<float> (-24.0f, 24.0f, 0.1f),
+                                                                 0.0f));
 
         name = FilterInfo::getParameterName (i, FilterInfo::FilterParam::FILTER_TYPE);
         layout.add (std::make_unique<juce::AudioParameterChoice> (juce::ParameterID { name, 1 },
@@ -241,8 +250,8 @@ const std::map<FilterInfo::FilterType, juce::String> EqualizerAudioProcessor::fi
 
 FilterInfo::FilterType EqualizerAudioProcessor::getFilterType (int filterIndex)
 {
-    auto filterTypeParam =
-        apvts.getRawParameterValue (FilterInfo::getParameterName (filterIndex, FilterInfo::FilterParam::FILTER_TYPE));
+    auto name = FilterInfo::getParameterName (filterIndex, FilterInfo::FilterParam::FILTER_TYPE);
+    auto filterTypeParam = apvts.getRawParameterValue (name);
     return static_cast<FilterInfo::FilterType> (filterTypeParam->load());
 }
 
@@ -250,7 +259,9 @@ juce::String EqualizerAudioProcessor::getFilterTypeName (FilterInfo::FilterType 
 {
     auto it = filterTypeMap.find (filterType);
     if (it != filterTypeMap.end())
+    {
         return it->second;
+    }
     return "Unknown";
 }
 
@@ -258,27 +269,26 @@ juce::StringArray EqualizerAudioProcessor::getFilterTypeNames()
 {
     juce::StringArray names;
     for (auto& it : filterTypeMap)
+    {
         names.add (it.second);
+    }
     return names;
+}
+
+float EqualizerAudioProcessor::getRawParameter (int filterIndex, FilterInfo::FilterParam filterParameter)
+{
+    auto name = FilterInfo::getParameterName (filterIndex, filterParameter);
+    return apvts.getRawParameterValue (name)->load();
 }
 
 FilterParametersBase EqualizerAudioProcessor::getBaseParameters (int filterIndex)
 {
-    auto bypassParamRaw =
-        apvts //
-            .getRawParameterValue (FilterInfo::getParameterName (filterIndex, FilterInfo::FilterParam::BYPASS))
-            ->load();
+    auto bypassParamRaw = getRawParameter (filterIndex, FilterInfo::FilterParam::BYPASS);
     auto bypassParam = bypassParamRaw > 0.5f;
 
-    auto frequencyParam =
-        apvts //
-            .getRawParameterValue (FilterInfo::getParameterName (filterIndex, FilterInfo::FilterParam::FREQUENCY))
-            ->load();
+    auto frequencyParam = getRawParameter (filterIndex, FilterInfo::FilterParam::FREQUENCY);
 
-    auto qParam =                                                                                          //
-        apvts                                                                                              //
-            .getRawParameterValue (FilterInfo::getParameterName (filterIndex, FilterInfo::FilterParam::Q)) //
-            ->load();
+    auto qParam = getRawParameter (filterIndex, FilterInfo::FilterParam::Q);
 
     return FilterParametersBase { frequencyParam, bypassParam, qParam, getSampleRate() };
 }
@@ -287,10 +297,7 @@ FilterParameters EqualizerAudioProcessor::getParametricParameters (int filterInd
 {
     auto baseParams = getBaseParameters (filterIndex);
 
-    auto gainParam =
-        apvts //
-            .getRawParameterValue (FilterInfo::getParameterName (filterIndex, FilterInfo::FilterParam::GAIN))
-            ->load();
+    auto gainParam = getRawParameter (filterIndex, FilterInfo::FilterParam::GAIN);
 
     return FilterParameters { baseParams, filterType, gainParam };
 }
