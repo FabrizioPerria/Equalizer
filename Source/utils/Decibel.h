@@ -6,133 +6,121 @@ template <typename FloatType>
 class Decibel
 {
 public:
-    Decibel() : linearValue (FloatType (1))
+    Decibel() : dbValue (FloatType (0))
     {
     }
 
-    Decibel (FloatType db) : linearValue (juce::Decibels::decibelsToGain (db, MINUS_INF))
+    Decibel (FloatType db) : dbValue (db)
     {
     }
 
-    Decibel<FloatType> operator+= (Decibel<FloatType> rhs)
+    Decibel& operator+= (Decibel rhs)
     {
-        this->linearValue += rhs.linearValue;
+        this->dbValue += rhs.dbValue;
         return *this;
     }
 
-    Decibel operator-= (Decibel<FloatType> rhs)
+    Decibel& operator-= (Decibel rhs)
     {
-        this->linearValue -= rhs.linearValue;
+        this->dbValue -= rhs.dbValue;
         return *this;
     }
 
-    Decibel<FloatType> operator*= (Decibel<FloatType> rhs)
+    Decibel& operator*= (Decibel rhs)
     {
-        this->linearValue *= rhs.linearValue;
+        this->dbValue *= rhs.dbValue;
         return *this;
     }
 
-    Decibel<FloatType> operator/= (Decibel<FloatType> rhs)
+    Decibel& operator/= (Decibel rhs)
     {
-        auto rhsGain = rhs.linearValue;
-        if (juce::approximatelyEqual (rhsGain, 0.0f))
+        if (juce::approximatelyEqual (rhs.dbValue, 0.0f))
         {
-            this->linearValue = std::numeric_limits<FloatType>::max();
+            this->dbValue = std::numeric_limits<FloatType>::max();
         }
         else
         {
-            this->linearValue /= rhsGain;
+            this->dbValue /= rhs.dbValue;
         }
         return *this;
     }
 
     FloatType getGain() const
     {
-        return linearValue;
+        return juce::Decibels::decibelsToGain (dbValue, MINUS_INF);
     }
 
     FloatType getDb() const
     {
-        return juce::Decibels::gainToDecibels (linearValue, MINUS_INF);
+        return dbValue;
     }
 
     void setGain (FloatType g)
     {
-        linearValue = g;
+        dbValue = juce::Decibels::gainToDecibels (g, MINUS_INF);
     }
 
     void setDb (FloatType db)
     {
-        linearValue = juce::Decibels::decibelsToGain (db);
+        dbValue = db;
     }
 
-    friend Decibel<FloatType> operator+ (Decibel<FloatType> lhs, Decibel<FloatType> rhs)
+    friend Decibel operator+ (Decibel lhs, Decibel rhs)
     {
-        Decibel<FloatType> result;
-        result.setGain (lhs.linearValue + rhs.linearValue);
-        return result;
+        return Decibel (lhs.dbValue + rhs.dbValue);
     }
 
-    friend Decibel<FloatType> operator- (Decibel<FloatType> lhs, Decibel<FloatType> rhs)
+    friend Decibel operator- (Decibel lhs, Decibel rhs)
     {
-        Decibel<FloatType> result;
-        result.setGain (lhs.linearValue - rhs.linearValue);
-        return result;
+        return Decibel (lhs.dbValue - rhs.dbValue);
     }
 
-    friend Decibel<FloatType> operator* (Decibel<FloatType> lhs, Decibel<FloatType> rhs)
+    friend Decibel operator* (Decibel lhs, Decibel rhs)
     {
-        Decibel<FloatType> result;
-        result.setGain (lhs.linearValue * rhs.linearValue);
-        return result;
+        return Decibel (lhs.dbValue * rhs.dbValue);
     }
 
-    friend Decibel<FloatType> operator/ (Decibel<FloatType> lhs, Decibel<FloatType> rhs)
+    friend Decibel operator/ (Decibel lhs, Decibel rhs)
     {
-        Decibel<FloatType> result;
-        if (juce::approximatelyEqual (rhs.linearValue, 0.0f))
+        if (juce::approximatelyEqual (rhs.dbValue, 0.0f))
         {
-            result.setGain (std::numeric_limits<FloatType>::max());
+            return Decibel (std::numeric_limits<FloatType>::max());
         }
-        else
-        {
-            result.setGain (lhs.linearValue / rhs.linearValue);
-        }
-        return result;
+        return Decibel (lhs.dbValue / rhs.dbValue);
     }
 
-    friend bool operator== (Decibel<FloatType> lhs, Decibel<FloatType> rhs)
+    friend bool operator== (Decibel lhs, Decibel rhs)
     {
-        return juce::approximatelyEqual (lhs.linearValue, rhs.linearValue);
+        return juce::approximatelyEqual (lhs.dbValue, rhs.dbValue);
     }
 
-    friend bool operator!= (Decibel<FloatType> lhs, Decibel<FloatType> rhs)
+    friend bool operator!= (Decibel lhs, Decibel rhs)
     {
-        return ! juce::approximatelyEqual (lhs.linearValue, rhs.linearValue);
+        return ! juce::approximatelyEqual (lhs.dbValue, rhs.dbValue);
     }
 
-    friend bool operator< (Decibel<FloatType> lhs, Decibel<FloatType> rhs)
+    friend bool operator< (Decibel lhs, Decibel rhs)
     {
-        return lhs.linearValue < rhs.linearValue;
+        return lhs.dbValue < rhs.dbValue;
     }
 
-    friend bool operator> (Decibel<FloatType> lhs, Decibel<FloatType> rhs)
+    friend bool operator> (Decibel lhs, Decibel rhs)
     {
-        return lhs.linearValue > rhs.linearValue;
+        return lhs.dbValue > rhs.dbValue;
     }
 
-    friend bool operator<= (Decibel<FloatType> lhs, Decibel<FloatType> rhs)
+    friend bool operator<= (Decibel lhs, Decibel rhs)
     {
-        return lhs.linearValue <= rhs.linearValue;
+        return lhs.dbValue <= rhs.dbValue;
     }
 
-    friend bool operator>= (Decibel<FloatType> lhs, Decibel<FloatType> rhs)
+    friend bool operator>= (Decibel lhs, Decibel rhs)
     {
-        return lhs.linearValue >= rhs.linearValue;
+        return lhs.dbValue >= rhs.dbValue;
     }
 
 private:
-    FloatType linearValue;
+    FloatType dbValue;
 
     static constexpr FloatType MINUS_INF = -48.0f;
 };
