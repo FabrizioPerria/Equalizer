@@ -15,6 +15,7 @@
         <FILE id="OjzSog" name="CoefficientsMaker.h" compile="0" resource="0"
               file="Source/utils/CoefficientsMaker.h"/>
         <FILE id="Kc5spL" name="Decibel.h" compile="0" resource="0" file="Source/utils/Decibel.h"/>
+        <FILE id="gJASSV" name="Fifo.h" compile="0" resource="0" file="Source/utils/Fifo.h"/>
         <FILE id="tBWZke" name="FilterParam.cpp" compile="1" resource="0" file="Source/utils/FilterParam.cpp"/>
         <FILE id="sGVlXw" name="FilterParam.h" compile="0" resource="0" file="Source/utils/FilterParam.h"/>
         <FILE id="gR2Gmg" name="FilterType.h" compile="0" resource="0" file="Source/utils/FilterType.h"/>

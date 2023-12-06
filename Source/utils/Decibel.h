@@ -34,11 +34,7 @@ public:
 
     Decibel& operator/= (Decibel rhs)
     {
-        if (juce::approximatelyEqual (rhs.dbValue, 0.0f))
-        {
-            this->dbValue = std::numeric_limits<FloatType>::max();
-        }
-        else
+        if (! juce::approximatelyEqual (rhs.dbValue, 0.0f))
         {
             this->dbValue /= rhs.dbValue;
         }
@@ -82,11 +78,11 @@ public:
 
     friend Decibel operator/ (Decibel lhs, Decibel rhs)
     {
-        if (juce::approximatelyEqual (rhs.dbValue, 0.0f))
+        if (! juce::approximatelyEqual (rhs.dbValue, 0.0f))
         {
-            return Decibel (std::numeric_limits<FloatType>::max());
+            return Decibel (lhs.dbValue / rhs.dbValue);
         }
-        return Decibel (lhs.dbValue / rhs.dbValue);
+        return lhs;
     }
 
     friend bool operator== (Decibel lhs, Decibel rhs)
