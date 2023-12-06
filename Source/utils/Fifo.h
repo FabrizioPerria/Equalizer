@@ -34,10 +34,25 @@ struct Fifo
     //used when T is std::vector<float>
     void prepare (size_t numElements)
     {
-        static_assert (std::is_same_v<T, juce::AudioBuffer<float>>, "T must be vector<float> when using prepare(numElements)");
+        static_assert (std::is_same_v<T, std::vector<float>>, "T must be vector<float> when using prepare(numElements)");
 
         buffer.clear();
         buffer.resize (numElements, 0);
+    }
+
+    void handleRefCountedObjectPtr (T& temp, T& bufferElement, const T& newValue)
+    {
+        if (bufferElement != nullptr)
+        {
+            temp = bufferElement;
+        }
+
+        bufferElement = newValue;
+
+        if (temp != nullptr)
+        {
+            jassert (temp->getReferenceCount() > 1);
+        }
     }
 
     bool push (const T& t)
@@ -49,20 +64,11 @@ struct Fifo
         {
             if constexpr (IsReferenceCountedObjectPtr<T>::value)
             {
-                if (buffer[write.startIndex1] != nullptr)
-                {
-                    temp = buffer[write.startIndex1];
-                }
+                handleRefCountedObjectPtr (temp, buffer[write.startIndex1], t);
             }
-
-            buffer[write.startIndex1] = t;
-
-            if constexpr (IsReferenceCountedObjectPtr<T>::value)
+            else
             {
-                if (temp != nullptr)
-                {
-                    jassert (temp->getReferenceCount() > 1);
-                }
+                buffer[write.startIndex1] = t;
             }
             return true;
         }
