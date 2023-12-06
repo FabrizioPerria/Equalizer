@@ -4,12 +4,12 @@
 #include <cstddef>
 
 template <typename T>
-struct IsReferenceCountedObject : std::false_type
+struct IsReferenceCountedObjectPtr : std::false_type
 {
 };
 
-template <>
-struct IsReferenceCountedObject<ReferenceCountedObject> : std::true_type
+template <typename T>
+struct IsReferenceCountedObjectPtr<ReferenceCountedObjectPtr<T>> : std::true_type
 {
 };
 
@@ -47,13 +47,23 @@ struct Fifo
         auto write = fifo.write (1);
         if (write.blockSize1 > 0)
         {
-            if constexpr (IsReferenceCountedObject<T>::value)
+            if constexpr (IsReferenceCountedObjectPtr<T>::value)
             {
-                temp = buffer[write.startIndex1];
+                if (buffer[write.startIndex1] != nullptr)
+                {
+                    temp = buffer[write.startIndex1];
+                }
             }
 
-            jassert (buffer[write.startIndex1].getReferenceCount() > 1);
             buffer[write.startIndex1] = t;
+
+            if constexpr (IsReferenceCountedObjectPtr<T>::value)
+            {
+                if (temp != nullptr)
+                {
+                    jassert (temp->getReferenceCount() > 1);
+                }
+            }
             return true;
         }
         return false;
