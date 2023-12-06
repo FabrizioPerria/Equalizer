@@ -34,14 +34,8 @@ public:
 
     Decibel& operator/= (Decibel rhs)
     {
-        if (juce::approximatelyEqual (rhs.dbValue, 0.0f))
-        {
-            this->dbValue = std::numeric_limits<FloatType>::max();
-        }
-        else
-        {
-            this->dbValue /= rhs.dbValue;
-        }
+        jassert (! juce::approximatelyEqual (rhs.dbValue, 0.0f));
+        this->dbValue /= rhs.dbValue;
         return *this;
     }
 
