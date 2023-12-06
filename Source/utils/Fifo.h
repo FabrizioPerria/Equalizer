@@ -59,10 +59,26 @@ struct Fifo
         return false;
     }
 
-    bool pull (T& t);
+    bool pull (T& t)
+    {
+        auto read = fifo.read (1);
+        if (read.blockSize1 > 0)
+        {
+            t = buffer[read.startIndex1];
+            return true;
+        }
+        return false;
+    }
 
-    int getNumAvailableForReading() const;
-    int getAvailableSpace() const;
+    int getNumAvailableForReading() const
+    {
+        return fifo.getNumReady();
+    }
+
+    int getAvailableSpace() const
+    {
+        return fifo.getFreeSpace();
+    }
 
 private:
     juce::AbstractFifo fifo { Size };
