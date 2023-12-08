@@ -89,7 +89,6 @@ private:
 
     static const std::map<FilterInfo::FilterType, juce::String> filterTypeMap;
     FilterInfo::FilterType getFilterType (int filterIndex);
-    static juce::String getFilterTypeName (FilterInfo::FilterType filterType);
     static bool isCutFilter (FilterInfo::FilterType filterType);
     static juce::StringArray getFilterTypeNamesBasedOnType (bool isCutFilter);
 

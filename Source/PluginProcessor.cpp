@@ -212,12 +212,6 @@ juce::AudioProcessorValueTreeState::ParameterLayout EqualizerAudioProcessor::cre
                                                                  range,
                                                                  20.0f));
 
-        name = FilterInfo::getParameterName (i, FilterInfo::FilterParam::Q);
-        layout.add (std::make_unique<juce::AudioParameterFloat> (juce::ParameterID { name, 1 },
-                                                                 name,
-                                                                 juce::NormalisableRange<float> (0.1f, 10.0f, 0.1f),
-                                                                 1.0f));
-
         auto isCutFilter = static_cast<ChainPositions> (i) == ChainPositions::HIGHCUT
                            || static_cast<ChainPositions> (i) == ChainPositions::LOWCUT;
 
@@ -229,6 +223,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout EqualizerAudioProcessor::cre
         if (isCutFilter)
         {
             juce::StringArray slopeNames;
+            // 8 slopes of -6db/Oct each = -48db/Oct
             for (int j = 0; j < 8; ++j)
             {
                 juce::String slopeName;
@@ -246,6 +241,12 @@ juce::AudioProcessorValueTreeState::ParameterLayout EqualizerAudioProcessor::cre
                                                                      name,
                                                                      juce::NormalisableRange<float> (-24.0f, 24.0f, 0.1f),
                                                                      0.0f));
+
+            name = FilterInfo::getParameterName (i, FilterInfo::FilterParam::Q);
+            layout.add (std::make_unique<juce::AudioParameterFloat> (juce::ParameterID { name, 1 },
+                                                                     name,
+                                                                     juce::NormalisableRange<float> (0.1f, 10.0f, 0.1f),
+                                                                     1.0f));
         }
     }
 
@@ -271,16 +272,6 @@ FilterInfo::FilterType EqualizerAudioProcessor::getFilterType (int filterIndex)
     auto name = FilterInfo::getParameterName (filterIndex, FilterInfo::FilterParam::FILTER_TYPE);
     auto filterTypeParam = apvts.getRawParameterValue (name);
     return static_cast<FilterInfo::FilterType> (filterTypeParam->load());
-}
-
-juce::String EqualizerAudioProcessor::getFilterTypeName (FilterInfo::FilterType filterType)
-{
-    auto it = filterTypeMap.find (filterType);
-    if (it != filterTypeMap.end())
-    {
-        return it->second;
-    }
-    return "Unknown";
 }
 
 bool EqualizerAudioProcessor::isCutFilter (FilterInfo::FilterType filterType)
@@ -342,12 +333,12 @@ void EqualizerAudioProcessor::updateCoefficients (Coefficients& oldCoefficients,
 
 void EqualizerAudioProcessor::updateFilters()
 {
-    auto lowcutSettings = getCutParameters (ChainPositions::LOWCUT, getFilterType (ChainPositions::LOWCUT));
+    auto lowcutSettings = getCutParameters (ChainPositions::LOWCUT, FilterInfo::FilterType::HIGHPASS);
     updateFilter<ChainPositions::LOWCUT> (oldHighCutLowCutParams[ChainPositions::LOWCUT], lowcutSettings);
 
     auto parametricSettings = getParametricParameters (ChainPositions::FILTER1, getFilterType (ChainPositions::FILTER1));
     updateFilter<ChainPositions::FILTER1> (oldFilterParams[ChainPositions::FILTER1], parametricSettings);
 
-    auto highcutSettings = getCutParameters (ChainPositions::HIGHCUT, getFilterType (ChainPositions::HIGHCUT));
+    auto highcutSettings = getCutParameters (ChainPositions::HIGHCUT, FilterInfo::FilterType::LOWPASS);
     updateFilter<ChainPositions::HIGHCUT> (oldHighCutLowCutParams[ChainPositions::HIGHCUT], highcutSettings);
 }
