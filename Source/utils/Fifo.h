@@ -9,7 +9,7 @@ struct IsReferenceCountedObjectPtr : std::false_type
 };
 
 template <typename T>
-struct IsReferenceCountedObjectPtr<ReferenceCountedObjectPtr<T>> : std::true_type
+struct IsReferenceCountedObjectPtr<juce::ReferenceCountedObjectPtr<T>> : std::true_type
 {
 };
 
@@ -40,35 +40,21 @@ struct Fifo
         buffer.resize (numElements, 0);
     }
 
-    void handleRefCountedObjectPtr (T& temp, T& bufferElement, const T& newValue)
-    {
-        if (bufferElement != nullptr)
-        {
-            temp = bufferElement;
-        }
-
-        bufferElement = newValue;
-
-        if (temp != nullptr)
-        {
-            jassert (temp->getReferenceCount() > 1);
-        }
-    }
-
     bool push (const T& t)
     {
-        T temp;
-
         auto write = fifo.write (1);
         if (write.blockSize1 > 0)
         {
-            if constexpr (IsReferenceCountedObjectPtr<T>::value)
+            size_t index = static_cast<size_t>(write.startIndex1);
+            if constexpr( IsReferenceCountedObjectPtr<T>::value)
             {
-                handleRefCountedObjectPtr (temp, buffer[write.startIndex1], t);
+                T old = buffer[index];
+                buffer[index] = t;
+                jassert(old.get() == nullptr || old->getReferenceCount() > 1);
             }
             else
             {
-                buffer[write.startIndex1] = t;
+                buffer[index] = t;
             }
             return true;
         }
