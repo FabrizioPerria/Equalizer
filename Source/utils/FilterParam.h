@@ -11,6 +11,7 @@ namespace FilterInfo
         FREQUENCY,
         BYPASS,
         FILTER_TYPE,
+        SLOPE
     };
 
     juce::String getParameterName(int filterNum, FilterParam param);
