@@ -51,12 +51,12 @@ struct CoefficientsMaker
         return make (params.type, params.frequency, params.quality, params.gain, sampleRate);
     }
 
-    static juce::dsp::IIR::Coefficients<FloatType>::Ptr make (const HighCutLowCutParameters& params, double sampleRate)
+    static juce::ReferenceCountedArray<juce::dsp::IIR::Coefficients<FloatType>> make (const HighCutLowCutParameters& params, double sampleRate)
     {
         using FilterDesign = juce::dsp::FilterDesign<FloatType>;
         if (params.isLowCut)
-            return FilterDesign::designIIRHighpassHighOrderButterworthMethod (params.frequency, sampleRate, params.order).getFirst();
+            return FilterDesign::designIIRHighpassHighOrderButterworthMethod (params.frequency, sampleRate, params.order);
 
-        return FilterDesign::designIIRLowpassHighOrderButterworthMethod (params.frequency, sampleRate, params.order).getFirst();
+        return FilterDesign::designIIRLowpassHighOrderButterworthMethod (params.frequency, sampleRate, params.order);
     }
 };
