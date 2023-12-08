@@ -10,12 +10,32 @@
 
 #include "data/FilterParameters.h"
 #include "utils/CoefficientsMaker.h"
+#include "utils/Fifo.h"
 #include "utils/FilterType.h"
 #include <JuceHeader.h>
 
 //==============================================================================
-/**
-*/
+enum ChainPositions
+{
+    LOWCUT = 0,
+    FILTER1,
+    HIGHCUT,
+    NUM_FILTERS
+};
+
+// ====================================================================================================
+enum Slope
+{
+    SLOPE_6 = 1,
+    SLOPE_12,
+    SLOPE_18,
+    SLOPE_24,
+    SLOPE_30,
+    SLOPE_36,
+    SLOPE_40,
+    SLOPE_48
+};
+// ====================================================================================================
 class EqualizerAudioProcessor : public juce::AudioProcessor
 {
 public:
@@ -60,7 +80,9 @@ public:
 
     using Filter = juce::dsp::IIR::Filter<float>;
     using Coefficients = juce::dsp::IIR::Coefficients<float>::Ptr;
-    using MonoFilter = juce::dsp::ProcessorChain<Filter>;
+    using CutCoefficients = juce::ReferenceCountedArray<juce::dsp::IIR::Coefficients<float>>;
+    using CutFilter = juce::dsp::ProcessorChain<Filter, Filter, Filter, Filter, Filter, Filter, Filter, Filter>;
+    using MonoFilter = juce::dsp::ProcessorChain<CutFilter, Filter, CutFilter>;
 
 private:
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
@@ -68,39 +90,123 @@ private:
     static const std::map<FilterInfo::FilterType, juce::String> filterTypeMap;
     FilterInfo::FilterType getFilterType (int filterIndex);
     static juce::String getFilterTypeName (FilterInfo::FilterType filterType);
-    static juce::StringArray getFilterTypeNames();
+    static bool isCutFilter (FilterInfo::FilterType filterType);
+    static juce::StringArray getFilterTypeNamesBasedOnType (bool isCutFilter);
 
     float getRawParameter (int filterIndex, FilterInfo::FilterParam filterParameter);
 
     FilterParametersBase getBaseParameters (int filterIndex);
     FilterParameters getParametricParameters (int filterIndex, FilterInfo::FilterType filterType);
     HighCutLowCutParameters getCutParameters (int filterIndex, FilterInfo::FilterType filterType);
-    bool needsParametricParams (FilterInfo::FilterType type);
 
-    void setBypassed (MonoFilter& filter, int filterIndex, bool bypassed);
-    void updateCoefficients (MonoFilter& filter, int filterIndex, Coefficients coefficients);
+    void updateCoefficients (Coefficients& oldCoefficients, const Coefficients& newCoefficients);
 
-    template <typename ParamsType>
-    void updateFilter (int filterIndex, ParamsType& oldParams, const ParamsType& newParams)
+    template <int Index, typename ChainType, typename CoefficientType>
+    void update (ChainType& chain, const CoefficientType& coefficients)
+    {
+        updateCoefficients (chain.template get<Index>().coefficients, coefficients[Index]);
+        chain.template setBypassed<Index> (false);
+    }
+
+    template <typename ChainType, typename CoefficientType>
+    void updateCutFilter (ChainType& chain, CoefficientType& coefficients, Slope slope)
+    {
+        chain.template setBypassed<0> (true);
+        chain.template setBypassed<1> (true);
+        chain.template setBypassed<2> (true);
+        chain.template setBypassed<3> (true);
+        chain.template setBypassed<4> (true);
+        chain.template setBypassed<5> (true);
+        chain.template setBypassed<6> (true);
+        chain.template setBypassed<7> (true);
+
+        switch (slope)
+        {
+            case Slope::SLOPE_48:
+            {
+                update<7> (chain, coefficients);
+            }
+            case Slope::SLOPE_40:
+            {
+                update<6> (chain, coefficients);
+            }
+            case Slope::SLOPE_36:
+            {
+                update<5> (chain, coefficients);
+            }
+            case Slope::SLOPE_30:
+            {
+                update<4> (chain, coefficients);
+            }
+            case Slope::SLOPE_24:
+            {
+                update<3> (chain, coefficients);
+            }
+            case Slope::SLOPE_18:
+            {
+                update<2> (chain, coefficients);
+            }
+            case Slope::SLOPE_12:
+            {
+                update<1> (chain, coefficients);
+            }
+            case Slope::SLOPE_6:
+            {
+                update<0> (chain, coefficients);
+            }
+        }
+    }
+
+    template <int ChainPosition, typename ParamsType>
+    void updateFilter (ParamsType& oldParams, const ParamsType& newParams)
     {
         if (newParams != oldParams)
         {
-            setBypassed (leftChain, filterIndex, newParams.bypassed);
-            setBypassed (rightChain, filterIndex, newParams.bypassed);
+            leftChain.setBypassed<ChainPosition> (newParams.bypassed);
+            rightChain.setBypassed<ChainPosition> (newParams.bypassed);
+
             auto coefficients = CoefficientsMaker<float>::make (newParams, getSampleRate());
-            updateCoefficients (leftChain, filterIndex, coefficients);
-            updateCoefficients (rightChain, filterIndex, coefficients);
+            auto& leftFilter = leftChain.template get<ChainPosition>();
+            auto& rightFilter = rightChain.template get<ChainPosition>();
+
+            if constexpr (ChainPosition == HIGHCUT)
+            {
+                highcutFilterFifo.push (coefficients);
+                CutCoefficients pulledCoefficients;
+                highcutFilterFifo.pull (pulledCoefficients);
+                updateCutFilter (leftFilter, coefficients, static_cast<Slope> (newParams.order));
+                updateCutFilter (rightFilter, coefficients, static_cast<Slope> (newParams.order));
+            }
+            else if constexpr (ChainPosition == LOWCUT)
+            {
+                lowcutFilterFifo.push (coefficients);
+                CutCoefficients pulledCoefficients;
+                lowcutFilterFifo.pull (pulledCoefficients);
+                updateCutFilter (leftFilter, coefficients, static_cast<Slope> (newParams.order));
+                updateCutFilter (rightFilter, coefficients, static_cast<Slope> (newParams.order));
+            }
+            else
+            {
+                parametricFilterFifo.push (coefficients);
+                Coefficients pulledCoefficients;
+                parametricFilterFifo.pull (pulledCoefficients);
+                updateCoefficients (leftFilter.coefficients, pulledCoefficients);
+                updateCoefficients (rightFilter.coefficients, pulledCoefficients);
+            }
             oldParams = newParams;
         }
     }
 
     void updateFilters();
 
-    static const int NUM_FILTERS = 1;
+    std::array<FilterParameters, ChainPositions::NUM_FILTERS> oldFilterParams;
+    std::array<HighCutLowCutParameters, ChainPositions::NUM_FILTERS> oldHighCutLowCutParams;
 
-    std::array<FilterParameters, NUM_FILTERS> oldFilterParams;
-    std::array<HighCutLowCutParameters, NUM_FILTERS> oldHighCutLowCutParams;
     MonoFilter leftChain, rightChain;
+
+    Fifo<CutCoefficients, 2> lowcutFilterFifo;
+    Fifo<Coefficients, 2> parametricFilterFifo;
+    Fifo<CutCoefficients, 2> highcutFilterFifo;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (EqualizerAudioProcessor)

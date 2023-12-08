@@ -198,7 +198,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout EqualizerAudioProcessor::cre
 {
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
 
-    for (int i = 0; i < NUM_FILTERS; ++i)
+    for (int i = 0; i < ChainPositions::NUM_FILTERS; ++i)
     {
         auto name = FilterInfo::getParameterName (i, FilterInfo::FilterParam::BYPASS);
         layout.add (std::make_unique<juce::AudioParameterBool> (juce::ParameterID { name, 1 }, //
@@ -218,17 +218,35 @@ juce::AudioProcessorValueTreeState::ParameterLayout EqualizerAudioProcessor::cre
                                                                  juce::NormalisableRange<float> (0.1f, 10.0f, 0.1f),
                                                                  1.0f));
 
-        name = FilterInfo::getParameterName (i, FilterInfo::FilterParam::GAIN);
-        layout.add (std::make_unique<juce::AudioParameterFloat> (juce::ParameterID { name, 1 },
-                                                                 name,
-                                                                 juce::NormalisableRange<float> (-24.0f, 24.0f, 0.1f),
-                                                                 0.0f));
+        auto isCutFilter = static_cast<ChainPositions> (i) == ChainPositions::HIGHCUT
+                           || static_cast<ChainPositions> (i) == ChainPositions::LOWCUT;
 
         name = FilterInfo::getParameterName (i, FilterInfo::FilterParam::FILTER_TYPE);
         layout.add (std::make_unique<juce::AudioParameterChoice> (juce::ParameterID { name, 1 },
                                                                   name,
-                                                                  getFilterTypeNames(),
-                                                                  static_cast<int> (FilterInfo::FilterType::ALLPASS)));
+                                                                  getFilterTypeNamesBasedOnType (isCutFilter),
+                                                                  0));
+        if (isCutFilter)
+        {
+            juce::StringArray slopeNames;
+            for (int j = 0; j < 8; ++j)
+            {
+                juce::String slopeName;
+                slopeName << (6 + j * 6);
+                slopeName << " db/Oct";
+                slopeNames.add (slopeName);
+            }
+            name = FilterInfo::getParameterName (i, FilterInfo::FilterParam::SLOPE);
+            layout.add (std::make_unique<juce::AudioParameterChoice> (juce::ParameterID { name, 1 }, name, slopeNames, 1));
+        }
+        else
+        {
+            name = FilterInfo::getParameterName (i, FilterInfo::FilterParam::GAIN);
+            layout.add (std::make_unique<juce::AudioParameterFloat> (juce::ParameterID { name, 1 },
+                                                                     name,
+                                                                     juce::NormalisableRange<float> (-24.0f, 24.0f, 0.1f),
+                                                                     0.0f));
+        }
     }
 
     return layout;
@@ -265,12 +283,19 @@ juce::String EqualizerAudioProcessor::getFilterTypeName (FilterInfo::FilterType 
     return "Unknown";
 }
 
-juce::StringArray EqualizerAudioProcessor::getFilterTypeNames()
+bool EqualizerAudioProcessor::isCutFilter (FilterInfo::FilterType filterType)
+{
+    return filterType == FilterInfo::FilterType::LOWPASS || //
+           filterType == FilterInfo::FilterType::HIGHPASS;
+}
+
+juce::StringArray EqualizerAudioProcessor::getFilterTypeNamesBasedOnType (bool onlyCutFilters)
 {
     juce::StringArray names;
     for (auto& it : filterTypeMap)
     {
-        names.add (it.second);
+        if (isCutFilter (it.first) == onlyCutFilters)
+            names.add (it.second);
     }
     return names;
 }
@@ -306,75 +331,23 @@ HighCutLowCutParameters EqualizerAudioProcessor::getCutParameters (int filterInd
 {
     auto baseParams = getBaseParameters (filterIndex);
     auto isLowCutParam = filterType == FilterInfo::FilterType::HIGHPASS;
-    return HighCutLowCutParameters { baseParams, 1, isLowCutParam };
+    auto slopeParam = static_cast<Slope> (getRawParameter (filterIndex, FilterInfo::FilterParam::SLOPE));
+    return HighCutLowCutParameters { baseParams, slopeParam, isLowCutParam };
 }
 
-bool EqualizerAudioProcessor::needsParametricParams (FilterInfo::FilterType type)
+void EqualizerAudioProcessor::updateCoefficients (Coefficients& oldCoefficients, const Coefficients& newCoefficients)
 {
-    switch (type)
-    {
-        case FilterInfo::FilterType::FIRST_ORDER_LOWPASS:
-        case FilterInfo::FilterType::FIRST_ORDER_HIGHPASS:
-        case FilterInfo::FilterType::FIRST_ORDER_ALLPASS:
-        case FilterInfo::FilterType::BANDPASS:
-        case FilterInfo::FilterType::NOTCH:
-        case FilterInfo::FilterType::LOWSHELF:
-        case FilterInfo::FilterType::HIGHSHELF:
-        case FilterInfo::FilterType::ALLPASS:
-        case FilterInfo::FilterType::PEAKFILTER:
-            return true;
-        case FilterInfo::FilterType::LOWPASS:
-        case FilterInfo::FilterType::HIGHPASS:
-            return false;
-        default:
-            jassertfalse;
-            return false;
-    }
-}
-
-void EqualizerAudioProcessor::setBypassed (MonoFilter& filter, int filterIndex, bool bypassed)
-{
-    jassert (filterIndex >= 0 && filterIndex < NUM_FILTERS);
-    switch (filterIndex)
-    {
-        case 0:
-            filter.setBypassed<0> (bypassed);
-            break;
-
-        default:
-            jassertfalse;
-            break;
-    }
-}
-
-void EqualizerAudioProcessor::updateCoefficients (MonoFilter& filter, int filterIndex, Coefficients coefficients)
-{
-    jassert (filterIndex >= 0 && filterIndex < NUM_FILTERS);
-    switch (filterIndex)
-    {
-        case 0:
-            *filter.get<0>().coefficients = *coefficients;
-            break;
-
-        default:
-            jassertfalse;
-            break;
-    }
+    *oldCoefficients = *newCoefficients;
 }
 
 void EqualizerAudioProcessor::updateFilters()
 {
-    for (int i = 0; i < NUM_FILTERS; ++i)
-    {
-        auto filterType = getFilterType (i);
+    auto lowcutSettings = getCutParameters (ChainPositions::LOWCUT, getFilterType (ChainPositions::LOWCUT));
+    updateFilter<ChainPositions::LOWCUT> (oldHighCutLowCutParams[ChainPositions::LOWCUT], lowcutSettings);
 
-        if (needsParametricParams (filterType))
-        {
-            updateFilter (i, oldFilterParams[i], getParametricParameters (i, filterType));
-        }
-        else
-        {
-            updateFilter (i, oldHighCutLowCutParams[i], getCutParameters (i, filterType));
-        }
-    }
+    auto parametricSettings = getParametricParameters (ChainPositions::FILTER1, getFilterType (ChainPositions::FILTER1));
+    updateFilter<ChainPositions::FILTER1> (oldFilterParams[ChainPositions::FILTER1], parametricSettings);
+
+    auto highcutSettings = getCutParameters (ChainPositions::HIGHCUT, getFilterType (ChainPositions::HIGHCUT));
+    updateFilter<ChainPositions::HIGHCUT> (oldHighCutLowCutParams[ChainPositions::HIGHCUT], highcutSettings);
 }
