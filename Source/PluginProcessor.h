@@ -18,7 +18,7 @@
 enum ChainPositions
 {
     LOWCUT,
-    FILTER1,
+    PARAMETRIC_FILTER,
     HIGHCUT,
     NUM_FILTERS
 };
@@ -26,7 +26,7 @@ enum ChainPositions
 // ====================================================================================================
 enum Slope
 {
-    SLOPE_6 = 1,
+    SLOPE_6,
     SLOPE_12,
     SLOPE_18,
     SLOPE_24,
@@ -91,6 +91,7 @@ private:
     FilterInfo::FilterType getFilterType (int filterIndex);
     static bool isCutFilter (FilterInfo::FilterType filterType);
     static juce::StringArray getFilterTypeNames();
+    static juce::StringArray getSlopeNames();
 
     float getRawParameter (int filterIndex, FilterInfo::FilterParam filterParameter);
 
@@ -114,10 +115,6 @@ private:
         chain.template setBypassed<1> (true);
         chain.template setBypassed<2> (true);
         chain.template setBypassed<3> (true);
-        chain.template setBypassed<4> (true);
-        chain.template setBypassed<5> (true);
-        chain.template setBypassed<6> (true);
-        chain.template setBypassed<7> (true);
 
         switch (slope)
         {
@@ -144,6 +141,16 @@ private:
         }
     }
 
+    // TODO: Test method to make sure the Fifo is working. Probably it will be removed soon.
+    template <typename CoefficientType, size_t Size>
+    CoefficientType getCoefficientsFromFifo (Fifo<CoefficientType, Size>& fifo, CoefficientType& coefficients)
+    {
+        jassert (fifo.push (coefficients));
+        CoefficientType pulledCoefficients;
+        jassert (fifo.pull (pulledCoefficients));
+        return pulledCoefficients;
+    }
+
     template <int ChainPosition, typename ParamsType>
     void updateFilter (ParamsType& oldParams, const ParamsType& newParams)
     {
@@ -156,30 +163,25 @@ private:
             auto& leftFilter = leftChain.template get<ChainPosition>();
             auto& rightFilter = rightChain.template get<ChainPosition>();
 
-            if constexpr (ChainPosition == HIGHCUT)
+            if constexpr (ChainPosition == HIGHCUT || ChainPosition == LOWCUT)
             {
-                highcutFilterFifo.push (coefficients);
-                CutCoefficients pulledCoefficients;
-                highcutFilterFifo.pull (pulledCoefficients);
-                updateCutFilter (leftFilter, pulledCoefficients, static_cast<Slope> (newParams.order));
-                updateCutFilter (rightFilter, pulledCoefficients, static_cast<Slope> (newParams.order));
-            }
-            else if constexpr (ChainPosition == LOWCUT)
-            {
-                lowcutFilterFifo.push (coefficients);
-                CutCoefficients pulledCoefficients;
-                lowcutFilterFifo.pull (pulledCoefficients);
-                updateCutFilter (leftFilter, pulledCoefficients, static_cast<Slope> (newParams.order));
-                updateCutFilter (rightFilter, pulledCoefficients, static_cast<Slope> (newParams.order));
+                auto coefficientsToUse = getCoefficientsFromFifo (ChainPosition == HIGHCUT ? highcutFilterFifo : lowcutFilterFifo,
+                                                                  coefficients);
+                updateCutFilter (leftFilter, coefficientsToUse, static_cast<Slope> (newParams.order));
+                updateCutFilter (rightFilter, coefficientsToUse, static_cast<Slope> (newParams.order));
             }
             else
             {
-                parametricFilterFifo.push (coefficients);
-                Coefficients pulledCoefficients;
-                parametricFilterFifo.pull (pulledCoefficients);
-                updateCoefficients (leftFilter.coefficients, pulledCoefficients);
-                updateCoefficients (rightFilter.coefficients, pulledCoefficients);
+                auto coefficientsToUse = getCoefficientsFromFifo (parametricFilterFifo, coefficients);
+
+                updateCoefficients (leftFilter.coefficients, coefficientsToUse);
+                updateCoefficients (rightFilter.coefficients, coefficientsToUse);
+
+                // trying to prevent the object from being deleted. This means the object is never released, even if it's overwritten in the Fifo
+                // TODO: make sure the object is released at some point, but outside the audio thread
+                coefficientsToUse.get()->incReferenceCount();
             }
+
             oldParams = newParams;
         }
     }
@@ -191,9 +193,9 @@ private:
 
     MonoFilter leftChain, rightChain;
 
-    Fifo<CutCoefficients, 100> lowcutFilterFifo;
-    Fifo<Coefficients, 100> parametricFilterFifo;
-    Fifo<CutCoefficients, 100> highcutFilterFifo;
+    Fifo<CutCoefficients, 20> lowcutFilterFifo;
+    Fifo<Coefficients, 20> parametricFilterFifo;
+    Fifo<CutCoefficients, 20> highcutFilterFifo;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (EqualizerAudioProcessor)
