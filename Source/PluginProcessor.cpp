@@ -267,12 +267,6 @@ FilterInfo::FilterType EqualizerAudioProcessor::getFilterType (int filterIndex)
     return static_cast<FilterInfo::FilterType> (filterTypeParam->load());
 }
 
-bool EqualizerAudioProcessor::isCutFilter (FilterInfo::FilterType filterType)
-{
-    return filterType == FilterInfo::FilterType::LOWPASS || //
-           filterType == FilterInfo::FilterType::HIGHPASS;
-}
-
 juce::StringArray EqualizerAudioProcessor::getFilterTypeNames()
 {
     juce::StringArray names;
