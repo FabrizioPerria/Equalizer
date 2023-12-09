@@ -15,7 +15,7 @@ bool operator!= (const FilterParametersBase& lhs, const FilterParametersBase& rh
 bool operator== (const FilterParameters& lhs, const FilterParameters& rhs)
 {
     return lhs.type == rhs.type //
-           && juce::approximatelyEqual (lhs.gain, rhs.gain)
+           && juce::approximatelyEqual (lhs.gain, rhs.gain) && juce::approximatelyEqual (lhs.quality, rhs.quality)
            && static_cast<const FilterParametersBase&> (lhs) == static_cast<const FilterParametersBase&> (rhs);
 }
 
