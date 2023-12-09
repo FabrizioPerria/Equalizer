@@ -4,7 +4,6 @@
 bool operator== (const FilterParametersBase& lhs, const FilterParametersBase& rhs)
 {
     return juce::approximatelyEqual (lhs.frequency, rhs.frequency) && lhs.bypassed == rhs.bypassed
-           && juce::approximatelyEqual (lhs.quality, rhs.quality)
            && juce::approximatelyEqual (lhs.sampleRate, rhs.sampleRate);
 }
 

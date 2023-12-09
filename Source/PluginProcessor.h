@@ -17,7 +17,7 @@
 //==============================================================================
 enum ChainPositions
 {
-    LOWCUT = 0,
+    LOWCUT,
     FILTER1,
     HIGHCUT,
     NUM_FILTERS
@@ -90,7 +90,7 @@ private:
     static const std::map<FilterInfo::FilterType, juce::String> filterTypeMap;
     FilterInfo::FilterType getFilterType (int filterIndex);
     static bool isCutFilter (FilterInfo::FilterType filterType);
-    static juce::StringArray getFilterTypeNamesBasedOnType (bool isCutFilter);
+    static juce::StringArray getFilterTypeNames();
 
     float getRawParameter (int filterIndex, FilterInfo::FilterParam filterParameter);
 
@@ -100,15 +100,15 @@ private:
 
     void updateCoefficients (Coefficients& oldCoefficients, const Coefficients& newCoefficients);
 
-    template <int Index, typename ChainType, typename CoefficientType>
-    void update (ChainType& chain, const CoefficientType& coefficients)
+    template <int Index, typename ChainType>
+    void update (ChainType& chain, CutCoefficients& coefficients)
     {
         updateCoefficients (chain.template get<Index>().coefficients, coefficients[Index]);
         chain.template setBypassed<Index> (false);
     }
 
-    template <typename ChainType, typename CoefficientType>
-    void updateCutFilter (ChainType& chain, CoefficientType& coefficients, Slope slope)
+    template <typename ChainType>
+    void updateCutFilter (ChainType& chain, CutCoefficients& coefficients, Slope slope)
     {
         chain.template setBypassed<0> (true);
         chain.template setBypassed<1> (true);
@@ -122,33 +122,21 @@ private:
         switch (slope)
         {
             case Slope::SLOPE_48:
-            {
-                update<7> (chain, coefficients);
-            }
             case Slope::SLOPE_40:
-            {
-                update<6> (chain, coefficients);
-            }
-            case Slope::SLOPE_36:
-            {
-                update<5> (chain, coefficients);
-            }
-            case Slope::SLOPE_30:
-            {
-                update<4> (chain, coefficients);
-            }
-            case Slope::SLOPE_24:
             {
                 update<3> (chain, coefficients);
             }
-            case Slope::SLOPE_18:
+            case Slope::SLOPE_36:
+            case Slope::SLOPE_30:
             {
                 update<2> (chain, coefficients);
             }
-            case Slope::SLOPE_12:
+            case Slope::SLOPE_24:
+            case Slope::SLOPE_18:
             {
                 update<1> (chain, coefficients);
             }
+            case Slope::SLOPE_12:
             case Slope::SLOPE_6:
             {
                 update<0> (chain, coefficients);
@@ -173,16 +161,16 @@ private:
                 highcutFilterFifo.push (coefficients);
                 CutCoefficients pulledCoefficients;
                 highcutFilterFifo.pull (pulledCoefficients);
-                updateCutFilter (leftFilter, coefficients, static_cast<Slope> (newParams.order));
-                updateCutFilter (rightFilter, coefficients, static_cast<Slope> (newParams.order));
+                updateCutFilter (leftFilter, pulledCoefficients, static_cast<Slope> (newParams.order));
+                updateCutFilter (rightFilter, pulledCoefficients, static_cast<Slope> (newParams.order));
             }
             else if constexpr (ChainPosition == LOWCUT)
             {
                 lowcutFilterFifo.push (coefficients);
                 CutCoefficients pulledCoefficients;
                 lowcutFilterFifo.pull (pulledCoefficients);
-                updateCutFilter (leftFilter, coefficients, static_cast<Slope> (newParams.order));
-                updateCutFilter (rightFilter, coefficients, static_cast<Slope> (newParams.order));
+                updateCutFilter (leftFilter, pulledCoefficients, static_cast<Slope> (newParams.order));
+                updateCutFilter (rightFilter, pulledCoefficients, static_cast<Slope> (newParams.order));
             }
             else
             {
@@ -203,9 +191,9 @@ private:
 
     MonoFilter leftChain, rightChain;
 
-    Fifo<CutCoefficients, 2> lowcutFilterFifo;
-    Fifo<Coefficients, 2> parametricFilterFifo;
-    Fifo<CutCoefficients, 2> highcutFilterFifo;
+    Fifo<CutCoefficients, 100> lowcutFilterFifo;
+    Fifo<Coefficients, 100> parametricFilterFifo;
+    Fifo<CutCoefficients, 100> highcutFilterFifo;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (EqualizerAudioProcessor)
