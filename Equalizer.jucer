@@ -2,7 +2,8 @@
 
 <JUCERPROJECT id="jnBIw8" name="Equalizer" projectType="audioplug" useAppConfig="0"
               addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1"
-              maxBinaryFileSize="20971520" pluginManufacturerCode="FABP" pluginCode="JEQ1">
+              maxBinaryFileSize="20971520" pluginManufacturerCode="FABP" pluginCode="JEQ1"
+              companyName="fp">
   <MAINGROUP id="Do3AsA" name="Equalizer">
     <GROUP id="{947A9606-09DB-5F3A-08CC-6B17C53CAE0F}" name="Source">
       <GROUP id="{DF623B76-4BBC-978B-59BD-4C329A2F163D}" name="data">

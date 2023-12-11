@@ -109,32 +109,28 @@ private:
     }
 
     template <typename ChainType>
-    void updateCutFilter (ChainType& chain, CutCoefficients& coefficients, Slope slope)
+    void updateCutFilter (ChainType& chain, CutCoefficients& coefficients)
     {
         chain.template setBypassed<0> (true);
         chain.template setBypassed<1> (true);
         chain.template setBypassed<2> (true);
         chain.template setBypassed<3> (true);
 
-        switch (slope)
+        switch (coefficients.size())
         {
-            case Slope::SLOPE_48:
-            case Slope::SLOPE_40:
+            case 4:
             {
                 update<3> (chain, coefficients);
             }
-            case Slope::SLOPE_36:
-            case Slope::SLOPE_30:
+            case 3:
             {
                 update<2> (chain, coefficients);
             }
-            case Slope::SLOPE_24:
-            case Slope::SLOPE_18:
+            case 2:
             {
                 update<1> (chain, coefficients);
             }
-            case Slope::SLOPE_12:
-            case Slope::SLOPE_6:
+            case 1:
             {
                 update<0> (chain, coefficients);
             }
@@ -166,8 +162,8 @@ private:
             auto& fifoToUse = isHighCutFilter ? highcutFilterFifo : lowcutFilterFifo;
             if (fifoToUse.pull (coefficients))
             {
-                updateCutFilter (leftFilter, coefficients, static_cast<Slope> (newParams.order));
-                updateCutFilter (rightFilter, coefficients, static_cast<Slope> (newParams.order));
+                updateCutFilter (leftFilter, coefficients);
+                updateCutFilter (rightFilter, coefficients);
             }
         }
         else

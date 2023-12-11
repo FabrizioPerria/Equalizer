@@ -33,18 +33,6 @@ struct FilterCoefficientGenerator : juce::Thread
         hasParametersChanged = true;
     }
 
-    bool receivedNewCoefficients (CoefficientType& coefficients)
-    {
-        if constexpr (IsCoefficientsArray<CoefficientType>::value)
-        {
-            return coefficients.size() > 0;
-        }
-        else
-        {
-            return coefficients != nullptr;
-        }
-    }
-
     void run() override
     {
         while (! threadShouldExit())
@@ -69,10 +57,22 @@ struct FilterCoefficientGenerator : juce::Thread
     }
 
 private:
+    bool receivedNewCoefficients (CoefficientType& coefficients)
+    {
+        if constexpr (IsCoefficientsArray<CoefficientType>::value)
+        {
+            return coefficients.size() > 0;
+        }
+        else
+        {
+            return coefficients != nullptr;
+        }
+    }
+
     static const int SLEEP_TIME_MS = 10;
     Fifo<CoefficientType, Size>& coefficientsFifo;
     Fifo<ParamType, Size> parametersFifo;
     juce::Atomic<bool> hasParametersChanged { false };
-    
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (FilterCoefficientGenerator)
 };
