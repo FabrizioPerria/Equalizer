@@ -47,7 +47,8 @@ struct FilterCoefficientGenerator : juce::Thread
                     auto coefficients = MakeFunction::make (poppedParams);
                     if (receivedNewCoefficients (coefficients))
                     {
-                        jassert (coefficientsFifo.push (coefficients));
+                        auto pushSuccess = coefficientsFifo.push (coefficients);
+                        jassert (pushSuccess);
                     }
                 }
             }
