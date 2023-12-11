@@ -212,6 +212,12 @@ juce::AudioProcessorValueTreeState::ParameterLayout EqualizerAudioProcessor::cre
                                                                  range,
                                                                  20.0f));
 
+        name = FilterInfo::getParameterName (i, FilterInfo::FilterParam::Q);
+        layout.add (std::make_unique<juce::AudioParameterFloat> (juce::ParameterID { name, 1 },
+                                                                 name,
+                                                                 juce::NormalisableRange<float> (0.1f, 10.0f, 0.1f),
+                                                                 1.0f));
+
         auto currentPosition = static_cast<ChainPositions> (i);
         if (currentPosition == ChainPositions::HIGHCUT || currentPosition == ChainPositions::LOWCUT)
         {
@@ -234,12 +240,6 @@ juce::AudioProcessorValueTreeState::ParameterLayout EqualizerAudioProcessor::cre
                                                                      name,
                                                                      juce::NormalisableRange<float> (-24.0f, 24.0f, 0.1f),
                                                                      0.0f));
-
-            name = FilterInfo::getParameterName (i, FilterInfo::FilterParam::Q);
-            layout.add (std::make_unique<juce::AudioParameterFloat> (juce::ParameterID { name, 1 },
-                                                                     name,
-                                                                     juce::NormalisableRange<float> (0.1f, 10.0f, 0.1f),
-                                                                     1.0f));
         }
     }
 
@@ -302,17 +302,17 @@ FilterParametersBase EqualizerAudioProcessor::getBaseParameters (int filterIndex
     auto frequencyParam = getRawParameter (filterIndex, FilterInfo::FilterParam::FREQUENCY);
     auto bypassParamRaw = getRawParameter (filterIndex, FilterInfo::FilterParam::BYPASS);
     auto bypassParam = bypassParamRaw > 0.5f;
+    auto qParam = getRawParameter (filterIndex, FilterInfo::FilterParam::Q);
 
-    return FilterParametersBase { frequencyParam, bypassParam, getSampleRate() };
+    return FilterParametersBase { frequencyParam, bypassParam, qParam, getSampleRate() };
 }
 
 FilterParameters EqualizerAudioProcessor::getParametricParameters (int filterIndex, FilterInfo::FilterType filterType)
 {
     auto baseParams = getBaseParameters (filterIndex);
     auto gainParam = getRawParameter (filterIndex, FilterInfo::FilterParam::GAIN);
-    auto qParam = getRawParameter (filterIndex, FilterInfo::FilterParam::Q);
 
-    return FilterParameters { baseParams, filterType, gainParam, qParam };
+    return FilterParameters { baseParams, filterType, gainParam };
 }
 
 HighCutLowCutParameters EqualizerAudioProcessor::getCutParameters (int filterIndex, FilterInfo::FilterType filterType)
@@ -333,13 +333,13 @@ void EqualizerAudioProcessor::updateFilters()
 {
     auto lowCutPosition = static_cast<int> (ChainPositions::LOWCUT);
     auto lowcutParameters = getCutParameters (lowCutPosition, FilterInfo::FilterType::HIGHPASS);
-    updateFilter<ChainPositions::LOWCUT> (oldHighCutLowCutParams[lowCutPosition], lowcutParameters);
+    updateFilter<ChainPositions::LOWCUT> (oldHighCutLowCutParams[static_cast<size_t> (lowCutPosition)], lowcutParameters);
 
     auto parametricPosition = static_cast<int> (ChainPositions::PARAMETRIC_FILTER);
     auto parametricParameters = getParametricParameters (parametricPosition, getFilterType (parametricPosition));
-    updateFilter<ChainPositions::PARAMETRIC_FILTER> (oldFilterParams[parametricPosition], parametricParameters);
+    updateFilter<ChainPositions::PARAMETRIC_FILTER> (oldFilterParams[static_cast<size_t> (parametricPosition)], parametricParameters);
 
     auto highCutPosition = static_cast<int> (ChainPositions::HIGHCUT);
     auto highcutParameters = getCutParameters (highCutPosition, FilterInfo::FilterType::LOWPASS);
-    updateFilter<ChainPositions::HIGHCUT> (oldHighCutLowCutParams[highCutPosition], highcutParameters);
+    updateFilter<ChainPositions::HIGHCUT> (oldHighCutLowCutParams[static_cast<size_t> (highCutPosition)], highcutParameters);
 }

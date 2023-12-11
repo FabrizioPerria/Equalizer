@@ -4,7 +4,7 @@
 bool operator== (const FilterParametersBase& lhs, const FilterParametersBase& rhs)
 {
     return juce::approximatelyEqual (lhs.frequency, rhs.frequency) && lhs.bypassed == rhs.bypassed
-           && juce::approximatelyEqual (lhs.sampleRate, rhs.sampleRate);
+           && juce::approximatelyEqual (lhs.quality, rhs.quality) && juce::approximatelyEqual (lhs.sampleRate, rhs.sampleRate);
 }
 
 bool operator!= (const FilterParametersBase& lhs, const FilterParametersBase& rhs)
@@ -15,7 +15,7 @@ bool operator!= (const FilterParametersBase& lhs, const FilterParametersBase& rh
 bool operator== (const FilterParameters& lhs, const FilterParameters& rhs)
 {
     return lhs.type == rhs.type //
-           && juce::approximatelyEqual (lhs.gain, rhs.gain) && juce::approximatelyEqual (lhs.quality, rhs.quality)
+           && juce::approximatelyEqual (lhs.gain, rhs.gain)
            && static_cast<const FilterParametersBase&> (lhs) == static_cast<const FilterParametersBase&> (rhs);
 }
 
