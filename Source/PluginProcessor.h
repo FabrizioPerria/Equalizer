@@ -10,12 +10,32 @@
 
 #include "data/FilterParameters.h"
 #include "utils/CoefficientsMaker.h"
+#include "utils/Fifo.h"
 #include "utils/FilterType.h"
 #include <JuceHeader.h>
 
 //==============================================================================
-/**
-*/
+enum class ChainPositions
+{
+    LOWCUT,
+    PARAMETRIC_FILTER,
+    HIGHCUT,
+    NUM_FILTERS
+};
+
+// ====================================================================================================
+enum class Slope
+{
+    SLOPE_6,
+    SLOPE_12,
+    SLOPE_18,
+    SLOPE_24,
+    SLOPE_30,
+    SLOPE_36,
+    SLOPE_40,
+    SLOPE_48
+};
+// ====================================================================================================
 class EqualizerAudioProcessor : public juce::AudioProcessor
 {
 public:
@@ -60,47 +80,124 @@ public:
 
     using Filter = juce::dsp::IIR::Filter<float>;
     using Coefficients = juce::dsp::IIR::Coefficients<float>::Ptr;
-    using MonoFilter = juce::dsp::ProcessorChain<Filter>;
+    using CutCoefficients = juce::ReferenceCountedArray<juce::dsp::IIR::Coefficients<float>>;
+    using CutFilter = juce::dsp::ProcessorChain<Filter, Filter, Filter, Filter>;
+    using MonoFilter = juce::dsp::ProcessorChain<CutFilter, Filter, CutFilter>;
 
 private:
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
 
     static const std::map<FilterInfo::FilterType, juce::String> filterTypeMap;
     FilterInfo::FilterType getFilterType (int filterIndex);
-    static juce::String getFilterTypeName (FilterInfo::FilterType filterType);
     static juce::StringArray getFilterTypeNames();
+    static juce::StringArray getSlopeNames();
 
     float getRawParameter (int filterIndex, FilterInfo::FilterParam filterParameter);
 
     FilterParametersBase getBaseParameters (int filterIndex);
     FilterParameters getParametricParameters (int filterIndex, FilterInfo::FilterType filterType);
     HighCutLowCutParameters getCutParameters (int filterIndex, FilterInfo::FilterType filterType);
-    bool needsParametricParams (FilterInfo::FilterType type);
 
-    void setBypassed (MonoFilter& filter, int filterIndex, bool bypassed);
-    void updateCoefficients (MonoFilter& filter, int filterIndex, Coefficients coefficients);
+    void updateCoefficients (Coefficients& oldCoefficients, const Coefficients& newCoefficients);
 
-    template <typename ParamsType>
-    void updateFilter (int filterIndex, ParamsType& oldParams, const ParamsType& newParams)
+    template <int Index, typename ChainType>
+    void update (ChainType& chain, CutCoefficients& coefficients)
+    {
+        updateCoefficients (chain.template get<Index>().coefficients, coefficients[Index]);
+        chain.template setBypassed<Index> (false);
+    }
+
+    template <typename ChainType>
+    void updateCutFilter (ChainType& chain, CutCoefficients& coefficients, Slope slope)
+    {
+        chain.template setBypassed<0> (true);
+        chain.template setBypassed<1> (true);
+        chain.template setBypassed<2> (true);
+        chain.template setBypassed<3> (true);
+
+        switch (slope)
+        {
+            case Slope::SLOPE_48:
+            case Slope::SLOPE_40:
+            {
+                update<3> (chain, coefficients);
+            }
+            case Slope::SLOPE_36:
+            case Slope::SLOPE_30:
+            {
+                update<2> (chain, coefficients);
+            }
+            case Slope::SLOPE_24:
+            case Slope::SLOPE_18:
+            {
+                update<1> (chain, coefficients);
+            }
+            case Slope::SLOPE_12:
+            case Slope::SLOPE_6:
+            {
+                update<0> (chain, coefficients);
+            }
+        }
+    }
+
+    // TODO: Test method to make sure the Fifo is working. Probably it will be removed soon.
+    template <typename CoefficientType, size_t Size>
+    CoefficientType getCoefficientsFromFifo (Fifo<CoefficientType, Size>& fifo, CoefficientType& coefficients)
+    {
+        jassert (fifo.push (coefficients));
+        CoefficientType pulledCoefficients;
+        jassert (fifo.pull (pulledCoefficients));
+        return pulledCoefficients;
+    }
+
+    template <ChainPositions ChainPosition, typename ParamsType>
+    void updateFilter (ParamsType& oldParams, const ParamsType& newParams)
     {
         if (newParams != oldParams)
         {
-            setBypassed (leftChain, filterIndex, newParams.bypassed);
-            setBypassed (rightChain, filterIndex, newParams.bypassed);
+            const int ChainPositionInt = static_cast<int> (ChainPosition);
+            leftChain.setBypassed<ChainPositionInt> (newParams.bypassed);
+            rightChain.setBypassed<ChainPositionInt> (newParams.bypassed);
+
             auto coefficients = CoefficientsMaker<float>::make (newParams, getSampleRate());
-            updateCoefficients (leftChain, filterIndex, coefficients);
-            updateCoefficients (rightChain, filterIndex, coefficients);
+
+            auto& leftFilter = leftChain.template get<ChainPositionInt>();
+            auto& rightFilter = rightChain.template get<ChainPositionInt>();
+
+            const bool isHighCutFilter = ChainPosition == ChainPositions::HIGHCUT;
+            const bool isLowCutFilter = ChainPosition == ChainPositions::LOWCUT;
+            if constexpr (isHighCutFilter || isLowCutFilter)
+            {
+                auto coefficientsToUse = getCoefficientsFromFifo (isHighCutFilter ? highcutFilterFifo : lowcutFilterFifo, coefficients);
+                updateCutFilter (leftFilter, coefficientsToUse, static_cast<Slope> (newParams.order));
+                updateCutFilter (rightFilter, coefficientsToUse, static_cast<Slope> (newParams.order));
+            }
+            else
+            {
+                auto coefficientsToUse = getCoefficientsFromFifo (parametricFilterFifo, coefficients);
+
+                updateCoefficients (leftFilter.coefficients, coefficientsToUse);
+                updateCoefficients (rightFilter.coefficients, coefficientsToUse);
+
+                // trying to prevent the object from being deleted. This means the object is never released, even if it's overwritten in the Fifo
+                // TODO: make sure the object is released at some point, but outside the audio thread
+                coefficientsToUse.get()->incReferenceCount();
+            }
+
             oldParams = newParams;
         }
     }
 
     void updateFilters();
 
-    static const int NUM_FILTERS = 1;
+    std::array<FilterParameters, static_cast<size_t> (ChainPositions::NUM_FILTERS)> oldFilterParams;
+    std::array<HighCutLowCutParameters, static_cast<size_t> (ChainPositions::NUM_FILTERS)> oldHighCutLowCutParams;
 
-    std::array<FilterParameters, NUM_FILTERS> oldFilterParams;
-    std::array<HighCutLowCutParameters, NUM_FILTERS> oldHighCutLowCutParams;
     MonoFilter leftChain, rightChain;
+
+    Fifo<CutCoefficients, 20> lowcutFilterFifo;
+    Fifo<Coefficients, 20> parametricFilterFifo;
+    Fifo<CutCoefficients, 20> highcutFilterFifo;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (EqualizerAudioProcessor)
