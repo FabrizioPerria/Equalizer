@@ -141,51 +141,47 @@ private:
         }
     }
 
-    // TODO: Test method to make sure the Fifo is working. Probably it will be removed soon.
-    template <typename CoefficientType, size_t Size>
-    CoefficientType getCoefficientsFromFifo (Fifo<CoefficientType, Size>& fifo, CoefficientType& coefficients)
+    template <ChainPositions ChainPosition, typename ParamsType, typename CoefficientsGenerator>
+    void updateFilter (ParamsType& oldParams, const ParamsType& newParams, CoefficientsGenerator& generator)
     {
-        jassert (fifo.push (coefficients));
-        CoefficientType pulledCoefficients;
-        jassert (fifo.pull (pulledCoefficients));
-        return pulledCoefficients;
-    }
+        const int ChainPositionInt = static_cast<int> (ChainPosition);
+        leftChain.setBypassed<ChainPositionInt> (newParams.bypassed);
+        rightChain.setBypassed<ChainPositionInt> (newParams.bypassed);
+        auto& leftFilter = leftChain.template get<ChainPositionInt>();
+        auto& rightFilter = rightChain.template get<ChainPositionInt>();
 
-    template <ChainPositions ChainPosition, typename ParamsType>
-    void updateFilter (ParamsType& oldParams, const ParamsType& newParams)
-    {
         if (newParams != oldParams)
         {
-            const int ChainPositionInt = static_cast<int> (ChainPosition);
-            leftChain.setBypassed<ChainPositionInt> (newParams.bypassed);
-            rightChain.setBypassed<ChainPositionInt> (newParams.bypassed);
+            generator.changeParameters (newParams);
+            oldParams = newParams;
+        }
 
-            auto coefficients = CoefficientsMaker<float>::make (newParams);
+        const bool isHighCutFilter = ChainPosition == ChainPositions::HIGHCUT;
+        const bool isLowCutFilter = ChainPosition == ChainPositions::LOWCUT;
+        if constexpr (isHighCutFilter || isLowCutFilter)
+        {
+            CutCoefficients coefficients;
 
-            auto& leftFilter = leftChain.template get<ChainPositionInt>();
-            auto& rightFilter = rightChain.template get<ChainPositionInt>();
-
-            const bool isHighCutFilter = ChainPosition == ChainPositions::HIGHCUT;
-            const bool isLowCutFilter = ChainPosition == ChainPositions::LOWCUT;
-            if constexpr (isHighCutFilter || isLowCutFilter)
+            auto& fifoToUse = isHighCutFilter ? highcutFilterFifo : lowcutFilterFifo;
+            if (fifoToUse.pull (coefficients))
             {
-                auto coefficientsToUse = getCoefficientsFromFifo (isHighCutFilter ? highcutFilterFifo : lowcutFilterFifo, coefficients);
-                updateCutFilter (leftFilter, coefficientsToUse, static_cast<Slope> (newParams.order));
-                updateCutFilter (rightFilter, coefficientsToUse, static_cast<Slope> (newParams.order));
+                updateCutFilter (leftFilter, coefficients, static_cast<Slope> (newParams.order));
+                updateCutFilter (rightFilter, coefficients, static_cast<Slope> (newParams.order));
             }
-            else
-            {
-                auto coefficientsToUse = getCoefficientsFromFifo (parametricFilterFifo, coefficients);
+        }
+        else
+        {
+            Coefficients coefficients;
 
-                updateCoefficients (leftFilter.coefficients, coefficientsToUse);
-                updateCoefficients (rightFilter.coefficients, coefficientsToUse);
+            if (parametricFilterFifo.pull (coefficients))
+            {
+                updateCoefficients (leftFilter.coefficients, coefficients);
+                updateCoefficients (rightFilter.coefficients, coefficients);
 
                 // trying to prevent the object from being deleted. This means the object is never released, even if it's overwritten in the Fifo
                 // TODO: make sure the object is released at some point, but outside the audio thread
-                coefficientsToUse.get()->incReferenceCount();
+                coefficients.get()->incReferenceCount();
             }
-
-            oldParams = newParams;
         }
     }
 
