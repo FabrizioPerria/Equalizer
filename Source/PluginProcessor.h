@@ -15,7 +15,7 @@
 #include <JuceHeader.h>
 
 //==============================================================================
-enum ChainPositions
+enum class ChainPositions
 {
     LOWCUT,
     PARAMETRIC_FILTER,
@@ -24,7 +24,7 @@ enum ChainPositions
 };
 
 // ====================================================================================================
-enum Slope
+enum class Slope
 {
     SLOPE_6,
     SLOPE_12,
@@ -150,22 +150,25 @@ private:
         return pulledCoefficients;
     }
 
-    template <int ChainPosition, typename ParamsType>
+    template <ChainPositions ChainPosition, typename ParamsType>
     void updateFilter (ParamsType& oldParams, const ParamsType& newParams)
     {
         if (newParams != oldParams)
         {
-            leftChain.setBypassed<ChainPosition> (newParams.bypassed);
-            rightChain.setBypassed<ChainPosition> (newParams.bypassed);
+            const int ChainPositionInt = static_cast<int> (ChainPosition);
+            leftChain.setBypassed<ChainPositionInt> (newParams.bypassed);
+            rightChain.setBypassed<ChainPositionInt> (newParams.bypassed);
 
             auto coefficients = CoefficientsMaker<float>::make (newParams, getSampleRate());
-            auto& leftFilter = leftChain.template get<ChainPosition>();
-            auto& rightFilter = rightChain.template get<ChainPosition>();
 
-            if constexpr (ChainPosition == HIGHCUT || ChainPosition == LOWCUT)
+            auto& leftFilter = leftChain.template get<ChainPositionInt>();
+            auto& rightFilter = rightChain.template get<ChainPositionInt>();
+
+            const bool isHighCutFilter = ChainPosition == ChainPositions::HIGHCUT;
+            const bool isLowCutFilter = ChainPosition == ChainPositions::LOWCUT;
+            if constexpr (isHighCutFilter || isLowCutFilter)
             {
-                auto coefficientsToUse = getCoefficientsFromFifo (ChainPosition == HIGHCUT ? highcutFilterFifo : lowcutFilterFifo,
-                                                                  coefficients);
+                auto coefficientsToUse = getCoefficientsFromFifo (isHighCutFilter ? highcutFilterFifo : lowcutFilterFifo, coefficients);
                 updateCutFilter (leftFilter, coefficientsToUse, static_cast<Slope> (newParams.order));
                 updateCutFilter (rightFilter, coefficientsToUse, static_cast<Slope> (newParams.order));
             }
@@ -187,8 +190,8 @@ private:
 
     void updateFilters();
 
-    std::array<FilterParameters, ChainPositions::NUM_FILTERS> oldFilterParams;
-    std::array<HighCutLowCutParameters, ChainPositions::NUM_FILTERS> oldHighCutLowCutParams;
+    std::array<FilterParameters, static_cast<size_t> (ChainPositions::NUM_FILTERS)> oldFilterParams;
+    std::array<HighCutLowCutParameters, static_cast<size_t> (ChainPositions::NUM_FILTERS)> oldHighCutLowCutParams;
 
     MonoFilter leftChain, rightChain;
 
