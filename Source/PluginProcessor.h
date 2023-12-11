@@ -11,6 +11,7 @@
 #include "data/FilterParameters.h"
 #include "utils/CoefficientsMaker.h"
 #include "utils/Fifo.h"
+#include "utils/FilterCoefficientGenerator.h"
 #include "utils/FilterType.h"
 #include <JuceHeader.h>
 
@@ -159,8 +160,7 @@ private:
             leftChain.setBypassed<ChainPositionInt> (newParams.bypassed);
             rightChain.setBypassed<ChainPositionInt> (newParams.bypassed);
 
-            auto coefficients = CoefficientsMaker<float>::make (newParams, getSampleRate());
-
+            auto coefficients = CoefficientsMaker<float>::make (newParams);
             auto& leftFilter = leftChain.template get<ChainPositionInt>();
             auto& rightFilter = rightChain.template get<ChainPositionInt>();
 
@@ -195,9 +195,25 @@ private:
 
     MonoFilter leftChain, rightChain;
 
-    Fifo<CutCoefficients, 20> lowcutFilterFifo;
-    Fifo<Coefficients, 20> parametricFilterFifo;
-    Fifo<CutCoefficients, 20> highcutFilterFifo;
+    const static size_t FIFO_SIZE = 20;
+    Fifo<CutCoefficients, FIFO_SIZE> lowcutFilterFifo;
+    Fifo<Coefficients, FIFO_SIZE> parametricFilterFifo;
+    Fifo<CutCoefficients, FIFO_SIZE> highcutFilterFifo;
+
+    using CutCoefficientGenerator = FilterCoefficientGenerator<CutCoefficients,
+                                                               HighCutLowCutParameters,
+                                                               CoefficientsMaker<float>,
+                                                               FIFO_SIZE>;
+
+    CutCoefficientGenerator lowCutCoefficientsGenerator { lowcutFilterFifo };
+    CutCoefficientGenerator highCutCoefficientsGenerator { highcutFilterFifo };
+
+    using ParametricCoefficientGenerator = FilterCoefficientGenerator<Coefficients, //
+                                                                      FilterParameters,
+                                                                      CoefficientsMaker<float>,
+                                                                      FIFO_SIZE>;
+
+    ParametricCoefficientGenerator parametricCoefficientsGenerator { parametricFilterFifo };
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (EqualizerAudioProcessor)
