@@ -29,7 +29,8 @@ struct FilterCoefficientGenerator : juce::Thread
 
     void changeParameters (ParamType params)
     {
-        jassert (parametersFifo.push (params));
+        auto parameterStored = parametersFifo.push (params);
+        jassert (parameterStored);
         hasParametersChanged = true;
     }
 
@@ -42,7 +43,8 @@ struct FilterCoefficientGenerator : juce::Thread
                 while (parametersFifo.getNumAvailableForReading() > 0)
                 {
                     ParamType poppedParams;
-                    jassert (parametersFifo.pull (poppedParams));
+                    auto gotParameters = parametersFifo.pull (poppedParams);
+                    jassert (gotParameters);
 
                     auto coefficients = MakeFunction::make (poppedParams);
                     if (receivedNewCoefficients (coefficients))
