@@ -173,10 +173,6 @@ private:
             {
                 updateCoefficients (leftFilter.coefficients, coefficients);
                 updateCoefficients (rightFilter.coefficients, coefficients);
-
-                // trying to prevent the object from being deleted. This means the object is never released, even if it's overwritten in the Fifo
-                // TODO: make sure the object is released at some point, but outside the audio thread
-                coefficients.get()->incReferenceCount();
             }
         }
     }
