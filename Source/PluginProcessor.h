@@ -88,6 +88,7 @@ public:
     using MonoFilter = juce::dsp::ProcessorChain<CutFilter, Filter, CutFilter>;
 
 private:
+    const static size_t FIFO_SIZE = 20;
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
 
     static const std::map<FilterInfo::FilterType, juce::String> filterTypeMap;
@@ -139,6 +140,41 @@ private:
         }
     }
 
+    template <typename CoefficientType>
+    CoefficientType fetchCoefficientsFromFifo (Fifo<CoefficientType, FIFO_SIZE>& fifo, ReleasePool<Coefficients>& pool)
+    {
+        while (fifo.getNumAvailableForReading() > 1)
+        {
+            CoefficientType unusedCoefficients;
+            if (fifo.pull (unusedCoefficients))
+            {
+                if constexpr (std::is_same_v<CoefficientType, CutCoefficients>)
+                {
+                    for (auto& coefficient : unusedCoefficients)
+                    {
+                        pool.add (coefficient);
+                    }
+                }
+                else if constexpr (std::is_same_v<CoefficientType, CoefficientsPtr>)
+                {
+                    pool.add (*unusedCoefficients);
+                }
+                else
+                {
+                    jassertfalse; //unknown coefficient type
+                }
+            }
+            else
+            {
+                jassertfalse; // fifo is inconsistent
+            }
+        }
+        CoefficientType coefficients;
+        auto success = fifo.pull (coefficients);
+        jassert (success);
+        return coefficients;
+    }
+
     template <ChainPositions ChainPosition, typename ParamsType, typename CoefficientsGenerator>
     void updateFilter (ParamsType& oldParams, const ParamsType& newParams, CoefficientsGenerator& generator)
     {
@@ -163,8 +199,10 @@ private:
             auto& releasePoolToUse = isHighCutFilter ? highCutReleasePool : lowCutReleasePool;
             auto& fifoToUse = isHighCutFilter ? highcutFilterFifo : lowcutFilterFifo;
 
-            if (fifoToUse.pull (coefficients))
+            if (fifoToUse.getNumAvailableForReading() > 0)
             {
+                coefficients = fetchCoefficientsFromFifo<CutCoefficients> (fifoToUse, releasePoolToUse);
+
                 updateCutFilter (leftFilter, coefficients, releasePoolToUse);
                 updateCutFilter (rightFilter, coefficients, releasePoolToUse);
             }
@@ -173,8 +211,10 @@ private:
         {
             CoefficientsPtr coefficients;
 
-            if (parametricFilterFifo.pull (coefficients))
+            if (parametricFilterFifo.getNumAvailableForReading() > 0)
             {
+                coefficients = fetchCoefficientsFromFifo (parametricFilterFifo, parametricReleasePool);
+
                 updateCoefficients (leftFilter.coefficients, coefficients, parametricReleasePool);
                 updateCoefficients (rightFilter.coefficients, coefficients, parametricReleasePool);
             }
@@ -188,7 +228,6 @@ private:
 
     MonoFilter leftChain, rightChain;
 
-    const static size_t FIFO_SIZE = 20;
     Fifo<CutCoefficients, FIFO_SIZE> lowcutFilterFifo;
     Fifo<CoefficientsPtr, FIFO_SIZE> parametricFilterFifo;
     Fifo<CutCoefficients, FIFO_SIZE> highcutFilterFifo;
