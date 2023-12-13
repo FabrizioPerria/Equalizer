@@ -13,6 +13,36 @@ struct IsReferenceCountedObjectPtr<juce::ReferenceCountedObjectPtr<T>> : std::tr
 {
 };
 
+template <typename T>
+struct IsReferenceCountedArray : std::false_type
+{
+};
+
+template <typename T>
+struct IsReferenceCountedArray<juce::ReferenceCountedArray<T>> : std::true_type
+{
+};
+
+template <typename T>
+struct IsVector : std::false_type
+{
+};
+
+template <typename T>
+struct IsVector<std::vector<T>> : std::true_type
+{
+};
+
+template <typename T>
+struct IsAudioBuffer : std::false_type
+{
+};
+
+template <typename T>
+struct IsAudioBuffer<juce::AudioBuffer<T>> : std::true_type
+{
+};
+
 template <typename T, size_t Size>
 struct Fifo
 {
@@ -69,6 +99,56 @@ struct Fifo
             t = buffer[static_cast<size_t> (read.startIndex1)];
             return true;
         }
+        return false;
+    }
+
+    bool exchange (T&& t)
+    {
+        auto read = fifo.read (1);
+
+        if (read.blockSize1 > 0)
+        {
+            size_t index = static_cast<size_t> (read.startIndex1);
+            if constexpr (IsReferenceCountedObjectPtr<T>::value)
+            {
+                std::swap (buffer[index], t);
+                jassert (buffer[index].get() == nullptr || buffer[index]->getReferenceCount() > 1);
+            }
+            else if constexpr (IsReferenceCountedArray<T>::value)
+            {
+                std::swap (buffer[index], t);
+                jassert (buffer[index].isEmpty() || buffer[index]->getReferenceCount() > 1);
+            }
+            else if constexpr (IsVector<T>::value)
+            {
+                if (t.size() < buffer[index].size())
+                {
+                    t = buffer[index];
+                }
+                else
+                {
+                    std::swap (buffer[index], t);
+                }
+            }
+            else if constexpr (IsAudioBuffer<T>::value)
+            {
+                if (t.getNumSamples() < buffer[index].getNumSamples())
+                {
+                    t = buffer[index];
+                }
+                else
+                {
+                    std::swap (buffer[index], t);
+                }
+            }
+            else
+            {
+                std::swap (buffer[index], t);
+                jaassert (buffer[index] == nullptr);
+            }
+            return true;
+        }
+
         return false;
     }
 
