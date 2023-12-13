@@ -144,7 +144,7 @@ struct Fifo
             else
             {
                 std::swap (buffer[index], t);
-                jaassert (buffer[index] == nullptr);
+                jassert (buffer[index] == nullptr);
             }
             return true;
         }

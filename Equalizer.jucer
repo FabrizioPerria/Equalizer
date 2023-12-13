@@ -22,6 +22,7 @@
         <FILE id="tBWZke" name="FilterParam.cpp" compile="1" resource="0" file="Source/utils/FilterParam.cpp"/>
         <FILE id="sGVlXw" name="FilterParam.h" compile="0" resource="0" file="Source/utils/FilterParam.h"/>
         <FILE id="gR2Gmg" name="FilterType.h" compile="0" resource="0" file="Source/utils/FilterType.h"/>
+        <FILE id="P5KFW3" name="ReleasePool.h" compile="0" resource="0" file="Source/utils/ReleasePool.h"/>
       </GROUP>
       <FILE id="IQfYle" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
