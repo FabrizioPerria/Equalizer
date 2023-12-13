@@ -22,8 +22,14 @@ struct ReleasePool : juce::Timer
         }
         else
         {
-            itemsToDelete.set (deletionFifo.push (ptr));
-            jassert (itemsToDelete.get()); // If this fails, it means that the FIFO is too small
+            if (deletionFifo.push (ptr))
+            {
+                itemsToDelete = true;
+            }
+            else
+            {
+                jassertfalse; // If this fails, it means that the FIFO is too small
+            }
         }
     }
 
