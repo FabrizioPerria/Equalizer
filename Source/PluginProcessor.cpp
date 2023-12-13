@@ -123,8 +123,11 @@ bool EqualizerAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts
     // In this template code we only support mono or stereo.
     // Some plugin hosts, such as certain GarageBand versions, will only
     // load plugins that support stereo bus layouts.
-    if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono()
-        && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
+    //if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono()
+    //    && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
+    // NOTE: For some reason, the above code does not work with the AU plugin in Logic Pro and validation crashes.
+    // Somehow, it expects the plugin to be only stereo. So, we will only support stereo for now.
+    if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
         return false;
 
         // This checks if the input layout matches the output layout
@@ -333,13 +336,19 @@ void EqualizerAudioProcessor::updateFilters()
 {
     auto lowCutPosition = static_cast<int> (ChainPositions::LOWCUT);
     auto lowcutParameters = getCutParameters (lowCutPosition, FilterInfo::FilterType::HIGHPASS);
-    updateFilter<ChainPositions::LOWCUT> (oldHighCutLowCutParams[static_cast<size_t> (lowCutPosition)], lowcutParameters);
+    updateFilter<ChainPositions::LOWCUT> (oldHighCutLowCutParams[static_cast<size_t> (lowCutPosition)], //
+                                          lowcutParameters,
+                                          lowCutCoefficientsGenerator);
 
     auto parametricPosition = static_cast<int> (ChainPositions::PARAMETRIC_FILTER);
     auto parametricParameters = getParametricParameters (parametricPosition, getFilterType (parametricPosition));
-    updateFilter<ChainPositions::PARAMETRIC_FILTER> (oldFilterParams[static_cast<size_t> (parametricPosition)], parametricParameters);
+    updateFilter<ChainPositions::PARAMETRIC_FILTER> (oldFilterParams[static_cast<size_t> (parametricPosition)],
+                                                     parametricParameters,
+                                                     parametricCoefficientsGenerator);
 
     auto highCutPosition = static_cast<int> (ChainPositions::HIGHCUT);
     auto highcutParameters = getCutParameters (highCutPosition, FilterInfo::FilterType::LOWPASS);
-    updateFilter<ChainPositions::HIGHCUT> (oldHighCutLowCutParams[static_cast<size_t> (highCutPosition)], highcutParameters);
+    updateFilter<ChainPositions::HIGHCUT> (oldHighCutLowCutParams[static_cast<size_t> (highCutPosition)],
+                                           highcutParameters,
+                                           highCutCoefficientsGenerator);
 }

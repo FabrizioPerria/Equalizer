@@ -46,18 +46,17 @@ struct CoefficientsMaker
         }
     }
 
-    static juce::dsp::IIR::Coefficients<FloatType>::Ptr make (const FilterParameters& params, double sampleRate)
+    static juce::dsp::IIR::Coefficients<FloatType>::Ptr make (const FilterParameters& params)
     {
-        return make (params.type, params.frequency, params.quality, params.gain, sampleRate);
+        return make (params.type, params.frequency, params.quality, params.gain, params.sampleRate);
     }
 
-    static juce::ReferenceCountedArray<juce::dsp::IIR::Coefficients<FloatType>> make (const HighCutLowCutParameters& params,
-                                                                                      double sampleRate)
+    static juce::ReferenceCountedArray<juce::dsp::IIR::Coefficients<FloatType>> make (const HighCutLowCutParameters& params)
     {
         using FilterDesign = juce::dsp::FilterDesign<FloatType>;
         if (params.isLowCut)
-            return FilterDesign::designIIRHighpassHighOrderButterworthMethod (params.frequency, sampleRate, params.order + 1);
+            return FilterDesign::designIIRHighpassHighOrderButterworthMethod (params.frequency, params.sampleRate, params.order + 1);
 
-        return FilterDesign::designIIRLowpassHighOrderButterworthMethod (params.frequency, sampleRate, params.order + 1);
+        return FilterDesign::designIIRLowpassHighOrderButterworthMethod (params.frequency, params.sampleRate, params.order + 1);
     }
 };

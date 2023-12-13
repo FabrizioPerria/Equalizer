@@ -11,6 +11,7 @@
 #include "data/FilterParameters.h"
 #include "utils/CoefficientsMaker.h"
 #include "utils/Fifo.h"
+#include "utils/FilterCoefficientGenerator.h"
 #include "utils/FilterType.h"
 #include <JuceHeader.h>
 
@@ -108,83 +109,71 @@ private:
     }
 
     template <typename ChainType>
-    void updateCutFilter (ChainType& chain, CutCoefficients& coefficients, Slope slope)
+    void updateCutFilter (ChainType& chain, CutCoefficients& coefficients)
     {
         chain.template setBypassed<0> (true);
         chain.template setBypassed<1> (true);
         chain.template setBypassed<2> (true);
         chain.template setBypassed<3> (true);
 
-        switch (slope)
+        switch (coefficients.size())
         {
-            case Slope::SLOPE_48:
-            case Slope::SLOPE_40:
+            case 4:
             {
                 update<3> (chain, coefficients);
             }
-            case Slope::SLOPE_36:
-            case Slope::SLOPE_30:
+            case 3:
             {
                 update<2> (chain, coefficients);
             }
-            case Slope::SLOPE_24:
-            case Slope::SLOPE_18:
+            case 2:
             {
                 update<1> (chain, coefficients);
             }
-            case Slope::SLOPE_12:
-            case Slope::SLOPE_6:
+            case 1:
             {
                 update<0> (chain, coefficients);
             }
         }
     }
 
-    // TODO: Test method to make sure the Fifo is working. Probably it will be removed soon.
-    template <typename CoefficientType, size_t Size>
-    CoefficientType getCoefficientsFromFifo (Fifo<CoefficientType, Size>& fifo, CoefficientType& coefficients)
+    template <ChainPositions ChainPosition, typename ParamsType, typename CoefficientsGenerator>
+    void updateFilter (ParamsType& oldParams, const ParamsType& newParams, CoefficientsGenerator& generator)
     {
-        jassert (fifo.push (coefficients));
-        CoefficientType pulledCoefficients;
-        jassert (fifo.pull (pulledCoefficients));
-        return pulledCoefficients;
-    }
+        const int ChainPositionInt = static_cast<int> (ChainPosition);
+        leftChain.setBypassed<ChainPositionInt> (newParams.bypassed);
+        rightChain.setBypassed<ChainPositionInt> (newParams.bypassed);
+        auto& leftFilter = leftChain.template get<ChainPositionInt>();
+        auto& rightFilter = rightChain.template get<ChainPositionInt>();
 
-    template <ChainPositions ChainPosition, typename ParamsType>
-    void updateFilter (ParamsType& oldParams, const ParamsType& newParams)
-    {
         if (newParams != oldParams)
         {
-            const int ChainPositionInt = static_cast<int> (ChainPosition);
-            leftChain.setBypassed<ChainPositionInt> (newParams.bypassed);
-            rightChain.setBypassed<ChainPositionInt> (newParams.bypassed);
-
-            auto coefficients = CoefficientsMaker<float>::make (newParams, getSampleRate());
-
-            auto& leftFilter = leftChain.template get<ChainPositionInt>();
-            auto& rightFilter = rightChain.template get<ChainPositionInt>();
-
-            const bool isHighCutFilter = ChainPosition == ChainPositions::HIGHCUT;
-            const bool isLowCutFilter = ChainPosition == ChainPositions::LOWCUT;
-            if constexpr (isHighCutFilter || isLowCutFilter)
-            {
-                auto coefficientsToUse = getCoefficientsFromFifo (isHighCutFilter ? highcutFilterFifo : lowcutFilterFifo, coefficients);
-                updateCutFilter (leftFilter, coefficientsToUse, static_cast<Slope> (newParams.order));
-                updateCutFilter (rightFilter, coefficientsToUse, static_cast<Slope> (newParams.order));
-            }
-            else
-            {
-                auto coefficientsToUse = getCoefficientsFromFifo (parametricFilterFifo, coefficients);
-
-                updateCoefficients (leftFilter.coefficients, coefficientsToUse);
-                updateCoefficients (rightFilter.coefficients, coefficientsToUse);
-
-                // trying to prevent the object from being deleted. This means the object is never released, even if it's overwritten in the Fifo
-                // TODO: make sure the object is released at some point, but outside the audio thread
-                coefficientsToUse.get()->incReferenceCount();
-            }
-
+            generator.changeParameters (newParams);
             oldParams = newParams;
+        }
+
+        const bool isHighCutFilter = ChainPosition == ChainPositions::HIGHCUT;
+        const bool isLowCutFilter = ChainPosition == ChainPositions::LOWCUT;
+        if constexpr (isHighCutFilter || isLowCutFilter)
+        {
+            CutCoefficients coefficients;
+
+            auto& fifoToUse = isHighCutFilter ? highcutFilterFifo : lowcutFilterFifo;
+            if (fifoToUse.pull (coefficients))
+            {
+                updateCutFilter (leftFilter, coefficients);
+                updateCutFilter (rightFilter, coefficients);
+            }
+        }
+        else
+        {
+            Coefficients coefficients;
+
+            if (parametricFilterFifo.pull (coefficients))
+            {
+                updateCoefficients (leftFilter.coefficients, coefficients);
+                updateCoefficients (rightFilter.coefficients, coefficients);
+            }
         }
     }
 
@@ -195,9 +184,25 @@ private:
 
     MonoFilter leftChain, rightChain;
 
-    Fifo<CutCoefficients, 20> lowcutFilterFifo;
-    Fifo<Coefficients, 20> parametricFilterFifo;
-    Fifo<CutCoefficients, 20> highcutFilterFifo;
+    const static size_t FIFO_SIZE = 20;
+    Fifo<CutCoefficients, FIFO_SIZE> lowcutFilterFifo;
+    Fifo<Coefficients, FIFO_SIZE> parametricFilterFifo;
+    Fifo<CutCoefficients, FIFO_SIZE> highcutFilterFifo;
+
+    using CutCoefficientGenerator = FilterCoefficientGenerator<CutCoefficients,
+                                                               HighCutLowCutParameters,
+                                                               CoefficientsMaker<float>,
+                                                               FIFO_SIZE>;
+
+    CutCoefficientGenerator lowCutCoefficientsGenerator { lowcutFilterFifo };
+    CutCoefficientGenerator highCutCoefficientsGenerator { highcutFilterFifo };
+
+    using ParametricCoefficientGenerator = FilterCoefficientGenerator<Coefficients, //
+                                                                      FilterParameters,
+                                                                      CoefficientsMaker<float>,
+                                                                      FIFO_SIZE>;
+
+    ParametricCoefficientGenerator parametricCoefficientsGenerator { parametricFilterFifo };
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (EqualizerAudioProcessor)
