@@ -13,6 +13,7 @@
 #include "utils/Fifo.h"
 #include "utils/FilterCoefficientGenerator.h"
 #include "utils/FilterType.h"
+#include "utils/ReleasePool.h"
 #include <JuceHeader.h>
 
 //==============================================================================
@@ -80,8 +81,9 @@ public:
     juce::AudioProcessorValueTreeState apvts { *this, nullptr, "Params", createParameterLayout() };
 
     using Filter = juce::dsp::IIR::Filter<float>;
-    using Coefficients = juce::dsp::IIR::Coefficients<float>::Ptr;
-    using CutCoefficients = juce::ReferenceCountedArray<juce::dsp::IIR::Coefficients<float>>;
+    using Coefficients = juce::dsp::IIR::Coefficients<float>;
+    using CoefficientsPtr = Coefficients::Ptr;
+    using CutCoefficients = juce::ReferenceCountedArray<Coefficients>;
     using CutFilter = juce::dsp::ProcessorChain<Filter, Filter, Filter, Filter>;
     using MonoFilter = juce::dsp::ProcessorChain<CutFilter, Filter, CutFilter>;
 
@@ -99,17 +101,17 @@ private:
     FilterParameters getParametricParameters (int filterIndex, FilterInfo::FilterType filterType);
     HighCutLowCutParameters getCutParameters (int filterIndex, FilterInfo::FilterType filterType);
 
-    void updateCoefficients (Coefficients& oldCoefficients, const Coefficients& newCoefficients);
+    void updateCoefficients (CoefficientsPtr& oldCoefficients, const CoefficientsPtr& newCoefficients, ReleasePool<Coefficients>& pool);
 
     template <int Index, typename ChainType>
-    void update (ChainType& chain, CutCoefficients& coefficients)
+    void update (ChainType& chain, CutCoefficients& coefficients, ReleasePool<Coefficients>& pool)
     {
-        updateCoefficients (chain.template get<Index>().coefficients, coefficients[Index]);
+        updateCoefficients (chain.template get<Index>().coefficients, coefficients[Index], pool);
         chain.template setBypassed<Index> (false);
     }
 
     template <typename ChainType>
-    void updateCutFilter (ChainType& chain, CutCoefficients& coefficients)
+    void updateCutFilter (ChainType& chain, CutCoefficients& coefficients, ReleasePool<Coefficients>& pool)
     {
         chain.template setBypassed<0> (true);
         chain.template setBypassed<1> (true);
@@ -120,19 +122,19 @@ private:
         {
             case 4:
             {
-                update<3> (chain, coefficients);
+                update<3> (chain, coefficients, pool);
             }
             case 3:
             {
-                update<2> (chain, coefficients);
+                update<2> (chain, coefficients, pool);
             }
             case 2:
             {
-                update<1> (chain, coefficients);
+                update<1> (chain, coefficients, pool);
             }
             case 1:
             {
-                update<0> (chain, coefficients);
+                update<0> (chain, coefficients, pool);
             }
         }
     }
@@ -158,21 +160,23 @@ private:
         {
             CutCoefficients coefficients;
 
+            auto& releasePoolToUse = isHighCutFilter ? highCutReleasePool : lowCutReleasePool;
             auto& fifoToUse = isHighCutFilter ? highcutFilterFifo : lowcutFilterFifo;
+
             if (fifoToUse.pull (coefficients))
             {
-                updateCutFilter (leftFilter, coefficients);
-                updateCutFilter (rightFilter, coefficients);
+                updateCutFilter (leftFilter, coefficients, releasePoolToUse);
+                updateCutFilter (rightFilter, coefficients, releasePoolToUse);
             }
         }
         else
         {
-            Coefficients coefficients;
+            CoefficientsPtr coefficients;
 
             if (parametricFilterFifo.pull (coefficients))
             {
-                updateCoefficients (leftFilter.coefficients, coefficients);
-                updateCoefficients (rightFilter.coefficients, coefficients);
+                updateCoefficients (leftFilter.coefficients, coefficients, parametricReleasePool);
+                updateCoefficients (rightFilter.coefficients, coefficients, parametricReleasePool);
             }
         }
     }
@@ -186,7 +190,7 @@ private:
 
     const static size_t FIFO_SIZE = 20;
     Fifo<CutCoefficients, FIFO_SIZE> lowcutFilterFifo;
-    Fifo<Coefficients, FIFO_SIZE> parametricFilterFifo;
+    Fifo<CoefficientsPtr, FIFO_SIZE> parametricFilterFifo;
     Fifo<CutCoefficients, FIFO_SIZE> highcutFilterFifo;
 
     using CutCoefficientGenerator = FilterCoefficientGenerator<CutCoefficients,
@@ -197,12 +201,16 @@ private:
     CutCoefficientGenerator lowCutCoefficientsGenerator { lowcutFilterFifo };
     CutCoefficientGenerator highCutCoefficientsGenerator { highcutFilterFifo };
 
-    using ParametricCoefficientGenerator = FilterCoefficientGenerator<Coefficients, //
+    using ParametricCoefficientGenerator = FilterCoefficientGenerator<CoefficientsPtr, //
                                                                       FilterParameters,
                                                                       CoefficientsMaker<float>,
                                                                       FIFO_SIZE>;
 
     ParametricCoefficientGenerator parametricCoefficientsGenerator { parametricFilterFifo };
+
+    ReleasePool<Coefficients> lowCutReleasePool;
+    ReleasePool<Coefficients> parametricReleasePool;
+    ReleasePool<Coefficients> highCutReleasePool;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (EqualizerAudioProcessor)
