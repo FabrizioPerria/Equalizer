@@ -112,12 +112,12 @@ struct Fifo
             if constexpr (IsReferenceCountedObjectPtr<T>::value)
             {
                 std::swap (buffer[index], t);
-                jassert (buffer[index].get() == nullptr || buffer[index]->getReferenceCount() > 1);
+                jassert (buffer[index].get() == nullptr);
             }
             else if constexpr (IsReferenceCountedArray<T>::value)
             {
                 std::swap (buffer[index], t);
-                jassert (buffer[index].isEmpty() || buffer[index]->getReferenceCount() > 1);
+                jassert (buffer[index].isEmpty());
             }
             else if constexpr (IsVector<T>::value)
             {
