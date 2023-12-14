@@ -183,10 +183,6 @@ void EqualizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
 
         offset += maxChunkSize;
     }
-    /* updateFilters(); */
-    /**/
-    /* leftChain.process (juce::dsp::ProcessContextReplacing<float> (leftBlock)); */
-    /* rightChain.process (juce::dsp::ProcessContextReplacing<float> (rightBlock)); */
 }
 
 //==============================================================================
@@ -261,12 +257,6 @@ juce::AudioProcessorValueTreeState::ParameterLayout EqualizerAudioProcessor::cre
         }
         else
         {
-            /* name = FilterInfo::getParameterName (i, FilterInfo::FilterParam::FILTER_TYPE); */
-            /* layout.add (std::make_unique<juce::AudioParameterChoice> (juce::ParameterID { name, 1 }, // */
-            /*                                                           name, */
-            /*                                                           getFilterTypeNames(), */
-            /*                                                           0)); */
-
             name = FilterInfo::getParameterName (i, FilterInfo::FilterParam::GAIN);
             layout.add (std::make_unique<juce::AudioParameterFloat> (juce::ParameterID { name, 1 },
                                                                      name,
@@ -277,37 +267,6 @@ juce::AudioProcessorValueTreeState::ParameterLayout EqualizerAudioProcessor::cre
 
     return layout;
 }
-
-/* const std::map<FilterInfo::FilterType, juce::String> EqualizerAudioProcessor::filterTypeMap = { */
-/*     { FilterInfo::FilterType::FIRST_ORDER_LOWPASS, "First Order Lowpass" }, */
-/*     { FilterInfo::FilterType::FIRST_ORDER_HIGHPASS, "First Order Highpass" }, */
-/*     { FilterInfo::FilterType::FIRST_ORDER_ALLPASS, "First Order Allpass" }, */
-/*     { FilterInfo::FilterType::LOWPASS, "Lowpass" }, */
-/*     { FilterInfo::FilterType::HIGHPASS, "Highpass" }, */
-/*     { FilterInfo::FilterType::BANDPASS, "Bandpass" }, */
-/*     { FilterInfo::FilterType::NOTCH, "Notch" }, */
-/*     { FilterInfo::FilterType::ALLPASS, "Allpass" }, */
-/*     { FilterInfo::FilterType::LOWSHELF, "Lowshelf" }, */
-/*     { FilterInfo::FilterType::HIGHSHELF, "Highshelf" }, */
-/*     { FilterInfo::FilterType::PEAKFILTER, "Peakfilter" }, */
-/* }; */
-
-/* FilterInfo::FilterType EqualizerAudioProcessor::getFilterType (int filterIndex) */
-/* { */
-/*     auto name = FilterInfo::getParameterName (filterIndex, FilterInfo::FilterParam::FILTER_TYPE); */
-/*     auto filterTypeParam = apvts.getRawParameterValue (name); */
-/*     return static_cast<FilterInfo::FilterType> (filterTypeParam->load()); */
-/* } */
-
-/* juce::StringArray EqualizerAudioProcessor::getFilterTypeNames() */
-/* { */
-/*     juce::StringArray names; */
-/*     for (auto& it : filterTypeMap) */
-/*     { */
-/*         names.add (it.second); */
-/*     } */
-/*     return names; */
-/* } */
 
 juce::StringArray EqualizerAudioProcessor::getSlopeNames()
 {
@@ -358,21 +317,4 @@ HighCutLowCutParameters EqualizerAudioProcessor::getCutParameters (int filterInd
 
 void EqualizerAudioProcessor::updateFilters()
 {
-    /* auto lowCutPosition = static_cast<int> (ChainPositions::LOWCUT); */
-    /* auto lowcutParameters = getCutParameters (lowCutPosition, FilterInfo::FilterType::HIGHPASS); */
-    /* updateFilter<ChainPositions::LOWCUT> (oldHighCutLowCutParams[static_cast<size_t> (lowCutPosition)], // */
-    /*                                       lowcutParameters, */
-    /*                                       lowCutCoefficientsGenerator); */
-
-    /* auto parametricPosition = static_cast<int> (ChainPositions::PARAMETRIC_FILTER); */
-    /* auto parametricParameters = getParametricParameters (parametricPosition, getFilterType (parametricPosition)); */
-    /* updateFilter<ChainPositions::PARAMETRIC_FILTER> (oldFilterParams[static_cast<size_t> (parametricPosition)], */
-    /*                                                  parametricParameters, */
-    /*                                                  parametricCoefficientsGenerator); */
-
-    /* auto highCutPosition = static_cast<int> (ChainPositions::HIGHCUT); */
-    /* auto highcutParameters = getCutParameters (highCutPosition, FilterInfo::FilterType::LOWPASS); */
-    /* updateFilter<ChainPositions::HIGHCUT> (oldHighCutLowCutParams[static_cast<size_t> (highCutPosition)], */
-    /*                                        highcutParameters, */
-    /*                                        highCutCoefficientsGenerator); */
 }
