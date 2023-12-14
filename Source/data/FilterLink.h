@@ -135,7 +135,7 @@ struct FilterLink
         }
         else
         {
-            updateFilterState (filter.state, coefficents);
+            updateFilterState (filter.coefficients, coefficents);
         }
     }
 
@@ -163,7 +163,7 @@ struct FilterLink
             params.quality = qualitySmoother.getNextValue();
             if constexpr (! IsCutFilter<FilterType>::value)
             {
-                params.gain = gainSmoother.getNextValue();
+                params.gain = gainSmoother.getNextValue().getGain();
             }
 
             coefficientsGenerator.changeParameters (params);
@@ -276,7 +276,7 @@ private:
     FilterType filter;
     ParamType currentParams;
     Fifo<FifoDataType, FIFO_SIZE> coefficientsFifo;
-    FilterCoefficientGenerator<FifoDataType, ParamType, FunctionType, FIFO_SIZE> coefficientsGenerator;
+    FilterCoefficientGenerator<FifoDataType, ParamType, FunctionType, FIFO_SIZE> coefficientsGenerator { coefficientsFifo };
     ReleasePool<Coefficients> coefficientsReleasePool;
 
     juce::SmoothedValue<float> freqSmoother;

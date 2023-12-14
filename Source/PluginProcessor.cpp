@@ -261,11 +261,11 @@ juce::AudioProcessorValueTreeState::ParameterLayout EqualizerAudioProcessor::cre
         }
         else
         {
-            name = FilterInfo::getParameterName (i, FilterInfo::FilterParam::FILTER_TYPE);
-            layout.add (std::make_unique<juce::AudioParameterChoice> (juce::ParameterID { name, 1 }, //
-                                                                      name,
-                                                                      getFilterTypeNames(),
-                                                                      0));
+            /* name = FilterInfo::getParameterName (i, FilterInfo::FilterParam::FILTER_TYPE); */
+            /* layout.add (std::make_unique<juce::AudioParameterChoice> (juce::ParameterID { name, 1 }, // */
+            /*                                                           name, */
+            /*                                                           getFilterTypeNames(), */
+            /*                                                           0)); */
 
             name = FilterInfo::getParameterName (i, FilterInfo::FilterParam::GAIN);
             layout.add (std::make_unique<juce::AudioParameterFloat> (juce::ParameterID { name, 1 },
@@ -278,36 +278,36 @@ juce::AudioProcessorValueTreeState::ParameterLayout EqualizerAudioProcessor::cre
     return layout;
 }
 
-const std::map<FilterInfo::FilterType, juce::String> EqualizerAudioProcessor::filterTypeMap = {
-    { FilterInfo::FilterType::FIRST_ORDER_LOWPASS, "First Order Lowpass" },
-    { FilterInfo::FilterType::FIRST_ORDER_HIGHPASS, "First Order Highpass" },
-    { FilterInfo::FilterType::FIRST_ORDER_ALLPASS, "First Order Allpass" },
-    { FilterInfo::FilterType::LOWPASS, "Lowpass" },
-    { FilterInfo::FilterType::HIGHPASS, "Highpass" },
-    { FilterInfo::FilterType::BANDPASS, "Bandpass" },
-    { FilterInfo::FilterType::NOTCH, "Notch" },
-    { FilterInfo::FilterType::ALLPASS, "Allpass" },
-    { FilterInfo::FilterType::LOWSHELF, "Lowshelf" },
-    { FilterInfo::FilterType::HIGHSHELF, "Highshelf" },
-    { FilterInfo::FilterType::PEAKFILTER, "Peakfilter" },
-};
+/* const std::map<FilterInfo::FilterType, juce::String> EqualizerAudioProcessor::filterTypeMap = { */
+/*     { FilterInfo::FilterType::FIRST_ORDER_LOWPASS, "First Order Lowpass" }, */
+/*     { FilterInfo::FilterType::FIRST_ORDER_HIGHPASS, "First Order Highpass" }, */
+/*     { FilterInfo::FilterType::FIRST_ORDER_ALLPASS, "First Order Allpass" }, */
+/*     { FilterInfo::FilterType::LOWPASS, "Lowpass" }, */
+/*     { FilterInfo::FilterType::HIGHPASS, "Highpass" }, */
+/*     { FilterInfo::FilterType::BANDPASS, "Bandpass" }, */
+/*     { FilterInfo::FilterType::NOTCH, "Notch" }, */
+/*     { FilterInfo::FilterType::ALLPASS, "Allpass" }, */
+/*     { FilterInfo::FilterType::LOWSHELF, "Lowshelf" }, */
+/*     { FilterInfo::FilterType::HIGHSHELF, "Highshelf" }, */
+/*     { FilterInfo::FilterType::PEAKFILTER, "Peakfilter" }, */
+/* }; */
 
-FilterInfo::FilterType EqualizerAudioProcessor::getFilterType (int filterIndex)
-{
-    auto name = FilterInfo::getParameterName (filterIndex, FilterInfo::FilterParam::FILTER_TYPE);
-    auto filterTypeParam = apvts.getRawParameterValue (name);
-    return static_cast<FilterInfo::FilterType> (filterTypeParam->load());
-}
+/* FilterInfo::FilterType EqualizerAudioProcessor::getFilterType (int filterIndex) */
+/* { */
+/*     auto name = FilterInfo::getParameterName (filterIndex, FilterInfo::FilterParam::FILTER_TYPE); */
+/*     auto filterTypeParam = apvts.getRawParameterValue (name); */
+/*     return static_cast<FilterInfo::FilterType> (filterTypeParam->load()); */
+/* } */
 
-juce::StringArray EqualizerAudioProcessor::getFilterTypeNames()
-{
-    juce::StringArray names;
-    for (auto& it : filterTypeMap)
-    {
-        names.add (it.second);
-    }
-    return names;
-}
+/* juce::StringArray EqualizerAudioProcessor::getFilterTypeNames() */
+/* { */
+/*     juce::StringArray names; */
+/*     for (auto& it : filterTypeMap) */
+/*     { */
+/*         names.add (it.second); */
+/*     } */
+/*     return names; */
+/* } */
 
 juce::StringArray EqualizerAudioProcessor::getSlopeNames()
 {

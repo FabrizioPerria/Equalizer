@@ -83,17 +83,23 @@ public:
 
     juce::AudioProcessorValueTreeState apvts { *this, nullptr, "Params", createParameterLayout() };
 
-    using CutFilter = FilterLink<CutFilter, CutCoefficients, HighCutLowCutParameters, CoefficientsMaker<float>>;
-    using SingleFilter = FilterLink<Filter, CoefficientsPtr, FilterParameters, CoefficientsMaker<float>>;
+    using Filter = juce::dsp::IIR::Filter<float>;
+    using Coefficients = juce::dsp::IIR::Coefficients<float>;
+    using CoefficientsPtr = Coefficients::Ptr;
+    using CutCoefficients = juce::ReferenceCountedArray<Coefficients>;
+    using CutFilter = juce::dsp::ProcessorChain<Filter, Filter, Filter, Filter>;
 
-    using MonoFilter = juce::dsp::ProcessorChain<CutFilter,    //lowCut
-                                                 SingleFilter, //lowShelf
-                                                 SingleFilter, //Peak1
-                                                 SingleFilter, //Peak2
-                                                 SingleFilter, //Peak3
-                                                 SingleFilter, //Peak4
-                                                 SingleFilter, //HighShelf
-                                                 CutFilter>;   //HighCut
+    using CutFilterLink = FilterLink<CutFilter, CutCoefficients, HighCutLowCutParameters, CoefficientsMaker<float>>;
+    using SingleFilterLink = FilterLink<Filter, CoefficientsPtr, FilterParameters, CoefficientsMaker<float>>;
+
+    using MonoChain = juce::dsp::ProcessorChain<CutFilterLink,    //lowCut
+                                                SingleFilterLink, //lowShelf
+                                                SingleFilterLink, //Peak1
+                                                SingleFilterLink, //Peak2
+                                                SingleFilterLink, //Peak3
+                                                SingleFilterLink, //Peak4
+                                                SingleFilterLink, //HighShelf
+                                                CutFilterLink>;   //HighCut
 
 private:
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
@@ -111,7 +117,7 @@ private:
 
     void updateFilters();
 
-    MonoFilter leftChain, rightChain;
+    MonoChain leftChain, rightChain;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (EqualizerAudioProcessor)
