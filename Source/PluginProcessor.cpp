@@ -151,13 +151,42 @@ void EqualizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
         buffer.clear (i, 0, buffer.getNumSamples());
 
     auto block = juce::dsp::AudioBlock<float> (buffer);
-    auto leftBlock = block.getSingleChannelBlock (0);
-    auto rightBlock = block.getSingleChannelBlock (1);
 
-    updateFilters();
+    const size_t SUB_BLOCK_SIZE = 32;
+    for (size_t offset = 0; offset < block.getNumSamples();)
+    {
+        auto numSamplesLeft = block.getNumSamples() - offset;
+        auto maxChunkSize = juce::jmin (numSamplesLeft, SUB_BLOCK_SIZE);
+        auto leftBlock = block.getSingleChannelBlock (0).getSubBlock (offset, maxChunkSize);
+        auto rightBlock = block.getSingleChannelBlock (1).getSubBlock (offset, maxChunkSize);
 
-    leftChain.process (juce::dsp::ProcessContextReplacing<float> (leftBlock));
-    rightChain.process (juce::dsp::ProcessContextReplacing<float> (rightBlock));
+        leftChain.get<static_cast<int> (ChainPositions::LOWCUT)>().performInnerLoopFilterUpdate (true, maxChunkSize);
+        leftChain.get<static_cast<int> (ChainPositions::LOWSHELF)>().performInnerLoopFilterUpdate (true, maxChunkSize);
+        leftChain.get<static_cast<int> (ChainPositions::PEAK1)>().performInnerLoopFilterUpdate (true, maxChunkSize);
+        leftChain.get<static_cast<int> (ChainPositions::PEAK2)>().performInnerLoopFilterUpdate (true, maxChunkSize);
+        leftChain.get<static_cast<int> (ChainPositions::PEAK3)>().performInnerLoopFilterUpdate (true, maxChunkSize);
+        leftChain.get<static_cast<int> (ChainPositions::PEAK4)>().performInnerLoopFilterUpdate (true, maxChunkSize);
+        leftChain.get<static_cast<int> (ChainPositions::HIGHSHELF)>().performInnerLoopFilterUpdate (true, maxChunkSize);
+        leftChain.get<static_cast<int> (ChainPositions::HIGHCUT)>().performInnerLoopFilterUpdate (true, maxChunkSize);
+
+        rightChain.get<static_cast<int> (ChainPositions::LOWCUT)>().performInnerLoopFilterUpdate (true, maxChunkSize);
+        rightChain.get<static_cast<int> (ChainPositions::LOWSHELF)>().performInnerLoopFilterUpdate (true, maxChunkSize);
+        rightChain.get<static_cast<int> (ChainPositions::PEAK1)>().performInnerLoopFilterUpdate (true, maxChunkSize);
+        rightChain.get<static_cast<int> (ChainPositions::PEAK2)>().performInnerLoopFilterUpdate (true, maxChunkSize);
+        rightChain.get<static_cast<int> (ChainPositions::PEAK3)>().performInnerLoopFilterUpdate (true, maxChunkSize);
+        rightChain.get<static_cast<int> (ChainPositions::PEAK4)>().performInnerLoopFilterUpdate (true, maxChunkSize);
+        rightChain.get<static_cast<int> (ChainPositions::HIGHSHELF)>().performInnerLoopFilterUpdate (true, maxChunkSize);
+        rightChain.get<static_cast<int> (ChainPositions::HIGHCUT)>().performInnerLoopFilterUpdate (true, maxChunkSize);
+
+        leftChain.process (juce::dsp::ProcessContextReplacing<float> (leftBlock));
+        rightChain.process (juce::dsp::ProcessContextReplacing<float> (rightBlock));
+
+        offset += maxChunkSize;
+    }
+    /* updateFilters(); */
+    /**/
+    /* leftChain.process (juce::dsp::ProcessContextReplacing<float> (leftBlock)); */
+    /* rightChain.process (juce::dsp::ProcessContextReplacing<float> (rightBlock)); */
 }
 
 //==============================================================================
@@ -329,20 +358,20 @@ HighCutLowCutParameters EqualizerAudioProcessor::getCutParameters (int filterInd
 
 void EqualizerAudioProcessor::updateFilters()
 {
-    auto lowCutPosition = static_cast<int> (ChainPositions::LOWCUT);
-    auto lowcutParameters = getCutParameters (lowCutPosition, FilterInfo::FilterType::HIGHPASS);
+    /* auto lowCutPosition = static_cast<int> (ChainPositions::LOWCUT); */
+    /* auto lowcutParameters = getCutParameters (lowCutPosition, FilterInfo::FilterType::HIGHPASS); */
     /* updateFilter<ChainPositions::LOWCUT> (oldHighCutLowCutParams[static_cast<size_t> (lowCutPosition)], // */
     /*                                       lowcutParameters, */
     /*                                       lowCutCoefficientsGenerator); */
 
-    auto parametricPosition = static_cast<int> (ChainPositions::PARAMETRIC_FILTER);
-    auto parametricParameters = getParametricParameters (parametricPosition, getFilterType (parametricPosition));
+    /* auto parametricPosition = static_cast<int> (ChainPositions::PARAMETRIC_FILTER); */
+    /* auto parametricParameters = getParametricParameters (parametricPosition, getFilterType (parametricPosition)); */
     /* updateFilter<ChainPositions::PARAMETRIC_FILTER> (oldFilterParams[static_cast<size_t> (parametricPosition)], */
     /*                                                  parametricParameters, */
     /*                                                  parametricCoefficientsGenerator); */
 
-    auto highCutPosition = static_cast<int> (ChainPositions::HIGHCUT);
-    auto highcutParameters = getCutParameters (highCutPosition, FilterInfo::FilterType::LOWPASS);
+    /* auto highCutPosition = static_cast<int> (ChainPositions::HIGHCUT); */
+    /* auto highcutParameters = getCutParameters (highCutPosition, FilterInfo::FilterType::LOWPASS); */
     /* updateFilter<ChainPositions::HIGHCUT> (oldHighCutLowCutParams[static_cast<size_t> (highCutPosition)], */
     /*                                        highcutParameters, */
     /*                                        highCutCoefficientsGenerator); */

@@ -11,17 +11,19 @@
 #include "data/FilterLink.h"
 #include "data/FilterParameters.h"
 #include "utils/CoefficientsMaker.h"
-#include "utils/Fifo.h"
-#include "utils/FilterCoefficientGenerator.h"
 #include "utils/FilterType.h"
-#include "utils/ReleasePool.h"
 #include <JuceHeader.h>
 
 //==============================================================================
 enum class ChainPositions
 {
     LOWCUT,
-    PARAMETRIC_FILTER,
+    LOWSHELF,
+    PEAK1,
+    PEAK2,
+    PEAK3,
+    PEAK4,
+    HIGHSHELF,
     HIGHCUT,
     NUM_FILTERS
 };
@@ -81,10 +83,19 @@ public:
 
     juce::AudioProcessorValueTreeState apvts { *this, nullptr, "Params", createParameterLayout() };
 
-    using MonoFilter = juce::dsp::ProcessorChain<CutFilter, Filter, CutFilter>;
+    using CutFilter = FilterLink<CutFilter, CutCoefficients, HighCutLowCutParameters, CoefficientsMaker<float>>;
+    using SingleFilter = FilterLink<Filter, CoefficientsPtr, FilterParameters, CoefficientsMaker<float>>;
+
+    using MonoFilter = juce::dsp::ProcessorChain<CutFilter,    //lowCut
+                                                 SingleFilter, //lowShelf
+                                                 SingleFilter, //Peak1
+                                                 SingleFilter, //Peak2
+                                                 SingleFilter, //Peak3
+                                                 SingleFilter, //Peak4
+                                                 SingleFilter, //HighShelf
+                                                 CutFilter>;   //HighCut
 
 private:
-    const static size_t FIFO_SIZE = 20;
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
 
     static const std::map<FilterInfo::FilterType, juce::String> filterTypeMap;
@@ -100,33 +111,7 @@ private:
 
     void updateFilters();
 
-    std::array<FilterParameters, static_cast<size_t> (ChainPositions::NUM_FILTERS)> oldFilterParams;
-    std::array<HighCutLowCutParameters, static_cast<size_t> (ChainPositions::NUM_FILTERS)> oldHighCutLowCutParams;
-
     MonoFilter leftChain, rightChain;
-
-    /* Fifo<CutCoefficients, FIFO_SIZE> lowcutFilterFifo; */
-    /* Fifo<CoefficientsPtr, FIFO_SIZE> parametricFilterFifo; */
-    /* Fifo<CutCoefficients, FIFO_SIZE> highcutFilterFifo; */
-    /**/
-    /* using CutCoefficientGenerator = FilterCoefficientGenerator<CutCoefficients, */
-    /*                                                            HighCutLowCutParameters, */
-    /*                                                            CoefficientsMaker<float>, */
-    /*                                                            FIFO_SIZE>; */
-    /**/
-    /* CutCoefficientGenerator lowCutCoefficientsGenerator { lowcutFilterFifo }; */
-    /* CutCoefficientGenerator highCutCoefficientsGenerator { highcutFilterFifo }; */
-    /**/
-    /* using ParametricCoefficientGenerator = FilterCoefficientGenerator<CoefficientsPtr, // */
-    /*                                                                   FilterParameters, */
-    /*                                                                   CoefficientsMaker<float>, */
-    /*                                                                   FIFO_SIZE>; */
-    /**/
-    /* ParametricCoefficientGenerator parametricCoefficientsGenerator { parametricFilterFifo }; */
-    /**/
-    /* ReleasePool<Coefficients> lowCutReleasePool; */
-    /* ReleasePool<Coefficients> parametricReleasePool; */
-    /* ReleasePool<Coefficients> highCutReleasePool; */
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (EqualizerAudioProcessor)
