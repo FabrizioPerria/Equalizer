@@ -327,8 +327,11 @@ HighCutLowCutParameters EqualizerAudioProcessor::getCutParameters (int filterInd
     return HighCutLowCutParameters { baseParams, slopeParam, isLowCutParam };
 }
 
-void EqualizerAudioProcessor::updateCoefficients (Coefficients& oldCoefficients, const Coefficients& newCoefficients)
+void EqualizerAudioProcessor::updateCoefficients (CoefficientsPtr& oldCoefficients,
+                                                  const CoefficientsPtr& newCoefficients,
+                                                  ReleasePool<Coefficients>& pool)
 {
+    pool.add (*oldCoefficients);
     *oldCoefficients = *newCoefficients;
 }
 
