@@ -220,7 +220,7 @@ struct FilterLink
     }
 
 private:
-    static const size_t FIFO_SIZE = 20;
+    static const size_t FIFO_SIZE = 2000;
 
     void discardOldCoefficientsIfAny()
     {

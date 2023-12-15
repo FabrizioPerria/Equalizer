@@ -66,7 +66,7 @@ private:
     }
 
     static const int TIMER_INTERVAL_MS = 2000;
-    static const int FIFO_SIZE = 2000;
+    static const int FIFO_SIZE = 50000;
 
     std::vector<Ptr> deletionPool;
 
