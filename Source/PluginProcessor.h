@@ -8,35 +8,32 @@
 
 #pragma once
 
+#include "data/FilterLink.h"
 #include "data/FilterParameters.h"
 #include "utils/CoefficientsMaker.h"
-#include "utils/Fifo.h"
-#include "utils/FilterCoefficientGenerator.h"
+#include "utils/FilterParam.h"
 #include "utils/FilterType.h"
-#include "utils/ReleasePool.h"
 #include <JuceHeader.h>
 
+//==============================================================================
+enum class Channel
+{
+    LEFT,
+    RIGHT
+};
 //==============================================================================
 enum class ChainPositions
 {
     LOWCUT,
-    PARAMETRIC_FILTER,
-    HIGHCUT,
-    NUM_FILTERS
+    LOWSHELF,
+    PEAK1,
+    PEAK2,
+    PEAK3,
+    PEAK4,
+    HIGHSHELF,
+    HIGHCUT
 };
 
-// ====================================================================================================
-enum class Slope
-{
-    SLOPE_6,
-    SLOPE_12,
-    SLOPE_18,
-    SLOPE_24,
-    SLOPE_30,
-    SLOPE_36,
-    SLOPE_40,
-    SLOPE_48
-};
 // ====================================================================================================
 class EqualizerAudioProcessor : public juce::AudioProcessor
 {
@@ -85,15 +82,63 @@ public:
     using CoefficientsPtr = Coefficients::Ptr;
     using CutCoefficients = juce::ReferenceCountedArray<Coefficients>;
     using CutFilter = juce::dsp::ProcessorChain<Filter, Filter, Filter, Filter>;
-    using MonoFilter = juce::dsp::ProcessorChain<CutFilter, Filter, CutFilter>;
+
+    using CutFilterLink = FilterLink<CutFilter, CutCoefficients, HighCutLowCutParameters, CoefficientsMaker<float>>;
+    using SingleFilterLink = FilterLink<Filter, CoefficientsPtr, FilterParameters, CoefficientsMaker<float>>;
+
+    using MonoChain = juce::dsp::ProcessorChain<CutFilterLink,    //lowCut
+                                                SingleFilterLink, //lowShelf
+                                                SingleFilterLink, //Peak1
+                                                SingleFilterLink, //Peak2
+                                                SingleFilterLink, //Peak3
+                                                SingleFilterLink, //Peak4
+                                                SingleFilterLink, //HighShelf
+                                                CutFilterLink>;   //HighCut
 
 private:
-    const static size_t FIFO_SIZE = 20;
+    const float RAMP_TIME_IN_SECONDS = 0.05f;
+
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
 
-    static const std::map<FilterInfo::FilterType, juce::String> filterTypeMap;
-    FilterInfo::FilterType getFilterType (int filterIndex);
-    static juce::StringArray getFilterTypeNames();
+    template <ChainPositions FilterPosition>
+    static void addFilterParameterToLayout (juce::AudioProcessorValueTreeState::ParameterLayout& layout, bool isCutFilter)
+    {
+        auto index = static_cast<int> (FilterPosition);
+        auto name = FilterInfo::getParameterName (index, FilterInfo::FilterParam::BYPASS);
+        layout.add (std::make_unique<juce::AudioParameterBool> (juce::ParameterID { name, 1 }, //
+                                                                name,
+                                                                false));
+
+        name = FilterInfo::getParameterName (index, FilterInfo::FilterParam::FREQUENCY);
+        auto range = juce::NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.25f);
+        layout.add (std::make_unique<juce::AudioParameterFloat> (juce::ParameterID { name, 1 }, //
+                                                                 name,
+                                                                 range,
+                                                                 20.0f));
+
+        name = FilterInfo::getParameterName (index, FilterInfo::FilterParam::Q);
+        layout.add (std::make_unique<juce::AudioParameterFloat> (juce::ParameterID { name, 1 },
+                                                                 name,
+                                                                 juce::NormalisableRange<float> (0.1f, 10.0f, 0.1f),
+                                                                 1.0f));
+        if (isCutFilter)
+        {
+            name = FilterInfo::getParameterName (index, FilterInfo::FilterParam::SLOPE);
+            layout.add (std::make_unique<juce::AudioParameterChoice> (juce::ParameterID { name, 1 }, //
+                                                                      name,
+                                                                      getSlopeNames(),
+                                                                      0));
+        }
+        else
+        {
+            name = FilterInfo::getParameterName (index, FilterInfo::FilterParam::GAIN);
+            layout.add (std::make_unique<juce::AudioParameterFloat> (juce::ParameterID { name, 1 },
+                                                                     name,
+                                                                     juce::NormalisableRange<float> (-24.0f, 24.0f, 0.1f),
+                                                                     0.0f));
+        }
+    }
+
     static juce::StringArray getSlopeNames();
 
     float getRawParameter (int filterIndex, FilterInfo::FilterParam filterParameter);
@@ -102,154 +147,57 @@ private:
     FilterParameters getParametricParameters (int filterIndex, FilterInfo::FilterType filterType);
     HighCutLowCutParameters getCutParameters (int filterIndex, FilterInfo::FilterType filterType);
 
-    void updateCoefficients (CoefficientsPtr& oldCoefficients, const CoefficientsPtr& newCoefficients, ReleasePool<Coefficients>& pool);
+    void initializeFilters();
 
-    template <int Index, typename ChainType>
-    void update (ChainType& chain, CutCoefficients& coefficients, ReleasePool<Coefficients>& pool)
+    template <ChainPositions FilterPosition>
+    void initializeCutFilter (FilterInfo::FilterType filterType, bool onRealTimeThread)
     {
-        updateCoefficients (chain.template get<Index>().coefficients, coefficients[Index], pool);
-        chain.template setBypassed<Index> (false);
+        const int filterIndex = static_cast<int> (FilterPosition);
+        auto cutParams = getCutParameters (filterIndex, filterType);
+        leftChain.get<filterIndex>().initialize (cutParams, RAMP_TIME_IN_SECONDS, onRealTimeThread, getSampleRate());
+        rightChain.get<filterIndex>().initialize (cutParams, RAMP_TIME_IN_SECONDS, onRealTimeThread, getSampleRate());
     }
 
-    template <typename ChainType>
-    void updateCutFilter (ChainType& chain, CutCoefficients& coefficients, ReleasePool<Coefficients>& pool)
+    template <ChainPositions FilterPosition>
+    void initializeParametricFilter (FilterInfo::FilterType filterType, bool onRealTimeThread)
     {
-        chain.template setBypassed<0> (true);
-        chain.template setBypassed<1> (true);
-        chain.template setBypassed<2> (true);
-        chain.template setBypassed<3> (true);
-
-        switch (coefficients.size())
-        {
-            case 4:
-            {
-                update<3> (chain, coefficients, pool);
-            }
-            case 3:
-            {
-                update<2> (chain, coefficients, pool);
-            }
-            case 2:
-            {
-                update<1> (chain, coefficients, pool);
-            }
-            case 1:
-            {
-                update<0> (chain, coefficients, pool);
-            }
-        }
+        const int filterIndex = static_cast<int> (FilterPosition);
+        auto parametricParams = getParametricParameters (filterIndex, filterType);
+        leftChain.get<filterIndex>().initialize (parametricParams, RAMP_TIME_IN_SECONDS, onRealTimeThread, getSampleRate());
+        rightChain.get<filterIndex>().initialize (parametricParams, RAMP_TIME_IN_SECONDS, onRealTimeThread, getSampleRate());
     }
 
-    template <typename CoefficientType>
-    CoefficientType fetchCoefficientsFromFifo (Fifo<CoefficientType, FIFO_SIZE>& fifo, ReleasePool<Coefficients>& pool)
+    void updateParameters();
+
+    template <ChainPositions FilterPosition>
+    void updateCutParameters (FilterInfo::FilterType filterType)
     {
-        while (fifo.getNumAvailableForReading() > 1)
-        {
-            CoefficientType unusedCoefficients;
-            if (fifo.pull (unusedCoefficients))
-            {
-                if constexpr (std::is_same_v<CoefficientType, CutCoefficients>)
-                {
-                    for (auto& coefficient : unusedCoefficients)
-                    {
-                        pool.add (coefficient);
-                    }
-                }
-                else if constexpr (std::is_same_v<CoefficientType, CoefficientsPtr>)
-                {
-                    pool.add (*unusedCoefficients);
-                }
-                else
-                {
-                    jassertfalse; //unknown coefficient type
-                }
-            }
-            else
-            {
-                jassertfalse; // fifo is inconsistent
-            }
-        }
-        CoefficientType coefficients;
-        auto success = fifo.pull (coefficients);
-        jassert (success);
-        return coefficients;
+        const int filterIndex = static_cast<int> (FilterPosition);
+        auto cutParams = getCutParameters (filterIndex, filterType);
+        leftChain.get<filterIndex>().performPreloopUpdate (cutParams);
+        rightChain.get<filterIndex>().performPreloopUpdate (cutParams);
     }
 
-    template <ChainPositions ChainPosition, typename ParamsType, typename CoefficientsGenerator>
-    void updateFilter (ParamsType& oldParams, const ParamsType& newParams, CoefficientsGenerator& generator)
+    template <ChainPositions FilterPosition>
+    void updateParametricParameters (FilterInfo::FilterType filterType)
     {
-        const int ChainPositionInt = static_cast<int> (ChainPosition);
-        leftChain.setBypassed<ChainPositionInt> (newParams.bypassed);
-        rightChain.setBypassed<ChainPositionInt> (newParams.bypassed);
-        auto& leftFilter = leftChain.template get<ChainPositionInt>();
-        auto& rightFilter = rightChain.template get<ChainPositionInt>();
-
-        if (newParams != oldParams)
-        {
-            generator.changeParameters (newParams);
-            oldParams = newParams;
-        }
-
-        const bool isHighCutFilter = ChainPosition == ChainPositions::HIGHCUT;
-        const bool isLowCutFilter = ChainPosition == ChainPositions::LOWCUT;
-        if constexpr (isHighCutFilter || isLowCutFilter)
-        {
-            CutCoefficients coefficients;
-
-            auto& releasePoolToUse = isHighCutFilter ? highCutReleasePool : lowCutReleasePool;
-            auto& fifoToUse = isHighCutFilter ? highcutFilterFifo : lowcutFilterFifo;
-
-            if (fifoToUse.getNumAvailableForReading() > 0)
-            {
-                coefficients = fetchCoefficientsFromFifo<CutCoefficients> (fifoToUse, releasePoolToUse);
-
-                updateCutFilter (leftFilter, coefficients, releasePoolToUse);
-                updateCutFilter (rightFilter, coefficients, releasePoolToUse);
-            }
-        }
-        else
-        {
-            CoefficientsPtr coefficients;
-
-            if (parametricFilterFifo.getNumAvailableForReading() > 0)
-            {
-                coefficients = fetchCoefficientsFromFifo (parametricFilterFifo, parametricReleasePool);
-
-                updateCoefficients (leftFilter.coefficients, coefficients, parametricReleasePool);
-                updateCoefficients (rightFilter.coefficients, coefficients, parametricReleasePool);
-            }
-        }
+        const int filterIndex = static_cast<int> (FilterPosition);
+        auto parametricParams = getParametricParameters (filterIndex, filterType);
+        leftChain.get<filterIndex>().performPreloopUpdate (parametricParams);
+        rightChain.get<filterIndex>().performPreloopUpdate (parametricParams);
     }
 
-    void updateFilters();
+    void updateFilters (int chunkSize);
 
-    std::array<FilterParameters, static_cast<size_t> (ChainPositions::NUM_FILTERS)> oldFilterParams;
-    std::array<HighCutLowCutParameters, static_cast<size_t> (ChainPositions::NUM_FILTERS)> oldHighCutLowCutParams;
+    template <ChainPositions FilterPosition>
+    void updateFilter (bool onRealTimeThread, int chunkSize)
+    {
+        const int filterIndex = static_cast<int> (FilterPosition);
+        leftChain.get<filterIndex>().performInnerLoopFilterUpdate (onRealTimeThread, chunkSize);
+        rightChain.get<filterIndex>().performInnerLoopFilterUpdate (onRealTimeThread, chunkSize);
+    }
 
-    MonoFilter leftChain, rightChain;
-
-    Fifo<CutCoefficients, FIFO_SIZE> lowcutFilterFifo;
-    Fifo<CoefficientsPtr, FIFO_SIZE> parametricFilterFifo;
-    Fifo<CutCoefficients, FIFO_SIZE> highcutFilterFifo;
-
-    using CutCoefficientGenerator = FilterCoefficientGenerator<CutCoefficients,
-                                                               HighCutLowCutParameters,
-                                                               CoefficientsMaker<float>,
-                                                               FIFO_SIZE>;
-
-    CutCoefficientGenerator lowCutCoefficientsGenerator { lowcutFilterFifo };
-    CutCoefficientGenerator highCutCoefficientsGenerator { highcutFilterFifo };
-
-    using ParametricCoefficientGenerator = FilterCoefficientGenerator<CoefficientsPtr, //
-                                                                      FilterParameters,
-                                                                      CoefficientsMaker<float>,
-                                                                      FIFO_SIZE>;
-
-    ParametricCoefficientGenerator parametricCoefficientsGenerator { parametricFilterFifo };
-
-    ReleasePool<Coefficients> lowCutReleasePool;
-    ReleasePool<Coefficients> parametricReleasePool;
-    ReleasePool<Coefficients> highCutReleasePool;
+    MonoChain leftChain, rightChain;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (EqualizerAudioProcessor)

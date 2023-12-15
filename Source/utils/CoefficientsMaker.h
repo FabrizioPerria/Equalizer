@@ -48,7 +48,7 @@ struct CoefficientsMaker
 
     static juce::dsp::IIR::Coefficients<FloatType>::Ptr make (const FilterParameters& params)
     {
-        return make (params.type, params.frequency, params.quality, params.gain, params.sampleRate);
+        return make (params.type, params.frequency, params.quality, params.gain.getGain(), params.sampleRate);
     }
 
     static juce::ReferenceCountedArray<juce::dsp::IIR::Coefficients<FloatType>> make (const HighCutLowCutParameters& params)
