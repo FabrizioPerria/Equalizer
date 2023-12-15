@@ -113,9 +113,45 @@ private:
 
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
 
-    static const std::map<FilterInfo::FilterType, juce::String> filterTypeMap;
-    FilterInfo::FilterType getFilterType (int filterIndex);
-    static juce::StringArray getFilterTypeNames();
+    template <ChainPositions FilterPosition>
+    static void addFilterParameterToLayout (juce::AudioProcessorValueTreeState::ParameterLayout& layout, bool isCutFilter)
+    {
+        auto index = static_cast<int> (FilterPosition);
+        auto name = FilterInfo::getParameterName (index, FilterInfo::FilterParam::BYPASS);
+        layout.add (std::make_unique<juce::AudioParameterBool> (juce::ParameterID { name, 1 }, //
+                                                                name,
+                                                                false));
+
+        name = FilterInfo::getParameterName (index, FilterInfo::FilterParam::FREQUENCY);
+        auto range = juce::NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.25f);
+        layout.add (std::make_unique<juce::AudioParameterFloat> (juce::ParameterID { name, 1 }, //
+                                                                 name,
+                                                                 range,
+                                                                 20.0f));
+
+        name = FilterInfo::getParameterName (index, FilterInfo::FilterParam::Q);
+        layout.add (std::make_unique<juce::AudioParameterFloat> (juce::ParameterID { name, 1 },
+                                                                 name,
+                                                                 juce::NormalisableRange<float> (0.1f, 10.0f, 0.1f),
+                                                                 1.0f));
+        if (isCutFilter)
+        {
+            name = FilterInfo::getParameterName (index, FilterInfo::FilterParam::SLOPE);
+            layout.add (std::make_unique<juce::AudioParameterChoice> (juce::ParameterID { name, 1 }, //
+                                                                      name,
+                                                                      getSlopeNames(),
+                                                                      0));
+        }
+        else
+        {
+            name = FilterInfo::getParameterName (index, FilterInfo::FilterParam::GAIN);
+            layout.add (std::make_unique<juce::AudioParameterFloat> (juce::ParameterID { name, 1 },
+                                                                     name,
+                                                                     juce::NormalisableRange<float> (-24.0f, 24.0f, 0.1f),
+                                                                     0.0f));
+        }
+    }
+
     static juce::StringArray getSlopeNames();
 
     float getRawParameter (int filterIndex, FilterInfo::FilterParam filterParameter);
@@ -126,47 +162,52 @@ private:
 
     void initializeFilters();
 
-    template <int FilterIndex>
+    template <ChainPositions FilterPosition>
     void initializeCutFilter (FilterInfo::FilterType filterType, bool onRealTimeThread)
     {
-        auto cutParams = getCutParameters (FilterIndex, filterType);
-        leftChain.get<FilterIndex>().initialize (cutParams, RAMP_TIME_IN_SECONDS, onRealTimeThread, getSampleRate());
-        rightChain.get<FilterIndex>().initialize (cutParams, RAMP_TIME_IN_SECONDS, onRealTimeThread, getSampleRate());
+        const int filterIndex = static_cast<int> (FilterPosition);
+        auto cutParams = getCutParameters (filterIndex, filterType);
+        leftChain.get<filterIndex>().initialize (cutParams, RAMP_TIME_IN_SECONDS, onRealTimeThread, getSampleRate());
+        rightChain.get<filterIndex>().initialize (cutParams, RAMP_TIME_IN_SECONDS, onRealTimeThread, getSampleRate());
     }
 
-    template <int FilterIndex>
+    template <ChainPositions FilterPosition>
     void initializeParametricFilter (FilterInfo::FilterType filterType, bool onRealTimeThread)
     {
-        auto parametricParams = getParametricParameters (FilterIndex, filterType);
-        leftChain.get<FilterIndex>().initialize (parametricParams, RAMP_TIME_IN_SECONDS, onRealTimeThread, getSampleRate());
-        rightChain.get<FilterIndex>().initialize (parametricParams, RAMP_TIME_IN_SECONDS, onRealTimeThread, getSampleRate());
+        const int filterIndex = static_cast<int> (FilterPosition);
+        auto parametricParams = getParametricParameters (filterIndex, filterType);
+        leftChain.get<filterIndex>().initialize (parametricParams, RAMP_TIME_IN_SECONDS, onRealTimeThread, getSampleRate());
+        rightChain.get<filterIndex>().initialize (parametricParams, RAMP_TIME_IN_SECONDS, onRealTimeThread, getSampleRate());
     }
 
     void updateParameters();
 
-    template <int FilterIndex>
+    template <ChainPositions FilterPosition>
     void updateCutParameters (FilterInfo::FilterType filterType)
     {
-        auto cutParams = getCutParameters (FilterIndex, filterType);
-        leftChain.get<FilterIndex>().performPreloopUpdate (cutParams);
-        rightChain.get<FilterIndex>().performPreloopUpdate (cutParams);
+        const int filterIndex = static_cast<int> (FilterPosition);
+        auto cutParams = getCutParameters (filterIndex, filterType);
+        leftChain.get<filterIndex>().performPreloopUpdate (cutParams);
+        rightChain.get<filterIndex>().performPreloopUpdate (cutParams);
     }
 
-    template <int FilterIndex>
+    template <ChainPositions FilterPosition>
     void updateParametricParameters (FilterInfo::FilterType filterType)
     {
-        auto parametricParams = getParametricParameters (FilterIndex, filterType);
-        leftChain.get<FilterIndex>().performPreloopUpdate (parametricParams);
-        rightChain.get<FilterIndex>().performPreloopUpdate (parametricParams);
+        const int filterIndex = static_cast<int> (FilterPosition);
+        auto parametricParams = getParametricParameters (filterIndex, filterType);
+        leftChain.get<filterIndex>().performPreloopUpdate (parametricParams);
+        rightChain.get<filterIndex>().performPreloopUpdate (parametricParams);
     }
 
     void updateFilters (int chunkSize);
 
-    template <int FilterIndex>
+    template <ChainPositions FilterPosition>
     void updateFilter (bool onRealTimeThread, int chunkSize)
     {
-        leftChain.get<FilterIndex>().performInnerLoopFilterUpdate (onRealTimeThread, chunkSize);
-        rightChain.get<FilterIndex>().performInnerLoopFilterUpdate (onRealTimeThread, chunkSize);
+        const int filterIndex = static_cast<int> (FilterPosition);
+        leftChain.get<filterIndex>().performInnerLoopFilterUpdate (onRealTimeThread, chunkSize);
+        rightChain.get<filterIndex>().performInnerLoopFilterUpdate (onRealTimeThread, chunkSize);
     }
 
     MonoChain leftChain, rightChain;
