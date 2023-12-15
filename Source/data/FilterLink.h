@@ -46,7 +46,7 @@ struct IsCutParameter<HighCutLowCutParameters> : std::true_type
 template <typename FilterType, typename FifoDataType, typename ParamType, typename FunctionType>
 struct FilterLink
 {
-    void prepare (const dsp::ProcessSpec& spec)
+    void prepare (const juce::dsp::ProcessSpec& spec)
     {
         filter.prepare (spec);
     }
@@ -224,7 +224,7 @@ private:
 
     void discardOldCoefficientsIfAny()
     {
-        while (coefficientsFifo.getNumAvailableForReading() > FIFO_SIZE)
+        while (coefficientsFifo.getNumAvailableForReading() > 1)
         {
             FifoDataType unusedCoefficients;
             if (coefficientsFifo.pull (unusedCoefficients))

@@ -160,10 +160,10 @@ private:
         rightChain.get<FilterIndex>().performPreloopUpdate (parametricParams);
     }
 
-    void updateFilters (const size_t chunkSize);
+    void updateFilters (int chunkSize);
 
     template <int FilterIndex>
-    void updateFilter (bool onRealTimeThread, const size_t chunkSize)
+    void updateFilter (bool onRealTimeThread, int chunkSize)
     {
         leftChain.get<FilterIndex>().performInnerLoopFilterUpdate (onRealTimeThread, chunkSize);
         rightChain.get<FilterIndex>().performInnerLoopFilterUpdate (onRealTimeThread, chunkSize);

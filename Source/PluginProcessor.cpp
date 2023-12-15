@@ -164,7 +164,7 @@ void EqualizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
         auto leftBlock = subBlock.getSingleChannelBlock (static_cast<size_t> (Channel::LEFT));
         auto rightBlock = subBlock.getSingleChannelBlock (static_cast<size_t> (Channel::RIGHT));
 
-        updateFilters (maxChunkSize);
+        updateFilters (static_cast<int> (maxChunkSize));
 
         leftChain.process (juce::dsp::ProcessContextReplacing<float> (leftBlock));
         rightChain.process (juce::dsp::ProcessContextReplacing<float> (rightBlock));
@@ -332,7 +332,7 @@ void EqualizerAudioProcessor::updateParameters()
     updateCutParameters<7> (FilterInfo::FilterType::LOWPASS);
 }
 
-void EqualizerAudioProcessor::updateFilters (const size_t chunkSize)
+void EqualizerAudioProcessor::updateFilters (int chunkSize)
 {
     bool onRealTimeThread = ! juce::MessageManager::getInstanceWithoutCreating()->isThisTheMessageThread();
 
