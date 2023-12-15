@@ -150,7 +150,7 @@ void EqualizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    performPreLoopUpdate (getSampleRate());
+    performPreLoopUpdate();
 
     auto block = juce::dsp::AudioBlock<float> (buffer);
 
@@ -164,7 +164,7 @@ void EqualizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
         auto leftBlock = subBlock.getSingleChannelBlock (static_cast<size_t> (Channel::LEFT));
         auto rightBlock = subBlock.getSingleChannelBlock (static_cast<size_t> (Channel::RIGHT));
 
-        performInnerLoopUpdate (getSampleRate(), maxChunkSize);
+        performInnerLoopUpdate (maxChunkSize);
 
         leftChain.process (juce::dsp::ProcessContextReplacing<float> (leftBlock));
         rightChain.process (juce::dsp::ProcessContextReplacing<float> (rightBlock));
@@ -199,7 +199,7 @@ void EqualizerAudioProcessor::setStateInformation (const void* data, int sizeInB
     if (tree.isValid())
     {
         apvts.replaceState (tree);
-        updateFilters();
+        initializeFilters (getSampleRate());
     }
 }
 
@@ -305,47 +305,49 @@ HighCutLowCutParameters EqualizerAudioProcessor::getCutParameters (int filterInd
 
 void EqualizerAudioProcessor::initializeFilters (double sampleRate)
 {
-    // am i on the audio thread here?
     bool onRealTimeThread = ! juce::MessageManager::getInstanceWithoutCreating()->isThisTheMessageThread();
-    auto rampTime = 0.05f;
-    //
-    // get filter params from apvts and initialize filters
-    auto lowPassParams = getCutParameters (0, FilterInfo::FilterType::LOWPASS);
-    leftChain.get<0>().initialize (lowPassParams, rampTime, onRealTimeThread, sampleRate);
-    rightChain.get<0>().initialize (lowPassParams, rampTime, onRealTimeThread, sampleRate);
+
+    const float RAMP_TIME_IN_SECONDS = 0.05f;
+
+    auto lowPassParams = getCutParameters (0, FilterInfo::FilterType::HIGHPASS);
+    leftChain.get<0>().initialize (lowPassParams, RAMP_TIME_IN_SECONDS, onRealTimeThread, sampleRate);
+    rightChain.get<0>().initialize (lowPassParams, RAMP_TIME_IN_SECONDS, onRealTimeThread, sampleRate);
 
     auto lowShelfParams = getParametricParameters (1, FilterInfo::FilterType::LOWSHELF);
-    leftChain.get<1>().initialize (lowShelfParams, rampTime, onRealTimeThread, sampleRate);
-    rightChain.get<1>().initialize (lowShelfParams, rampTime, onRealTimeThread, sampleRate);
+    leftChain.get<1>().initialize (lowShelfParams, RAMP_TIME_IN_SECONDS, onRealTimeThread, sampleRate);
+    rightChain.get<1>().initialize (lowShelfParams, RAMP_TIME_IN_SECONDS, onRealTimeThread, sampleRate);
 
     auto peakParams0 = getParametricParameters (2, FilterInfo::FilterType::PEAKFILTER);
-    leftChain.get<2>().initialize (peakParams0, rampTime, onRealTimeThread, sampleRate);
-    rightChain.get<2>().initialize (peakParams0, rampTime, onRealTimeThread, sampleRate);
+    leftChain.get<2>().initialize (peakParams0, RAMP_TIME_IN_SECONDS, onRealTimeThread, sampleRate);
+    rightChain.get<2>().initialize (peakParams0, RAMP_TIME_IN_SECONDS, onRealTimeThread, sampleRate);
 
     auto peakParams1 = getParametricParameters (3, FilterInfo::FilterType::PEAKFILTER);
-    leftChain.get<3>().initialize (peakParams1, rampTime, onRealTimeThread, sampleRate);
-    rightChain.get<3>().initialize (peakParams1, rampTime, onRealTimeThread, sampleRate);
+    leftChain.get<3>().initialize (peakParams1, RAMP_TIME_IN_SECONDS, onRealTimeThread, sampleRate);
+    rightChain.get<3>().initialize (peakParams1, RAMP_TIME_IN_SECONDS, onRealTimeThread, sampleRate);
 
     auto peakParams2 = getParametricParameters (4, FilterInfo::FilterType::PEAKFILTER);
-    leftChain.get<4>().initialize (peakParams2, rampTime, onRealTimeThread, sampleRate);
-    rightChain.get<4>().initialize (peakParams2, rampTime, onRealTimeThread, sampleRate);
+    leftChain.get<4>().initialize (peakParams2, RAMP_TIME_IN_SECONDS, onRealTimeThread, sampleRate);
+    rightChain.get<4>().initialize (peakParams2, RAMP_TIME_IN_SECONDS, onRealTimeThread, sampleRate);
 
     auto peakParams3 = getParametricParameters (5, FilterInfo::FilterType::PEAKFILTER);
-    leftChain.get<5>().initialize (peakParams3, rampTime, onRealTimeThread, sampleRate);
-    rightChain.get<5>().initialize (peakParams3, rampTime, onRealTimeThread, sampleRate);
+    leftChain.get<5>().initialize (peakParams3, RAMP_TIME_IN_SECONDS, onRealTimeThread, sampleRate);
+    rightChain.get<5>().initialize (peakParams3, RAMP_TIME_IN_SECONDS, onRealTimeThread, sampleRate);
 
     auto highShelfParams = getParametricParameters (6, FilterInfo::FilterType::HIGHSHELF);
-    leftChain.get<6>().initialize (highShelfParams, rampTime, onRealTimeThread, sampleRate);
-    rightChain.get<6>().initialize (highShelfParams, rampTime, onRealTimeThread, sampleRate);
+    leftChain.get<6>().initialize (highShelfParams, RAMP_TIME_IN_SECONDS, onRealTimeThread, sampleRate);
+    rightChain.get<6>().initialize (highShelfParams, RAMP_TIME_IN_SECONDS, onRealTimeThread, sampleRate);
 
-    auto highPassParams = getCutParameters (7, FilterInfo::FilterType::HIGHPASS);
-    leftChain.get<7>().initialize (highPassParams, rampTime, onRealTimeThread, sampleRate);
-    rightChain.get<7>().initialize (highPassParams, rampTime, onRealTimeThread, sampleRate);
+    auto highPassParams = getCutParameters (7, FilterInfo::FilterType::LOWPASS);
+    leftChain.get<7>().initialize (highPassParams, RAMP_TIME_IN_SECONDS, onRealTimeThread, sampleRate);
+    rightChain.get<7>().initialize (highPassParams, RAMP_TIME_IN_SECONDS, onRealTimeThread, sampleRate);
+
+    leftChain.reset();
+    rightChain.reset();
 }
 
-void EqualizerAudioProcessor::performPreLoopUpdate (const double sampleRate)
+void EqualizerAudioProcessor::performPreLoopUpdate()
 {
-    auto lowPassParams = getCutParameters (0, FilterInfo::FilterType::LOWPASS);
+    auto lowPassParams = getCutParameters (0, FilterInfo::FilterType::HIGHPASS);
     leftChain.get<0>().performPreloopUpdate (lowPassParams);
     rightChain.get<0>().performPreloopUpdate (lowPassParams);
 
@@ -373,7 +375,7 @@ void EqualizerAudioProcessor::performPreLoopUpdate (const double sampleRate)
     leftChain.get<6>().performPreloopUpdate (highShelfParams);
     rightChain.get<6>().performPreloopUpdate (highShelfParams);
 
-    auto highPassParams = getCutParameters (7, FilterInfo::FilterType::HIGHPASS);
+    auto highPassParams = getCutParameters (7, FilterInfo::FilterType::LOWPASS);
     leftChain.get<7>().performPreloopUpdate (highPassParams);
     rightChain.get<7>().performPreloopUpdate (highPassParams);
 }

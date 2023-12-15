@@ -1,5 +1,6 @@
 #pragma once
 
+#include "data/FilterParameters.h"
 #include "utils/Decibel.h"
 #include "utils/Fifo.h"
 #include "utils/FilterCoefficientGenerator.h"
@@ -29,6 +30,16 @@ struct IsParametricFilter : std::false_type
 
 template <>
 struct IsParametricFilter<Filter> : std::true_type
+{
+};
+
+template <typename ParamType>
+struct IsCutParameter : std::false_type
+{
+};
+
+template <>
+struct IsCutParameter<HighCutLowCutParameters> : std::true_type
 {
 };
 
@@ -68,7 +79,7 @@ struct FilterLink
             qualitySmoother.setTargetValue (currentParams.quality);
         }
 
-        if constexpr (! IsCutFilter<FilterType>::value)
+        if constexpr (! IsCutParameter<ParamType>::value)
         {
             if (! juce::approximatelyEqual (currentParams.gain, gainSmoother.getTargetValue()))
             {
@@ -85,8 +96,11 @@ struct FilterLink
         qualitySmoother.reset (sampleRate, rampTime);
         qualitySmoother.setCurrentAndTargetValue (currentParams.quality);
 
-        gainSmoother.reset (sampleRate, rampTime);
-        gainSmoother.setCurrentAndTargetValue (currentParams.gain);
+        if constexpr (! IsCutParameter<ParamType>::value)
+        {
+            gainSmoother.reset (sampleRate, rampTime);
+            gainSmoother.setCurrentAndTargetValue (currentParams.gain);
+        }
     }
 
     bool isSmoothing() const
@@ -94,7 +108,7 @@ struct FilterLink
         auto freqSmoothing = freqSmoother.isSmoothing();
         auto qualitySmoothing = qualitySmoother.isSmoothing();
         auto gainSmoothing = false;
-        if constexpr (! IsCutFilter<FilterType>::value)
+        if constexpr (! IsCutParameter<ParamType>::value)
         {
             gainSmoothing = gainSmoother.isSmoothing();
         }
@@ -113,7 +127,7 @@ struct FilterLink
     {
         freqSmoother.skip (numSamples);
         qualitySmoother.skip (numSamples);
-        if constexpr (! IsCutFilter<FilterType>::value)
+        if constexpr (! IsCutParameter<ParamType>::value)
         {
             gainSmoother.skip (numSamples);
         }
@@ -124,6 +138,7 @@ struct FilterLink
         if (params != currentParams)
         {
             shouldComputeNewCoefficients = true;
+            currentParams = params;
         }
     }
 
@@ -143,7 +158,14 @@ struct FilterLink
     {
         if (fromFifo)
         {
-            loadCoefficientsFromFifo();
+            if (coefficientsFifo.getNumAvailableForReading() > 0)
+            {
+                FifoDataType coefficients;
+                discardOldCoefficientsIfAny();
+                auto success = coefficientsFifo.pull (coefficients);
+                jassert (success);
+                updateCoefficients (coefficients);
+            }
         }
         else
         {
@@ -161,7 +183,7 @@ struct FilterLink
             params = currentParams;
             params.frequency = freqSmoother.getNextValue();
             params.quality = qualitySmoother.getNextValue();
-            if constexpr (! IsCutFilter<FilterType>::value)
+            if constexpr (! IsCutParameter<ParamType>::value)
             {
                 params.gain = gainSmoother.getNextValue().getGain();
             }
@@ -200,9 +222,9 @@ struct FilterLink
 private:
     static const size_t FIFO_SIZE = 20;
 
-    void loadCoefficientsFromFifo()
+    void discardOldCoefficientsIfAny()
     {
-        while (coefficientsFifo.getNumAvailableForReading() > 1)
+        while (coefficientsFifo.getNumAvailableForReading() > FIFO_SIZE)
         {
             FifoDataType unusedCoefficients;
             if (coefficientsFifo.pull (unusedCoefficients))
@@ -228,11 +250,10 @@ private:
                 jassertfalse; // coefficientsFifo is inconsistent
             }
         }
-        FifoDataType coefficients;
-        auto success = coefficientsFifo.pull (coefficients);
-        jassert (success);
+    }
 
-        updateCoefficients (coefficients);
+    FifoDataType loadCoefficientsFromFifo()
+    {
     }
 
     void updateFilterState (CoefficientsPtr& oldState, CoefficientsPtr newState)

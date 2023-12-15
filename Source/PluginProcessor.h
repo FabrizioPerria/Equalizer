@@ -11,6 +11,7 @@
 #include "data/FilterLink.h"
 #include "data/FilterParameters.h"
 #include "utils/CoefficientsMaker.h"
+#include "utils/FilterParam.h"
 #include "utils/FilterType.h"
 #include <JuceHeader.h>
 
@@ -122,7 +123,7 @@ private:
     HighCutLowCutParameters getCutParameters (int filterIndex, FilterInfo::FilterType filterType);
 
     void initializeFilters (const double sampleRate);
-    void performPreLoopUpdate (const double sampleRate);
+    void performPreLoopUpdate();
     void performInnerLoopUpdate (const size_t chunkSize);
 
     MonoChain leftChain, rightChain;
