@@ -31,22 +31,9 @@ enum class ChainPositions
     PEAK3,
     PEAK4,
     HIGHSHELF,
-    HIGHCUT,
-    NUM_FILTERS
+    HIGHCUT
 };
 
-// ====================================================================================================
-enum class Slope
-{
-    SLOPE_6,
-    SLOPE_12,
-    SLOPE_18,
-    SLOPE_24,
-    SLOPE_30,
-    SLOPE_36,
-    SLOPE_40,
-    SLOPE_48
-};
 // ====================================================================================================
 class EqualizerAudioProcessor : public juce::AudioProcessor
 {
