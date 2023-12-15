@@ -15,6 +15,12 @@
 #include <JuceHeader.h>
 
 //==============================================================================
+enum class Channel
+{
+    LEFT,
+    RIGHT
+};
+//==============================================================================
 enum class ChainPositions
 {
     LOWCUT,
@@ -115,7 +121,9 @@ private:
     FilterParameters getParametricParameters (int filterIndex, FilterInfo::FilterType filterType);
     HighCutLowCutParameters getCutParameters (int filterIndex, FilterInfo::FilterType filterType);
 
-    void updateFilters();
+    void initializeFilters (const double sampleRate);
+    void performPreLoopUpdate (const double sampleRate);
+    void performInnerLoopUpdate (const size_t chunkSize);
 
     MonoChain leftChain, rightChain;
 
