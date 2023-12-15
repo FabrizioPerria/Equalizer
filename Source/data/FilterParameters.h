@@ -1,6 +1,6 @@
 #pragma once
 
-#include "utils/FilterParam.h"
+#include "utils/Decibel.h"
 #include "utils/FilterType.h"
 #include <JuceHeader.h>
 
@@ -15,7 +15,7 @@ struct FilterParametersBase
 struct FilterParameters : FilterParametersBase
 {
     FilterInfo::FilterType type = FilterInfo::FilterType::ALLPASS;
-    float gain = 0.0f;
+    Decibel<float> gain { 0.0f };
 };
 
 struct HighCutLowCutParameters : public FilterParametersBase

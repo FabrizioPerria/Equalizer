@@ -289,7 +289,7 @@ FilterParametersBase EqualizerAudioProcessor::getBaseParameters (int filterIndex
 FilterParameters EqualizerAudioProcessor::getParametricParameters (int filterIndex, FilterInfo::FilterType filterType)
 {
     auto baseParams = getBaseParameters (filterIndex);
-    auto gainParam = getRawParameter (filterIndex, FilterInfo::FilterParam::GAIN);
+    auto gainParam = Decibel<float> (getRawParameter (filterIndex, FilterInfo::FilterParam::GAIN));
 
     return FilterParameters { baseParams, filterType, gainParam };
 }
