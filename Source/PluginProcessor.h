@@ -77,6 +77,7 @@ public:
 
     juce::AudioProcessorValueTreeState apvts { *this, nullptr, "Params", createParameterLayout() };
 
+    using GainTrim = juce::dsp::Gain<float>;
     using Filter = juce::dsp::IIR::Filter<float>;
     using Coefficients = juce::dsp::IIR::Coefficients<float>;
     using CoefficientsPtr = Coefficients::Ptr;
@@ -139,10 +140,12 @@ private:
         }
     }
 
+    static void addGainTrimParameterToLayout (juce::AudioProcessorValueTreeState::ParameterLayout& layout, const juce::String& name);
+
     static juce::StringArray getSlopeNames();
 
-    float getRawParameter (int filterIndex, FilterInfo::FilterParam filterParameter);
-
+    float getRawParameter (const juce::String& name);
+    float getRawFilterParameter (int filterIndex, FilterInfo::FilterParam filterParameter);
     FilterParametersBase getBaseParameters (int filterIndex);
     FilterParameters getParametricParameters (int filterIndex, FilterInfo::FilterType filterType);
     HighCutLowCutParameters getCutParameters (int filterIndex, FilterInfo::FilterType filterType);
@@ -197,7 +200,10 @@ private:
         rightChain.get<filterIndex>().performInnerLoopFilterUpdate (onRealTimeThread, chunkSize);
     }
 
+    void updateTrimGains();
+
     MonoChain leftChain, rightChain;
+    GainTrim inputGain, outputGain;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (EqualizerAudioProcessor)

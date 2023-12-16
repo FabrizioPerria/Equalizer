@@ -103,6 +103,10 @@ void EqualizerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBl
     leftChain.prepare (spec);
     rightChain.prepare (spec);
 
+    spec.numChannels = 2;
+    inputGain.prepare (spec);
+    outputGain.prepare (spec);
+
     initializeFilters();
 }
 
@@ -150,9 +154,11 @@ void EqualizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
+    updateTrimGains();
     updateParameters();
 
     auto block = juce::dsp::AudioBlock<float> (buffer);
+    inputGain.process (juce::dsp::ProcessContextReplacing<float> (block));
 
     const size_t SUB_BLOCK_MAX_SIZE = 32;
     for (size_t offset = 0; offset < block.getNumSamples();)
@@ -171,6 +177,8 @@ void EqualizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
 
         offset += maxChunkSize;
     }
+
+    outputGain.process (juce::dsp::ProcessContextReplacing<float> (block));
 }
 
 //==============================================================================
@@ -214,6 +222,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout EqualizerAudioProcessor::cre
 {
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
 
+    addGainTrimParameterToLayout (layout, "input_gain");
     addFilterParameterToLayout<ChainPositions::LOWCUT> (layout, true);
     addFilterParameterToLayout<ChainPositions::LOWSHELF> (layout, false);
     addFilterParameterToLayout<ChainPositions::PEAK1> (layout, false);
@@ -222,8 +231,15 @@ juce::AudioProcessorValueTreeState::ParameterLayout EqualizerAudioProcessor::cre
     addFilterParameterToLayout<ChainPositions::PEAK4> (layout, false);
     addFilterParameterToLayout<ChainPositions::HIGHSHELF> (layout, false);
     addFilterParameterToLayout<ChainPositions::HIGHCUT> (layout, true);
+    addGainTrimParameterToLayout (layout, "output_gain");
 
     return layout;
+}
+
+void EqualizerAudioProcessor::addGainTrimParameterToLayout (juce::AudioProcessorValueTreeState::ParameterLayout& layout,
+                                                            const juce::String& name)
+{
+    layout.add (std::make_unique<juce::AudioParameterFloat> (name, name, juce::NormalisableRange<float> (-18.0f, 18.0f, 0.1f), 0.0f));
 }
 
 juce::StringArray EqualizerAudioProcessor::getSlopeNames()
@@ -240,18 +256,23 @@ juce::StringArray EqualizerAudioProcessor::getSlopeNames()
     return slopeNames;
 }
 
-float EqualizerAudioProcessor::getRawParameter (int filterIndex, FilterInfo::FilterParam filterParameter)
+float EqualizerAudioProcessor::getRawParameter (const juce::String& name)
+{
+    return apvts.getRawParameterValue (name)->load();
+}
+
+float EqualizerAudioProcessor::getRawFilterParameter (int filterIndex, FilterInfo::FilterParam filterParameter)
 {
     auto name = FilterInfo::getParameterName (filterIndex, filterParameter);
-    return apvts.getRawParameterValue (name)->load();
+    return getRawParameter (name);
 }
 
 FilterParametersBase EqualizerAudioProcessor::getBaseParameters (int filterIndex)
 {
-    auto frequencyParam = getRawParameter (filterIndex, FilterInfo::FilterParam::FREQUENCY);
-    auto bypassParamRaw = getRawParameter (filterIndex, FilterInfo::FilterParam::BYPASS);
+    auto frequencyParam = getRawFilterParameter (filterIndex, FilterInfo::FilterParam::FREQUENCY);
+    auto bypassParamRaw = getRawFilterParameter (filterIndex, FilterInfo::FilterParam::BYPASS);
     auto bypassParam = bypassParamRaw > 0.5f;
-    auto qParam = getRawParameter (filterIndex, FilterInfo::FilterParam::Q);
+    auto qParam = getRawFilterParameter (filterIndex, FilterInfo::FilterParam::Q);
 
     return FilterParametersBase { frequencyParam, bypassParam, qParam, getSampleRate() };
 }
@@ -259,7 +280,7 @@ FilterParametersBase EqualizerAudioProcessor::getBaseParameters (int filterIndex
 FilterParameters EqualizerAudioProcessor::getParametricParameters (int filterIndex, FilterInfo::FilterType filterType)
 {
     auto baseParams = getBaseParameters (filterIndex);
-    auto gainParam = Decibel<float> (getRawParameter (filterIndex, FilterInfo::FilterParam::GAIN));
+    auto gainParam = Decibel<float> (getRawFilterParameter (filterIndex, FilterInfo::FilterParam::GAIN));
 
     return FilterParameters { baseParams, filterType, gainParam };
 }
@@ -268,7 +289,7 @@ HighCutLowCutParameters EqualizerAudioProcessor::getCutParameters (int filterInd
 {
     auto baseParams = getBaseParameters (filterIndex);
     auto isLowCutParam = filterType == FilterInfo::FilterType::HIGHPASS;
-    auto slopeParam = static_cast<int> (getRawParameter (filterIndex, FilterInfo::FilterParam::SLOPE));
+    auto slopeParam = static_cast<int> (getRawFilterParameter (filterIndex, FilterInfo::FilterParam::SLOPE));
 
     return HighCutLowCutParameters { baseParams, slopeParam, isLowCutParam };
 }
@@ -314,4 +335,13 @@ void EqualizerAudioProcessor::updateFilters (int chunkSize)
     updateFilter<ChainPositions::PEAK4> (onRealTimeThread, chunkSize);
     updateFilter<ChainPositions::HIGHSHELF> (onRealTimeThread, chunkSize);
     updateFilter<ChainPositions::HIGHCUT> (onRealTimeThread, chunkSize);
+}
+
+void EqualizerAudioProcessor::updateTrimGains()
+{
+    auto inputGainRaw = getRawParameter ("input_gain");
+    auto outputGainRaw = getRawParameter ("output_gain");
+
+    inputGain.setGainDecibels (inputGainRaw);
+    outputGain.setGainDecibels (outputGainRaw);
 }
