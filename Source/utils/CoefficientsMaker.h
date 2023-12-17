@@ -1,6 +1,7 @@
 #pragma once
 
 #include "data/FilterParameters.h"
+#include "utils/EqCutFilterDesign.h"
 #include "utils/FilterType.h"
 #include <JuceHeader.h>
 
@@ -53,10 +54,15 @@ struct CoefficientsMaker
 
     static juce::ReferenceCountedArray<juce::dsp::IIR::Coefficients<FloatType>> make (const HighCutLowCutParameters& params)
     {
-        using FilterDesign = juce::dsp::FilterDesign<FloatType>;
         if (params.isLowCut)
-            return FilterDesign::designIIRHighpassHighOrderButterworthMethod (params.frequency, params.sampleRate, params.order + 1);
+            return EqCutFilterDesign::designIIRHighpassHighOrderButterworthMethod (params.frequency,
+                                                                                   params.sampleRate,
+                                                                                   params.order + 1,
+                                                                                   params.quality);
 
-        return FilterDesign::designIIRLowpassHighOrderButterworthMethod (params.frequency, params.sampleRate, params.order + 1);
+        return EqCutFilterDesign::designIIRLowpassHighOrderButterworthMethod (params.frequency,
+                                                                              params.sampleRate,
+                                                                              params.order + 1,
+                                                                              params.quality);
     }
 };
