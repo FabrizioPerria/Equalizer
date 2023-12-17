@@ -120,8 +120,8 @@ private:
         name = FilterInfo::getParameterName (index, FilterInfo::FilterParam::Q);
         layout.add (std::make_unique<juce::AudioParameterFloat> (juce::ParameterID { name, 1 },
                                                                  name,
-                                                                 juce::NormalisableRange<float> (0.1f, 10.0f, 0.1f),
-                                                                 1.0f));
+                                                                 juce::NormalisableRange<float> (0.1f, 10.0f, 0.01f),
+                                                                 0.71f));
         if (isCutFilter)
         {
             name = FilterInfo::getParameterName (index, FilterInfo::FilterParam::SLOPE);
