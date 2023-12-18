@@ -11,6 +11,7 @@
 #include "data/FilterLink.h"
 #include "data/FilterParameters.h"
 #include "utils/CoefficientsMaker.h"
+#include "utils/EqParam.h"
 #include "utils/FilterParam.h"
 #include "utils/FilterType.h"
 #include "utils/MidSideProcessor.h"
@@ -154,48 +155,52 @@ private:
     void initializeFilters();
 
     template <ChainPositions FilterPosition>
-    void initializeCutFilter (FilterInfo::FilterType filterType, bool onRealTimeThread)
+    void initializeCutFilter (FilterInfo::FilterType filterType, EqMode mode, bool onRealTimeThread)
     {
         const int filterIndex = static_cast<int> (FilterPosition);
         auto leftCutParams = getCutParameters (filterIndex, Channel::LEFT, filterType);
         leftChain.get<filterIndex>().initialize (leftCutParams, RAMP_TIME_IN_SECONDS, onRealTimeThread, getSampleRate());
 
-        auto rightCutParams = getCutParameters (filterIndex, Channel::RIGHT, filterType);
+        auto rightCutParams = mode == EqMode::STEREO ? leftCutParams //
+                                                     : getCutParameters (filterIndex, Channel::RIGHT, filterType);
         rightChain.get<filterIndex>().initialize (rightCutParams, RAMP_TIME_IN_SECONDS, onRealTimeThread, getSampleRate());
     }
 
     template <ChainPositions FilterPosition>
-    void initializeParametricFilter (FilterInfo::FilterType filterType, bool onRealTimeThread)
+    void initializeParametricFilter (FilterInfo::FilterType filterType, EqMode mode, bool onRealTimeThread)
     {
         const int filterIndex = static_cast<int> (FilterPosition);
         auto leftParametricParams = getParametricParameters (filterIndex, Channel::LEFT, filterType);
         leftChain.get<filterIndex>().initialize (leftParametricParams, RAMP_TIME_IN_SECONDS, onRealTimeThread, getSampleRate());
 
-        auto rightParametricParams = getParametricParameters (filterIndex, Channel::RIGHT, filterType);
+        auto rightParametricParams = mode == EqMode::STEREO ? leftParametricParams
+                                                            : getParametricParameters (filterIndex, Channel::RIGHT, filterType);
         rightChain.get<filterIndex>().initialize (rightParametricParams, RAMP_TIME_IN_SECONDS, onRealTimeThread, getSampleRate());
     }
 
-    void updateParameters();
+    void updateParameters (EqMode mode);
 
     template <ChainPositions FilterPosition>
-    void updateCutParameters (FilterInfo::FilterType filterType)
+    void updateCutParameters (FilterInfo::FilterType filterType, EqMode mode)
     {
         const int filterIndex = static_cast<int> (FilterPosition);
         auto leftCutParams = getCutParameters (filterIndex, Channel::LEFT, filterType);
         leftChain.get<filterIndex>().performPreloopUpdate (leftCutParams);
 
-        auto rightCutParams = getCutParameters (filterIndex, Channel::RIGHT, filterType);
+        auto rightCutParams = mode == EqMode::STEREO ? leftCutParams //
+                                                     : getCutParameters (filterIndex, Channel::RIGHT, filterType);
         rightChain.get<filterIndex>().performPreloopUpdate (rightCutParams);
     }
 
     template <ChainPositions FilterPosition>
-    void updateParametricParameters (FilterInfo::FilterType filterType)
+    void updateParametricParameters (FilterInfo::FilterType filterType, EqMode mode)
     {
         const int filterIndex = static_cast<int> (FilterPosition);
         auto leftParametricParams = getParametricParameters (filterIndex, Channel::LEFT, filterType);
         leftChain.get<filterIndex>().performPreloopUpdate (leftParametricParams);
 
-        auto rightParametricParams = getParametricParameters (filterIndex, Channel::RIGHT, filterType);
+        auto rightParametricParams = mode == EqMode::STEREO ? leftParametricParams //
+                                                            : getParametricParameters (filterIndex, Channel::RIGHT, filterType);
         rightChain.get<filterIndex>().performPreloopUpdate (rightParametricParams);
     }
 
