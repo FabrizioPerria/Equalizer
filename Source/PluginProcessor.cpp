@@ -8,6 +8,7 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "utils/EqParam.h"
 #include "utils/FilterParam.h"
 #include "utils/FilterType.h"
 
@@ -155,10 +156,17 @@ void EqualizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
         buffer.clear (i, 0, buffer.getNumSamples());
 
     updateTrimGains();
-    updateParameters();
+
+    auto mode = getEqMode();
+    updateParameters (mode);
 
     auto block = juce::dsp::AudioBlock<float> (buffer);
     inputGain.process (juce::dsp::ProcessContextReplacing<float> (block));
+
+    if (mode == EqMode::MID_SIDE)
+    {
+        midSideProcessor.process (juce::dsp::ProcessContextReplacing<float> (block));
+    }
 
     const size_t SUB_BLOCK_MAX_SIZE = 32;
     for (size_t offset = 0; offset < block.getNumSamples();)
@@ -176,6 +184,11 @@ void EqualizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
         rightChain.process (juce::dsp::ProcessContextReplacing<float> (rightBlock));
 
         offset += maxChunkSize;
+    }
+
+    if (mode == EqMode::MID_SIDE)
+    {
+        midSideProcessor.process (juce::dsp::ProcessContextReplacing<float> (block));
     }
 
     outputGain.process (juce::dsp::ProcessContextReplacing<float> (block));
@@ -222,6 +235,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout EqualizerAudioProcessor::cre
 {
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
 
+    addEqModeParameterToLayout (layout);
     addGainTrimParameterToLayout (layout, "input_gain");
     addFilterParameterToLayout<ChainPositions::LOWCUT> (layout, true);
     addFilterParameterToLayout<ChainPositions::LOWSHELF> (layout, false);
@@ -234,6 +248,14 @@ juce::AudioProcessorValueTreeState::ParameterLayout EqualizerAudioProcessor::cre
     addGainTrimParameterToLayout (layout, "output_gain");
 
     return layout;
+}
+
+void EqualizerAudioProcessor::addEqModeParameterToLayout (juce::AudioProcessorValueTreeState::ParameterLayout& layout)
+{
+    layout.add (std::make_unique<juce::AudioParameterChoice> ("eq_mode",
+                                                              "eq_mode",
+                                                              juce::StringArray { "Stereo", "Dual Mono", "Mid/Side" },
+                                                              0));
 }
 
 void EqualizerAudioProcessor::addGainTrimParameterToLayout (juce::AudioProcessorValueTreeState::ParameterLayout& layout,
@@ -294,33 +316,39 @@ HighCutLowCutParameters EqualizerAudioProcessor::getCutParameters (int filterInd
     return HighCutLowCutParameters { baseParams, slopeParam, isLowCutParam };
 }
 
+EqMode EqualizerAudioProcessor::getEqMode()
+{
+    return static_cast<EqMode> (getRawParameter ("eq_mode"));
+}
+
 void EqualizerAudioProcessor::initializeFilters()
 {
     bool onRealTimeThread = ! juce::MessageManager::getInstanceWithoutCreating()->isThisTheMessageThread();
 
-    initializeCutFilter<ChainPositions::LOWCUT> (FilterInfo::FilterType::HIGHPASS, onRealTimeThread);
-    initializeParametricFilter<ChainPositions::LOWSHELF> (FilterInfo::FilterType::LOWSHELF, onRealTimeThread);
-    initializeParametricFilter<ChainPositions::PEAK1> (FilterInfo::FilterType::PEAKFILTER, onRealTimeThread);
-    initializeParametricFilter<ChainPositions::PEAK2> (FilterInfo::FilterType::PEAKFILTER, onRealTimeThread);
-    initializeParametricFilter<ChainPositions::PEAK3> (FilterInfo::FilterType::PEAKFILTER, onRealTimeThread);
-    initializeParametricFilter<ChainPositions::PEAK4> (FilterInfo::FilterType::PEAKFILTER, onRealTimeThread);
-    initializeParametricFilter<ChainPositions::HIGHSHELF> (FilterInfo::FilterType::HIGHSHELF, onRealTimeThread);
-    initializeCutFilter<ChainPositions::HIGHCUT> (FilterInfo::FilterType::LOWPASS, onRealTimeThread);
+    auto mode = getEqMode();
+    initializeCutFilter<ChainPositions::LOWCUT> (FilterInfo::FilterType::HIGHPASS, mode, onRealTimeThread);
+    initializeParametricFilter<ChainPositions::LOWSHELF> (FilterInfo::FilterType::LOWSHELF, mode, onRealTimeThread);
+    initializeParametricFilter<ChainPositions::PEAK1> (FilterInfo::FilterType::PEAKFILTER, mode, onRealTimeThread);
+    initializeParametricFilter<ChainPositions::PEAK2> (FilterInfo::FilterType::PEAKFILTER, mode, onRealTimeThread);
+    initializeParametricFilter<ChainPositions::PEAK3> (FilterInfo::FilterType::PEAKFILTER, mode, onRealTimeThread);
+    initializeParametricFilter<ChainPositions::PEAK4> (FilterInfo::FilterType::PEAKFILTER, mode, onRealTimeThread);
+    initializeParametricFilter<ChainPositions::HIGHSHELF> (FilterInfo::FilterType::HIGHSHELF, mode, onRealTimeThread);
+    initializeCutFilter<ChainPositions::HIGHCUT> (FilterInfo::FilterType::LOWPASS, mode, onRealTimeThread);
 
     leftChain.reset();
     rightChain.reset();
 }
 
-void EqualizerAudioProcessor::updateParameters()
+void EqualizerAudioProcessor::updateParameters (EqMode mode)
 {
-    updateCutParameters<ChainPositions::LOWCUT> (FilterInfo::FilterType::HIGHPASS);
-    updateParametricParameters<ChainPositions::LOWSHELF> (FilterInfo::FilterType::LOWSHELF);
-    updateParametricParameters<ChainPositions::PEAK1> (FilterInfo::FilterType::PEAKFILTER);
-    updateParametricParameters<ChainPositions::PEAK2> (FilterInfo::FilterType::PEAKFILTER);
-    updateParametricParameters<ChainPositions::PEAK3> (FilterInfo::FilterType::PEAKFILTER);
-    updateParametricParameters<ChainPositions::PEAK4> (FilterInfo::FilterType::PEAKFILTER);
-    updateParametricParameters<ChainPositions::HIGHSHELF> (FilterInfo::FilterType::HIGHSHELF);
-    updateCutParameters<ChainPositions::HIGHCUT> (FilterInfo::FilterType::LOWPASS);
+    updateCutParameters<ChainPositions::LOWCUT> (FilterInfo::FilterType::HIGHPASS, mode);
+    updateParametricParameters<ChainPositions::LOWSHELF> (FilterInfo::FilterType::LOWSHELF, mode);
+    updateParametricParameters<ChainPositions::PEAK1> (FilterInfo::FilterType::PEAKFILTER, mode);
+    updateParametricParameters<ChainPositions::PEAK2> (FilterInfo::FilterType::PEAKFILTER, mode);
+    updateParametricParameters<ChainPositions::PEAK3> (FilterInfo::FilterType::PEAKFILTER, mode);
+    updateParametricParameters<ChainPositions::PEAK4> (FilterInfo::FilterType::PEAKFILTER, mode);
+    updateParametricParameters<ChainPositions::HIGHSHELF> (FilterInfo::FilterType::HIGHSHELF, mode);
+    updateCutParameters<ChainPositions::HIGHCUT> (FilterInfo::FilterType::LOWPASS, mode);
 }
 
 void EqualizerAudioProcessor::updateFilters (int chunkSize)
