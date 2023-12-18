@@ -222,6 +222,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout EqualizerAudioProcessor::cre
 {
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
 
+    addEqModeParameterToLayout (layout);
     addGainTrimParameterToLayout (layout, "input_gain");
     addFilterParameterToLayout<ChainPositions::LOWCUT> (layout, true);
     addFilterParameterToLayout<ChainPositions::LOWSHELF> (layout, false);
@@ -234,6 +235,14 @@ juce::AudioProcessorValueTreeState::ParameterLayout EqualizerAudioProcessor::cre
     addGainTrimParameterToLayout (layout, "output_gain");
 
     return layout;
+}
+
+void EqualizerAudioProcessor::addEqModeParameterToLayout (juce::AudioProcessorValueTreeState::ParameterLayout& layout)
+{
+    layout.add (std::make_unique<juce::AudioParameterChoice> ("eq_mode",
+                                                              "eq_mode",
+                                                              juce::StringArray { "Stereo", "Dual Mono", "Mid/Side" },
+                                                              0));
 }
 
 void EqualizerAudioProcessor::addGainTrimParameterToLayout (juce::AudioProcessorValueTreeState::ParameterLayout& layout,
@@ -292,6 +301,11 @@ HighCutLowCutParameters EqualizerAudioProcessor::getCutParameters (int filterInd
     auto slopeParam = static_cast<int> (getRawFilterParameter (filterIndex, audioChannel, FilterInfo::FilterParam::SLOPE));
 
     return HighCutLowCutParameters { baseParams, slopeParam, isLowCutParam };
+}
+
+EqMode EqualizerAudioProcessor::getEqMode()
+{
+    return static_cast<EqMode> (getRawParameter ("eq_mode"));
 }
 
 void EqualizerAudioProcessor::initializeFilters()

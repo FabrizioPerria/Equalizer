@@ -13,6 +13,7 @@
 #include "utils/CoefficientsMaker.h"
 #include "utils/FilterParam.h"
 #include "utils/FilterType.h"
+#include "utils/MidSideProcessor.h"
 #include <JuceHeader.h>
 
 //==============================================================================
@@ -137,6 +138,7 @@ private:
         }
     }
 
+    static void addEqModeParameterToLayout (juce::AudioProcessorValueTreeState::ParameterLayout& layout);
     static void addGainTrimParameterToLayout (juce::AudioProcessorValueTreeState::ParameterLayout& layout, const juce::String& name);
 
     static juce::StringArray getSlopeNames();
@@ -146,6 +148,8 @@ private:
     FilterParametersBase getBaseParameters (int filterIndex, Channel audioChannel);
     FilterParameters getParametricParameters (int filterIndex, Channel audioChannel, FilterInfo::FilterType filterType);
     HighCutLowCutParameters getCutParameters (int filterIndex, Channel audioChannel, FilterInfo::FilterType filterType);
+
+    EqMode getEqMode();
 
     void initializeFilters();
 
@@ -209,6 +213,8 @@ private:
 
     MonoChain leftChain, rightChain;
     GainTrim inputGain, outputGain;
+
+    MidSideProcessor midSideProcessor;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (EqualizerAudioProcessor)
