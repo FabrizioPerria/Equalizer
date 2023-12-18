@@ -16,12 +16,6 @@
 #include <JuceHeader.h>
 
 //==============================================================================
-enum class Channel
-{
-    LEFT,
-    RIGHT
-};
-//==============================================================================
 enum class ChainPositions
 {
     LOWCUT,
@@ -104,39 +98,42 @@ private:
     template <ChainPositions FilterPosition>
     static void addFilterParameterToLayout (juce::AudioProcessorValueTreeState::ParameterLayout& layout, bool isCutFilter)
     {
-        auto index = static_cast<int> (FilterPosition);
-        auto name = FilterInfo::getParameterName (index, FilterInfo::FilterParam::BYPASS);
-        layout.add (std::make_unique<juce::AudioParameterBool> (juce::ParameterID { name, 1 }, //
-                                                                name,
-                                                                false));
-
-        name = FilterInfo::getParameterName (index, FilterInfo::FilterParam::FREQUENCY);
-        auto range = juce::NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.25f);
-        layout.add (std::make_unique<juce::AudioParameterFloat> (juce::ParameterID { name, 1 }, //
-                                                                 name,
-                                                                 range,
-                                                                 20.0f));
-
-        name = FilterInfo::getParameterName (index, FilterInfo::FilterParam::Q);
-        layout.add (std::make_unique<juce::AudioParameterFloat> (juce::ParameterID { name, 1 },
-                                                                 name,
-                                                                 juce::NormalisableRange<float> (0.1f, 10.0f, 0.01f),
-                                                                 0.71f));
-        if (isCutFilter)
+        for (auto audioChannel : { Channel::LEFT, Channel::RIGHT })
         {
-            name = FilterInfo::getParameterName (index, FilterInfo::FilterParam::SLOPE);
-            layout.add (std::make_unique<juce::AudioParameterChoice> (juce::ParameterID { name, 1 }, //
-                                                                      name,
-                                                                      getSlopeNames(),
-                                                                      0));
-        }
-        else
-        {
-            name = FilterInfo::getParameterName (index, FilterInfo::FilterParam::GAIN);
+            auto index = static_cast<int> (FilterPosition);
+            auto name = FilterInfo::getParameterName (index, audioChannel, FilterInfo::FilterParam::BYPASS);
+            layout.add (std::make_unique<juce::AudioParameterBool> (juce::ParameterID { name, 1 }, //
+                                                                    name,
+                                                                    false));
+
+            name = FilterInfo::getParameterName (index, audioChannel, FilterInfo::FilterParam::FREQUENCY);
+            auto range = juce::NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.25f);
+            layout.add (std::make_unique<juce::AudioParameterFloat> (juce::ParameterID { name, 1 }, //
+                                                                     name,
+                                                                     range,
+                                                                     20.0f));
+
+            name = FilterInfo::getParameterName (index, audioChannel, FilterInfo::FilterParam::Q);
             layout.add (std::make_unique<juce::AudioParameterFloat> (juce::ParameterID { name, 1 },
                                                                      name,
-                                                                     juce::NormalisableRange<float> (-24.0f, 24.0f, 0.1f),
-                                                                     0.0f));
+                                                                     juce::NormalisableRange<float> (0.1f, 10.0f, 0.01f),
+                                                                     0.71f));
+            if (isCutFilter)
+            {
+                name = FilterInfo::getParameterName (index, audioChannel, FilterInfo::FilterParam::SLOPE);
+                layout.add (std::make_unique<juce::AudioParameterChoice> (juce::ParameterID { name, 1 }, //
+                                                                          name,
+                                                                          getSlopeNames(),
+                                                                          0));
+            }
+            else
+            {
+                name = FilterInfo::getParameterName (index, audioChannel, FilterInfo::FilterParam::GAIN);
+                layout.add (std::make_unique<juce::AudioParameterFloat> (juce::ParameterID { name, 1 },
+                                                                         name,
+                                                                         juce::NormalisableRange<float> (-24.0f, 24.0f, 0.1f),
+                                                                         0.0f));
+            }
         }
     }
 
@@ -145,10 +142,10 @@ private:
     static juce::StringArray getSlopeNames();
 
     float getRawParameter (const juce::String& name);
-    float getRawFilterParameter (int filterIndex, FilterInfo::FilterParam filterParameter);
-    FilterParametersBase getBaseParameters (int filterIndex);
-    FilterParameters getParametricParameters (int filterIndex, FilterInfo::FilterType filterType);
-    HighCutLowCutParameters getCutParameters (int filterIndex, FilterInfo::FilterType filterType);
+    float getRawFilterParameter (int filterIndex, Channel audioChannel, FilterInfo::FilterParam filterParameter);
+    FilterParametersBase getBaseParameters (int filterIndex, Channel audioChannel);
+    FilterParameters getParametricParameters (int filterIndex, Channel audioChannel, FilterInfo::FilterType filterType);
+    HighCutLowCutParameters getCutParameters (int filterIndex, Channel audioChannel, FilterInfo::FilterType filterType);
 
     void initializeFilters();
 
@@ -156,18 +153,22 @@ private:
     void initializeCutFilter (FilterInfo::FilterType filterType, bool onRealTimeThread)
     {
         const int filterIndex = static_cast<int> (FilterPosition);
-        auto cutParams = getCutParameters (filterIndex, filterType);
-        leftChain.get<filterIndex>().initialize (cutParams, RAMP_TIME_IN_SECONDS, onRealTimeThread, getSampleRate());
-        rightChain.get<filterIndex>().initialize (cutParams, RAMP_TIME_IN_SECONDS, onRealTimeThread, getSampleRate());
+        auto leftCutParams = getCutParameters (filterIndex, Channel::LEFT, filterType);
+        leftChain.get<filterIndex>().initialize (leftCutParams, RAMP_TIME_IN_SECONDS, onRealTimeThread, getSampleRate());
+
+        auto rightCutParams = getCutParameters (filterIndex, Channel::RIGHT, filterType);
+        rightChain.get<filterIndex>().initialize (rightCutParams, RAMP_TIME_IN_SECONDS, onRealTimeThread, getSampleRate());
     }
 
     template <ChainPositions FilterPosition>
     void initializeParametricFilter (FilterInfo::FilterType filterType, bool onRealTimeThread)
     {
         const int filterIndex = static_cast<int> (FilterPosition);
-        auto parametricParams = getParametricParameters (filterIndex, filterType);
-        leftChain.get<filterIndex>().initialize (parametricParams, RAMP_TIME_IN_SECONDS, onRealTimeThread, getSampleRate());
-        rightChain.get<filterIndex>().initialize (parametricParams, RAMP_TIME_IN_SECONDS, onRealTimeThread, getSampleRate());
+        auto leftParametricParams = getParametricParameters (filterIndex, Channel::LEFT, filterType);
+        leftChain.get<filterIndex>().initialize (leftParametricParams, RAMP_TIME_IN_SECONDS, onRealTimeThread, getSampleRate());
+
+        auto rightParametricParams = getParametricParameters (filterIndex, Channel::RIGHT, filterType);
+        rightChain.get<filterIndex>().initialize (rightParametricParams, RAMP_TIME_IN_SECONDS, onRealTimeThread, getSampleRate());
     }
 
     void updateParameters();
@@ -176,18 +177,22 @@ private:
     void updateCutParameters (FilterInfo::FilterType filterType)
     {
         const int filterIndex = static_cast<int> (FilterPosition);
-        auto cutParams = getCutParameters (filterIndex, filterType);
-        leftChain.get<filterIndex>().performPreloopUpdate (cutParams);
-        rightChain.get<filterIndex>().performPreloopUpdate (cutParams);
+        auto leftCutParams = getCutParameters (filterIndex, Channel::LEFT, filterType);
+        leftChain.get<filterIndex>().performPreloopUpdate (leftCutParams);
+
+        auto rightCutParams = getCutParameters (filterIndex, Channel::RIGHT, filterType);
+        rightChain.get<filterIndex>().performPreloopUpdate (rightCutParams);
     }
 
     template <ChainPositions FilterPosition>
     void updateParametricParameters (FilterInfo::FilterType filterType)
     {
         const int filterIndex = static_cast<int> (FilterPosition);
-        auto parametricParams = getParametricParameters (filterIndex, filterType);
-        leftChain.get<filterIndex>().performPreloopUpdate (parametricParams);
-        rightChain.get<filterIndex>().performPreloopUpdate (parametricParams);
+        auto leftParametricParams = getParametricParameters (filterIndex, Channel::LEFT, filterType);
+        leftChain.get<filterIndex>().performPreloopUpdate (leftParametricParams);
+
+        auto rightParametricParams = getParametricParameters (filterIndex, Channel::RIGHT, filterType);
+        rightChain.get<filterIndex>().performPreloopUpdate (rightParametricParams);
     }
 
     void updateFilters (int chunkSize);

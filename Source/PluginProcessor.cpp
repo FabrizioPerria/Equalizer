@@ -261,35 +261,35 @@ float EqualizerAudioProcessor::getRawParameter (const juce::String& name)
     return apvts.getRawParameterValue (name)->load();
 }
 
-float EqualizerAudioProcessor::getRawFilterParameter (int filterIndex, FilterInfo::FilterParam filterParameter)
+float EqualizerAudioProcessor::getRawFilterParameter (int filterIndex, Channel audioChannel, FilterInfo::FilterParam filterParameter)
 {
-    auto name = FilterInfo::getParameterName (filterIndex, filterParameter);
+    auto name = FilterInfo::getParameterName (filterIndex, audioChannel, filterParameter);
     return getRawParameter (name);
 }
 
-FilterParametersBase EqualizerAudioProcessor::getBaseParameters (int filterIndex)
+FilterParametersBase EqualizerAudioProcessor::getBaseParameters (int filterIndex, Channel audioChannel)
 {
-    auto frequencyParam = getRawFilterParameter (filterIndex, FilterInfo::FilterParam::FREQUENCY);
-    auto bypassParamRaw = getRawFilterParameter (filterIndex, FilterInfo::FilterParam::BYPASS);
+    auto frequencyParam = getRawFilterParameter (filterIndex, audioChannel, FilterInfo::FilterParam::FREQUENCY);
+    auto bypassParamRaw = getRawFilterParameter (filterIndex, audioChannel, FilterInfo::FilterParam::BYPASS);
     auto bypassParam = bypassParamRaw > 0.5f;
-    auto qParam = getRawFilterParameter (filterIndex, FilterInfo::FilterParam::Q);
+    auto qParam = getRawFilterParameter (filterIndex, audioChannel, FilterInfo::FilterParam::Q);
 
     return FilterParametersBase { frequencyParam, bypassParam, qParam, getSampleRate() };
 }
 
-FilterParameters EqualizerAudioProcessor::getParametricParameters (int filterIndex, FilterInfo::FilterType filterType)
+FilterParameters EqualizerAudioProcessor::getParametricParameters (int filterIndex, Channel audioChannel, FilterInfo::FilterType filterType)
 {
-    auto baseParams = getBaseParameters (filterIndex);
-    auto gainParam = Decibel<float> (getRawFilterParameter (filterIndex, FilterInfo::FilterParam::GAIN));
+    auto baseParams = getBaseParameters (filterIndex, audioChannel);
+    auto gainParam = Decibel<float> (getRawFilterParameter (filterIndex, audioChannel, FilterInfo::FilterParam::GAIN));
 
     return FilterParameters { baseParams, filterType, gainParam };
 }
 
-HighCutLowCutParameters EqualizerAudioProcessor::getCutParameters (int filterIndex, FilterInfo::FilterType filterType)
+HighCutLowCutParameters EqualizerAudioProcessor::getCutParameters (int filterIndex, Channel audioChannel, FilterInfo::FilterType filterType)
 {
-    auto baseParams = getBaseParameters (filterIndex);
+    auto baseParams = getBaseParameters (filterIndex, audioChannel);
     auto isLowCutParam = filterType == FilterInfo::FilterType::HIGHPASS;
-    auto slopeParam = static_cast<int> (getRawFilterParameter (filterIndex, FilterInfo::FilterParam::SLOPE));
+    auto slopeParam = static_cast<int> (getRawFilterParameter (filterIndex, audioChannel, FilterInfo::FilterParam::SLOPE));
 
     return HighCutLowCutParameters { baseParams, slopeParam, isLowCutParam };
 }
