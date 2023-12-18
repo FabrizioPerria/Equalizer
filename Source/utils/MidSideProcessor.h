@@ -20,7 +20,7 @@ struct MidSideProcessor
         /* const auto correctiveGain = 1.0f / juce::MathConstants<float>::sqrt2; */
         const auto correctiveGain = juce::Decibels::decibelsToGain (-3.0f);
 
-        for (int i = 0; i < outputBlock.getNumSamples(); ++i)
+        for (size_t i = 0; i < outputBlock.getNumSamples(); ++i)
         {
             auto mid = (leftReader[i] + rightReader[i]) * correctiveGain;
             auto side = (leftReader[i] - rightReader[i]) * correctiveGain;
