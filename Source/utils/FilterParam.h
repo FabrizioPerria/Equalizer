@@ -4,15 +4,15 @@
 
 namespace FilterInfo
 {
-    enum class FilterParam
-    {
-        GAIN,
-        Q,
-        FREQUENCY,
-        BYPASS,
-        FILTER_TYPE,
-        SLOPE
-    };
+enum class FilterParam
+{
+    GAIN,
+    Q,
+    FREQUENCY,
+    BYPASS,
+    FILTER_TYPE,
+    SLOPE
+};
 
-    juce::String getParameterName(int filterNum, FilterParam param);
-}
+juce::String getParameterName (int filterNum, int audioChannel, FilterParam param);
+} // namespace FilterInfo

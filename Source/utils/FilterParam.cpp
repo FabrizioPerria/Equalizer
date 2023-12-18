@@ -6,7 +6,8 @@ static std::map<FilterInfo::FilterParam, juce::String> filterParamNames = {
     { FilterInfo::FilterParam::FILTER_TYPE, "type" }, { FilterInfo::FilterParam::SLOPE, "slope" }
 };
 
-juce::String FilterInfo::getParameterName (int filterNum, FilterParam param)
+juce::String FilterInfo::getParameterName (int filterNum, int audioChannel, FilterParam param)
 {
-    return "Filter_" + juce::String (filterNum) + "_" + filterParamNames[param];
+    auto channelName = audioChannel == 0 ? "L" : "R";
+    return "Filter_" + juce::String (filterNum) + "_" + channelName + "_" + filterParamNames[param];
 }
