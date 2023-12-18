@@ -1,6 +1,7 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include <utils/EqParam.h>
 
 namespace FilterInfo
 {
@@ -14,5 +15,5 @@ enum class FilterParam
     SLOPE
 };
 
-juce::String getParameterName (int filterNum, int audioChannel, FilterParam param);
+juce::String getParameterName (int filterNum, Channel audioChannel, FilterParam param);
 } // namespace FilterInfo

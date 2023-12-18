@@ -16,12 +16,6 @@
 #include <JuceHeader.h>
 
 //==============================================================================
-enum class Channel
-{
-    LEFT,
-    RIGHT
-};
-//==============================================================================
 enum class ChainPositions
 {
     LOWCUT,
@@ -107,27 +101,26 @@ private:
         for (auto audioChannel : { Channel::LEFT, Channel::RIGHT })
         {
             auto index = static_cast<int> (FilterPosition);
-            auto channel = static_cast<int> (audioChannel);
-            auto name = FilterInfo::getParameterName (index, channel, FilterInfo::FilterParam::BYPASS);
+            auto name = FilterInfo::getParameterName (index, audioChannel, FilterInfo::FilterParam::BYPASS);
             layout.add (std::make_unique<juce::AudioParameterBool> (juce::ParameterID { name, 1 }, //
                                                                     name,
                                                                     false));
 
-            name = FilterInfo::getParameterName (index, channel, FilterInfo::FilterParam::FREQUENCY);
+            name = FilterInfo::getParameterName (index, audioChannel, FilterInfo::FilterParam::FREQUENCY);
             auto range = juce::NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.25f);
             layout.add (std::make_unique<juce::AudioParameterFloat> (juce::ParameterID { name, 1 }, //
                                                                      name,
                                                                      range,
                                                                      20.0f));
 
-            name = FilterInfo::getParameterName (index, channel, FilterInfo::FilterParam::Q);
+            name = FilterInfo::getParameterName (index, audioChannel, FilterInfo::FilterParam::Q);
             layout.add (std::make_unique<juce::AudioParameterFloat> (juce::ParameterID { name, 1 },
                                                                      name,
                                                                      juce::NormalisableRange<float> (0.1f, 10.0f, 0.01f),
                                                                      0.71f));
             if (isCutFilter)
             {
-                name = FilterInfo::getParameterName (index, channel, FilterInfo::FilterParam::SLOPE);
+                name = FilterInfo::getParameterName (index, audioChannel, FilterInfo::FilterParam::SLOPE);
                 layout.add (std::make_unique<juce::AudioParameterChoice> (juce::ParameterID { name, 1 }, //
                                                                           name,
                                                                           getSlopeNames(),
@@ -135,7 +128,7 @@ private:
             }
             else
             {
-                name = FilterInfo::getParameterName (index, channel, FilterInfo::FilterParam::GAIN);
+                name = FilterInfo::getParameterName (index, audioChannel, FilterInfo::FilterParam::GAIN);
                 layout.add (std::make_unique<juce::AudioParameterFloat> (juce::ParameterID { name, 1 },
                                                                          name,
                                                                          juce::NormalisableRange<float> (-24.0f, 24.0f, 0.1f),

@@ -263,7 +263,7 @@ float EqualizerAudioProcessor::getRawParameter (const juce::String& name)
 
 float EqualizerAudioProcessor::getRawFilterParameter (int filterIndex, Channel audioChannel, FilterInfo::FilterParam filterParameter)
 {
-    auto name = FilterInfo::getParameterName (filterIndex, static_cast<int> (audioChannel), filterParameter);
+    auto name = FilterInfo::getParameterName (filterIndex, audioChannel, filterParameter);
     return getRawParameter (name);
 }
 
