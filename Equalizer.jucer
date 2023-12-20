@@ -6,6 +6,12 @@
               companyName="fp">
   <MAINGROUP id="Do3AsA" name="Equalizer">
     <GROUP id="{947A9606-09DB-5F3A-08CC-6B17C53CAE0F}" name="Source">
+      <GROUP id="{7B339522-B1D5-D067-0094-2F67CA15145D}" name="ui">
+        <FILE id="izWLyB" name="MeterComponent.cpp" compile="1" resource="0"
+              file="Source/ui/MeterComponent.cpp"/>
+        <FILE id="L9RxGF" name="MeterComponent.h" compile="0" resource="0"
+              file="Source/ui/MeterComponent.h"/>
+      </GROUP>
       <GROUP id="{DF623B76-4BBC-978B-59BD-4C329A2F163D}" name="data">
         <FILE id="gCkjWk" name="FilterLink.h" compile="0" resource="0" file="Source/data/FilterLink.h"/>
         <FILE id="oRHJNO" name="FilterParameters.cpp" compile="1" resource="0"
