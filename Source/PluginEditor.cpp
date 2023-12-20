@@ -32,8 +32,9 @@ void EqualizerAudioProcessorEditor::paint (juce::Graphics& g)
 
 void EqualizerAudioProcessorEditor::resized()
 {
-    auto editorWidth = getLocalBounds().getWidth();
-    inputMeter.setBounds (getLocalBounds().reduced (5).withWidth (editorWidth / 30));
+    auto bounds = getLocalBounds();
+    const auto meterWidth = 12;
+    inputMeter.setBounds (bounds.removeFromLeft(meterWidth));
 }
 
 void EqualizerAudioProcessorEditor::timerCallback()
