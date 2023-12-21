@@ -108,6 +108,8 @@ void EqualizerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBl
     inputGain.prepare (spec);
     outputGain.prepare (spec);
 
+    inputMeterFifo.prepare (samplesPerBlock, 2);
+
     initializeFilters();
 }
 
@@ -163,6 +165,8 @@ void EqualizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     auto block = juce::dsp::AudioBlock<float> (buffer);
     inputGain.process (juce::dsp::ProcessContextReplacing<float> (block));
 
+    inputMeterFifo.push (buffer);
+
     if (mode == EqMode::MID_SIDE)
     {
         midSideProcessor.process (juce::dsp::ProcessContextReplacing<float> (block));
@@ -202,8 +206,8 @@ bool EqualizerAudioProcessor::hasEditor() const
 
 juce::AudioProcessorEditor* EqualizerAudioProcessor::createEditor()
 {
-    return new juce::GenericAudioProcessorEditor (*this);
-    /* return new EqualizerAudioProcessorEditor (*this); */
+    /* return new juce::GenericAudioProcessorEditor (*this); */
+    return new EqualizerAudioProcessorEditor (*this);
 }
 
 //==============================================================================

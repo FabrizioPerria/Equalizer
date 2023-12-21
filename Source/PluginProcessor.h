@@ -73,6 +73,8 @@ public:
 
     juce::AudioProcessorValueTreeState apvts { *this, nullptr, "Params", createParameterLayout() };
 
+    Fifo<juce::AudioBuffer<float>, 20> inputMeterFifo;
+
     using GainTrim = juce::dsp::Gain<float>;
     using Filter = juce::dsp::IIR::Filter<float>;
     using Coefficients = juce::dsp::IIR::Coefficients<float>;
