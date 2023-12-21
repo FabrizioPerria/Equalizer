@@ -15,7 +15,7 @@ void MeterComponent::paint (juce::Graphics& g)
     if (peakDb > NEGATIVE_INFINITY)
     {
         auto relativePeak = juce::jmap (peakDb, NEGATIVE_INFINITY, MAX_DECIBELS, meterHeight, 0.0f);
-        auto meterFill = meterRect.withY (relativePeak);
+        auto meterFill = meterRect.withY (relativePeak).withBottom (meterRect.getBottom());
         g.setColour (meterColor);
         g.fillRect (meterFill);
     }
