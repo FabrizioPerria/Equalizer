@@ -17,6 +17,10 @@
               file="Source/ui/MeterComponent.h"/>
       </GROUP>
       <GROUP id="{DF623B76-4BBC-978B-59BD-4C329A2F163D}" name="data">
+        <FILE id="oodeOc" name="DecayingValueHolder.cpp" compile="1" resource="0"
+              file="Source/data/DecayingValueHolder.cpp"/>
+        <FILE id="xbxUVX" name="DecayingValueHolder.h" compile="0" resource="0"
+              file="Source/data/DecayingValueHolder.h"/>
         <FILE id="gCkjWk" name="FilterLink.h" compile="0" resource="0" file="Source/data/FilterLink.h"/>
         <FILE id="oRHJNO" name="FilterParameters.cpp" compile="1" resource="0"
               file="Source/data/FilterParameters.cpp"/>
