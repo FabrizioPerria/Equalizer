@@ -18,10 +18,17 @@ void MeterComponent::paint (juce::Graphics& g)
         g.setColour (meterColor);
         g.fillRect (meterFill);
     }
+
+    auto tickPeak = juce::jmap (peakDbDecay.getCurrentValue(), NEGATIVE_INFINITY, MAX_DECIBELS, meterHeight, 0.0f);
+    auto peakLine = juce::Line<float> (meterRect.getX(), tickPeak, meterRect.getRight(), tickPeak);
+
+    g.setColour (peakDbDecay.isOverThreshold() ? juce::Colours::red : juce::Colours::orange);
+    g.drawLine (peakLine, 2.0f);
 }
 
 void MeterComponent::update (float dbLevel)
 {
     peakDb = dbLevel;
+    peakDbDecay.updateHeldValue (dbLevel);
     repaint();
 }

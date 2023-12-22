@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ui/MeterComponent.h"
+#include "utils/MeterConstants.h"
 #include <JuceHeader.h>
 
 struct DecayingValueHolder : juce::Timer
@@ -24,7 +24,7 @@ private:
     juce::int64 holdTime = 2000; //2 seconds
     float decayRatePerFrame { 0 };
     float decayRateMultiplier { 1 };
-    float decayAcceleration { 1.01f };
+    float decayAcceleration { 1.05f };
 
     static juce::int64 getNow();
     void resetDecayRateMultiplier();

@@ -1,5 +1,4 @@
 #include "data/DecayingValueHolder.h"
-#include "ui/MeterComponent.h"
 
 DecayingValueHolder::DecayingValueHolder()
 {
