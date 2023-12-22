@@ -7,6 +7,10 @@
   <MAINGROUP id="Do3AsA" name="Equalizer">
     <GROUP id="{947A9606-09DB-5F3A-08CC-6B17C53CAE0F}" name="Source">
       <GROUP id="{7B339522-B1D5-D067-0094-2F67CA15145D}" name="ui">
+        <FILE id="jioKe9" name="DbScaleComponent.cpp" compile="1" resource="0"
+              file="Source/ui/DbScaleComponent.cpp"/>
+        <FILE id="C8P3QR" name="DbScaleComponent.h" compile="0" resource="0"
+              file="Source/ui/DbScaleComponent.h"/>
         <FILE id="izWLyB" name="MeterComponent.cpp" compile="1" resource="0"
               file="Source/ui/MeterComponent.cpp"/>
         <FILE id="L9RxGF" name="MeterComponent.h" compile="0" resource="0"
