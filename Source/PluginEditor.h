@@ -9,6 +9,7 @@
 #pragma once
 
 #include "PluginProcessor.h"
+#include "ui/DbScaleComponent.h"
 #include "ui/MeterComponent.h"
 #include <JuceHeader.h>
 
@@ -32,6 +33,7 @@ private:
     // access the processor object that created it.
     EqualizerAudioProcessor& audioProcessor;
 
+    DbScaleComponent inputScale;
     MeterComponent inputMeter;
     juce::AudioBuffer<float> inputMeterBuffer;
 

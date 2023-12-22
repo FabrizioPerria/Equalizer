@@ -8,6 +8,7 @@
 
 #include "PluginEditor.h"
 #include "PluginProcessor.h"
+#include "ui/MeterComponent.h"
 #include "utils/EqParam.h"
 //==============================================================================
 EqualizerAudioProcessorEditor::EqualizerAudioProcessorEditor (EqualizerAudioProcessor& p) : AudioProcessorEditor (&p), audioProcessor (p)
@@ -17,6 +18,8 @@ EqualizerAudioProcessorEditor::EqualizerAudioProcessorEditor (EqualizerAudioProc
     setSize (400, 300);
 
     addAndMakeVisible (inputMeter);
+    addAndMakeVisible (inputScale);
+
     startTimerHz (60);
 }
 
@@ -33,8 +36,23 @@ void EqualizerAudioProcessorEditor::paint (juce::Graphics& g)
 void EqualizerAudioProcessorEditor::resized()
 {
     auto bounds = getLocalBounds();
-    const auto meterWidth = 12;
-    inputMeter.setBounds (bounds.removeFromLeft(meterWidth));
+    const auto meterWidth = 15;
+    const auto scaleWidth = 15;
+    const auto margin = 10;
+
+    auto wholeMeterBounds = bounds.removeFromLeft (meterWidth + scaleWidth);
+    auto meterBounds = wholeMeterBounds.withTrimmedTop (margin).withTrimmedBottom (margin).removeFromLeft (scaleWidth);
+    auto scaleBounds = wholeMeterBounds.withX (meterWidth);
+
+/* #define TEST_METER */
+#ifdef TEST_METER
+    meterBounds.setY (JUCE_LIVE_CONSTANT (meterBounds.getY()));
+    meterBounds.setHeight (JUCE_LIVE_CONSTANT (meterBounds.getHeight()));
+#endif
+    inputScale.setBounds (scaleBounds);
+    inputMeter.setBounds (meterBounds);
+
+    inputScale.buildBackgroundImage (6, meterBounds, NEGATIVE_INFINITY, MAX_DECIBELS);
 }
 
 void EqualizerAudioProcessorEditor::timerCallback()
