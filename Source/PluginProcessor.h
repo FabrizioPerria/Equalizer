@@ -8,6 +8,8 @@
 
 #pragma once
 
+#define USE_TEST_OSC 1
+
 #include "data/FilterLink.h"
 #include "data/FilterParameters.h"
 #include "utils/CoefficientsMaker.h"

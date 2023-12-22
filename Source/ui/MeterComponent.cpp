@@ -5,10 +5,9 @@ void MeterComponent::paint (juce::Graphics& g)
 {
     g.fillAll (juce::Colours::black);
 
-    const float meterWidth = getLocalBounds().toFloat().getWidth();
-    const float meterHeight = getLocalBounds().toFloat().getHeight();
+    auto meterRect = getLocalBounds().toFloat();
 
-    auto meterRect = juce::Rectangle<float> { 0.0f, 0.0f, meterWidth, meterHeight };
+    const float meterHeight = meterRect.getHeight();
 
     auto meterColor = juce::Colours::green;
 

@@ -163,13 +163,12 @@ void EqualizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    auto block = juce::dsp::AudioBlock<float> (buffer);
-
     updateTrimGains();
 
     auto mode = getEqMode();
     updateParameters (mode);
 
+    auto block = juce::dsp::AudioBlock<float> (buffer);
     inputGain.process (juce::dsp::ProcessContextReplacing<float> (block));
 
 #ifdef USE_TEST_OSC
@@ -179,7 +178,7 @@ void EqualizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
         buffer.clear (channel, 0, buffer.getNumSamples());
         for (auto samplePosition = 0; samplePosition < buffer.getNumSamples(); ++samplePosition)
         {
-            auto sample = osc.processSample (0.0f);
+            auto sample = testOscillator.processSample (0.0f);
             buffer.setSample (channel, samplePosition, sample);
         }
     }

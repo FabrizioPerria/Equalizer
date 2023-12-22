@@ -37,12 +37,11 @@ void EqualizerAudioProcessorEditor::resized()
 {
     auto bounds = getLocalBounds();
     const auto meterWidth = 15;
-    const auto scaleWidth = 15;
+    const auto scaleWidth = 20;
     const auto margin = 10;
 
-    auto wholeMeterBounds = bounds.removeFromLeft (meterWidth + scaleWidth);
-    auto meterBounds = wholeMeterBounds.withTrimmedTop (margin).withTrimmedBottom (margin).removeFromLeft (scaleWidth);
-    auto scaleBounds = wholeMeterBounds.withX (meterWidth);
+    auto meterBounds = bounds.removeFromLeft (meterWidth).withTrimmedTop (margin).withTrimmedBottom (margin);
+    auto scaleBounds = bounds.removeFromLeft (scaleWidth);
 
 #ifdef USE_TEST_OSC
     meterBounds.setY (JUCE_LIVE_CONSTANT (meterBounds.getY()));

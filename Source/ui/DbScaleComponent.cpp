@@ -20,9 +20,9 @@ void DbScaleComponent::buildBackgroundImage (int dbDivision, juce::Rectangle<int
     }
 
     auto desktopScaleFactor = juce::Desktop::getInstance().getGlobalScaleFactor();
-    auto height = bounds.getHeight() * desktopScaleFactor;
-    auto width = bounds.getWidth() * desktopScaleFactor;
-    bkgd = juce::Image (juce::Image::RGB, width, height, true);
+    auto scaledHeight = bounds.getHeight() * desktopScaleFactor;
+    auto scaledWidth = bounds.getWidth() * desktopScaleFactor;
+    bkgd = juce::Image (juce::Image::RGB, scaledWidth, scaledHeight, true);
 
     auto g = juce::Graphics (bkgd);
     g.addTransform (juce::AffineTransform::scale (desktopScaleFactor));
@@ -33,7 +33,9 @@ void DbScaleComponent::buildBackgroundImage (int dbDivision, juce::Rectangle<int
     const int textHeight = 14;
     for (auto& tick : ticks)
     {
-        auto tickBounds = juce::Rectangle<int> { bounds.getX(), tick.y - textHeight / 2, bounds.getWidth(), textHeight };
+        auto tickBounds = bounds;
+        tickBounds.setY (tick.y - textHeight / 2.f);
+        tickBounds.setHeight (textHeight);
         g.drawFittedText (juce::String (tick.db), tickBounds, juce::Justification::centred, 1);
     }
 }
@@ -51,7 +53,7 @@ std::vector<Tick> DbScaleComponent::getTicks (int dbDivision, juce::Rectangle<in
     for (int db = minDb; db <= maxDb; db += dbDivision)
     {
         Tick tick;
-        tick.db = db;
+        tick.db = static_cast<float> (db);
         tick.y = juce::jmap (db, minDb, maxDb, meterBounds.getBottom(), meterBounds.getY());
         ticks.push_back (tick);
     }
