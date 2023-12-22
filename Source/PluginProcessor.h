@@ -223,6 +223,11 @@ private:
 
     MidSideProcessor midSideProcessor;
 
+#ifdef USE_TEST_OSC
+    juce::dsp::Gain<float> testGain;
+    juce::dsp::Oscillator<float> testOscillator { [] (float x) { return std::sin (x); } };
+#endif
+
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (EqualizerAudioProcessor)
 };

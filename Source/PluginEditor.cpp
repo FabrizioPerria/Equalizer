@@ -44,11 +44,11 @@ void EqualizerAudioProcessorEditor::resized()
     auto meterBounds = wholeMeterBounds.withTrimmedTop (margin).withTrimmedBottom (margin).removeFromLeft (scaleWidth);
     auto scaleBounds = wholeMeterBounds.withX (meterWidth);
 
-/* #define TEST_METER */
-#ifdef TEST_METER
+#ifdef USE_TEST_OSC
     meterBounds.setY (JUCE_LIVE_CONSTANT (meterBounds.getY()));
     meterBounds.setHeight (JUCE_LIVE_CONSTANT (meterBounds.getHeight()));
 #endif
+
     inputScale.setBounds (scaleBounds);
     inputMeter.setBounds (meterBounds);
 

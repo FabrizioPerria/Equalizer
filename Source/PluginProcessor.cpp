@@ -111,6 +111,12 @@ void EqualizerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBl
     inputMeterFifo.prepare (samplesPerBlock, 2);
 
     initializeFilters();
+
+#ifdef USE_TEST_OSC
+    testOscillator.prepare (spec);
+    testOscillator.setFrequency (440.0f);
+    testGain.prepare (spec);
+#endif
 }
 
 void EqualizerAudioProcessor::releaseResources()
@@ -157,13 +163,28 @@ void EqualizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
+    auto block = juce::dsp::AudioBlock<float> (buffer);
+
     updateTrimGains();
 
     auto mode = getEqMode();
     updateParameters (mode);
 
-    auto block = juce::dsp::AudioBlock<float> (buffer);
     inputGain.process (juce::dsp::ProcessContextReplacing<float> (block));
+
+#ifdef USE_TEST_OSC
+    testGain.setGainDecibels (JUCE_LIVE_CONSTANT (0.0f));
+    for (auto channel = 0; channel < getTotalNumOutputChannels(); ++channel)
+    {
+        buffer.clear (channel, 0, buffer.getNumSamples());
+        for (auto samplePosition = 0; samplePosition < buffer.getNumSamples(); ++samplePosition)
+        {
+            auto sample = osc.processSample (0.0f);
+            buffer.setSample (channel, samplePosition, sample);
+        }
+    }
+    testGain.process (juce::dsp::ProcessContextReplacing<float> (block));
+#endif
 
     inputMeterFifo.push (buffer);
 
@@ -196,6 +217,13 @@ void EqualizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     }
 
     outputGain.process (juce::dsp::ProcessContextReplacing<float> (block));
+
+#ifdef USE_TEST_OSC
+    for (auto channel = 0; channel < getTotalNumOutputChannels(); ++channel)
+    {
+        buffer.clear (channel, 0, buffer.getNumSamples());
+    }
+#endif
 }
 
 //==============================================================================
