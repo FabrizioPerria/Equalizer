@@ -44,7 +44,11 @@ struct Averager
         auto currentAverage = currentSum / currentSize;
         elements[currentwriteIndex] = t;
 
-        currentwriteIndex = (currentwriteIndex + 1) % currentSize;
+        currentwriteIndex++;
+        if (currentwriteIndex == currentSize)
+        {
+            currentwriteIndex = 0;
+        }
 
         sum = currentSum;
         writeIndex = currentwriteIndex;
