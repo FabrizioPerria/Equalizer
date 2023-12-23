@@ -7,28 +7,31 @@ void MeterComponent::paint (juce::Graphics& g)
 
     auto meterRect = getLocalBounds().toFloat();
 
-    const float meterHeight = meterRect.getHeight();
-
-    auto meterColor = juce::Colours::green;
-
     if (peakDb > NEGATIVE_INFINITY)
     {
-        auto relativePeak = juce::jmap (peakDb, NEGATIVE_INFINITY, MAX_DECIBELS, meterHeight, 0.0f);
-        auto meterFill = meterRect.withY (relativePeak).withBottom (meterRect.getBottom());
-        g.setColour (meterColor);
-        g.fillRect (meterFill);
+        paintRectangleForValue (g, peakDb, meterRect, juce::Colours::green);
     }
 
-    auto tickPeak = juce::jmap (peakDbDecay.getCurrentValue(), NEGATIVE_INFINITY, MAX_DECIBELS, meterHeight, 0.0f);
-    auto peakLine = juce::Line<float> (meterRect.getX(), tickPeak, meterRect.getRight(), tickPeak);
+    paintRectangleForValue (g, averageDb.getAvg(), meterRect.withTrimmedLeft (5).withTrimmedRight (5), juce::Colours::gold);
 
+    auto tickPeak = juce::jmap (peakDbDecay.getCurrentValue(), NEGATIVE_INFINITY, MAX_DECIBELS, meterRect.getHeight(), 0.0f);
+    auto peakLine = juce::Line<float> (meterRect.getX(), tickPeak, meterRect.getRight(), tickPeak);
     g.setColour (peakDbDecay.isOverThreshold() ? juce::Colours::red : juce::Colours::orange);
     g.drawLine (peakLine, 2.0f);
+}
+
+void MeterComponent::paintRectangleForValue (juce::Graphics& g, float value, juce::Rectangle<float> rect, juce::Colour color)
+{
+    auto relativeValue = juce::jmap (value, NEGATIVE_INFINITY, MAX_DECIBELS, rect.getHeight(), 0.0f);
+    auto fill = rect.withY (relativeValue).withBottom (rect.getBottom());
+    g.setColour (color);
+    g.fillRect (fill);
 }
 
 void MeterComponent::update (float dbLevel)
 {
     peakDb = dbLevel;
     peakDbDecay.updateHeldValue (dbLevel);
+    averageDb.add (dbLevel);
     repaint();
 }
