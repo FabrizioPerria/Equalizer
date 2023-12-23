@@ -8,8 +8,9 @@
 
 struct MeterComponent : juce::Component
 {
+    MeterComponent (juce::String label);
     void paint (juce::Graphics&) override;
-    void update (float dbLevel);
+    void update (float peakDbLevel, float rmsDbLevel);
 
 private:
     void paintRectangleForValue (juce::Graphics& g, float value, juce::Rectangle<float> rect, juce::Colour color);

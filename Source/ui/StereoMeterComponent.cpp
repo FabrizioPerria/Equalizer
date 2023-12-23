@@ -1,7 +1,8 @@
 #include "ui/StereoMeterComponent.h"
 
-StereoMeterComponent::StereoMeterComponent()
+StereoMeterComponent::StereoMeterComponent (juce::String label)
 {
+    // TODO: add label
     addAndMakeVisible (leftMeter);
     addAndMakeVisible (rightMeter);
     addAndMakeVisible (dbScale);
@@ -34,8 +35,8 @@ void StereoMeterComponent::resized()
     dbScale.buildBackgroundImage (TICKS_INTERVAL, leftMeterBounds, NEGATIVE_INFINITY, MAX_DECIBELS);
 }
 
-void StereoMeterComponent::update (float leftDbLevel, float rightDbLevel)
+void StereoMeterComponent::update (MeterValues meterValues)
 {
-    leftMeter.update (leftDbLevel);
-    rightMeter.update (rightDbLevel);
+    leftMeter.update (meterValues.leftPeakDb.getDb(), meterValues.leftRmsDb.getDb());
+    rightMeter.update (meterValues.rightPeakDb.getDb(), meterValues.rightRmsDb.getDb());
 }

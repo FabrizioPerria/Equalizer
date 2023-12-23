@@ -1,6 +1,11 @@
 #include "ui/MeterComponent.h"
 #include <JuceHeader.h>
 
+MeterComponent::MeterComponent (juce::String label)
+{
+    // TODO: add label
+}
+
 void MeterComponent::paint (juce::Graphics& g)
 {
     g.fillAll (juce::Colours::black);
@@ -28,10 +33,10 @@ void MeterComponent::paintRectangleForValue (juce::Graphics& g, float value, juc
     g.fillRect (fill);
 }
 
-void MeterComponent::update (float dbLevel)
+void MeterComponent::update (float peakDbLevel, float rmsDbLevel)
 {
-    peakDb = dbLevel;
-    peakDbDecay.updateHeldValue (dbLevel);
-    averageDb.add (dbLevel);
+    peakDb = peakDbLevel;
+    peakDbDecay.updateHeldValue (peakDbLevel);
+    averageDb.add (rmsDbLevel);
     repaint();
 }

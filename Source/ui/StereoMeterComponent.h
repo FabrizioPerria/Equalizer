@@ -1,19 +1,20 @@
 #pragma once
 
+#include "data/MeterValues.h"
 #include "ui/DbScaleComponent.h"
 #include "ui/MeterComponent.h"
 
 struct StereoMeterComponent : juce::Component
 {
-    StereoMeterComponent();
+    StereoMeterComponent (juce::String label);
 
     void paint (juce::Graphics&) override;
     void resized() override;
-    void update (float leftDbLevel, float rightDbLevel);
+    void update (MeterValues meterValues);
 
 private:
-    MeterComponent leftMeter;
-    MeterComponent rightMeter;
+    MeterComponent leftMeter { "L" };
+    MeterComponent rightMeter { "R" };
 
     DbScaleComponent dbScale;
 };
