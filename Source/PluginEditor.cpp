@@ -8,6 +8,7 @@
 
 #include "PluginEditor.h"
 #include "PluginProcessor.h"
+#include "data/MeterValues.h"
 #include "ui/MeterComponent.h"
 #include "utils/EqParam.h"
 #include "utils/MeterConstants.h"
@@ -16,10 +17,10 @@ EqualizerAudioProcessorEditor::EqualizerAudioProcessorEditor (EqualizerAudioProc
 {
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
-    setSize (400, 300);
+    setSize (800, 600);
 
     addAndMakeVisible (inputMeter);
-    addAndMakeVisible (inputScale);
+    addAndMakeVisible (outputMeter);
 
     startTimerHz (FRAMES_PER_SECOND);
 }
@@ -36,34 +37,36 @@ void EqualizerAudioProcessorEditor::paint (juce::Graphics& g)
 
 void EqualizerAudioProcessorEditor::resized()
 {
-    auto bounds = getLocalBounds();
-    const auto meterWidth = 15;
-    const auto scaleWidth = 20;
-    const auto margin = 10;
-
-    auto meterBounds = bounds.removeFromLeft (meterWidth).withTrimmedTop (margin).withTrimmedBottom (margin);
-    auto scaleBounds = bounds.removeFromLeft (scaleWidth);
-
-#ifdef USE_TEST_OSC
-    meterBounds.setY (JUCE_LIVE_CONSTANT (meterBounds.getY()));
-    meterBounds.setHeight (JUCE_LIVE_CONSTANT (meterBounds.getHeight()));
-#endif
-
-    inputScale.setBounds (scaleBounds);
-    inputMeter.setBounds (meterBounds);
-
-    inputScale.buildBackgroundImage (TICKS_INTERVAL, meterBounds, NEGATIVE_INFINITY, MAX_DECIBELS);
+    auto pluginBounds = getLocalBounds();
+    //TODO: define margin and meter sizes here
+    inputMeter.setBounds (pluginBounds.removeFromLeft (JUCE_LIVE_CONSTANT (80)));
+    outputMeter.setBounds (pluginBounds.removeFromRight (JUCE_LIVE_CONSTANT (80 - 30)));
 }
 
 void EqualizerAudioProcessorEditor::timerCallback()
 {
-    while (audioProcessor.inputMeterFifo.getNumAvailableForReading() > 0)
+    //TODO: refactor this
+    if (audioProcessor.inMeterValuesFifo.getNumAvailableForReading() > 0)
     {
-        auto success = audioProcessor.inputMeterFifo.pull (inputMeterBuffer);
-        jassert (success);
+        MeterValues inputMeterValues;
+        while (audioProcessor.inMeterValuesFifo.getNumAvailableForReading() > 0)
+        {
+            auto success = audioProcessor.inMeterValuesFifo.pull (inputMeterValues);
+            jassert (success);
+        }
+
+        inputMeter.update (inputMeterValues);
     }
 
-    auto gain = inputMeterBuffer.getMagnitude (static_cast<int> (Channel::LEFT), 0, inputMeterBuffer.getNumSamples());
-    auto db = juce::Decibels::gainToDecibels (gain);
-    inputMeter.update (db);
+    if (audioProcessor.outMeterValuesFifo.getNumAvailableForReading() > 0)
+    {
+        MeterValues outputMeterValues;
+        while (audioProcessor.outMeterValuesFifo.getNumAvailableForReading() > 0)
+        {
+            auto success = audioProcessor.outMeterValuesFifo.pull (outputMeterValues);
+            jassert (success);
+        }
+
+        outputMeter.update (outputMeterValues);
+    }
 }

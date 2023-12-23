@@ -12,6 +12,7 @@
 
 #include "data/FilterLink.h"
 #include "data/FilterParameters.h"
+#include "data/MeterValues.h"
 #include "utils/CoefficientsMaker.h"
 #include "utils/EqParam.h"
 #include "utils/FilterParam.h"
@@ -75,7 +76,8 @@ public:
 
     juce::AudioProcessorValueTreeState apvts { *this, nullptr, "Params", createParameterLayout() };
 
-    Fifo<juce::AudioBuffer<float>, 20> inputMeterFifo;
+    Fifo<MeterValues, 20> inMeterValuesFifo;
+    Fifo<MeterValues, 20> outMeterValuesFifo;
 
     using GainTrim = juce::dsp::Gain<float>;
     using Filter = juce::dsp::IIR::Filter<float>;

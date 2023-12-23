@@ -108,8 +108,6 @@ void EqualizerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBl
     inputGain.prepare (spec);
     outputGain.prepare (spec);
 
-    inputMeterFifo.prepare (samplesPerBlock, 2);
-
     initializeFilters();
 
 #ifdef USE_TEST_OSC
@@ -187,7 +185,13 @@ void EqualizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     testGain.process (juce::dsp::ProcessContextReplacing<float> (block));
 #endif
 
-    inputMeterFifo.push (buffer);
+    MeterValues meterValues;
+    meterValues.leftPeakDb.setGain (buffer.getMagnitude (static_cast<int> (Channel::LEFT), 0, buffer.getNumSamples()));
+    meterValues.rightPeakDb.setGain (buffer.getMagnitude (static_cast<int> (Channel::RIGHT), 0, buffer.getNumSamples()));
+    meterValues.leftRmsDb.setGain (buffer.getRMSLevel (static_cast<int> (Channel::LEFT), 0, buffer.getNumSamples()));
+    meterValues.rightRmsDb.setGain (buffer.getRMSLevel (static_cast<int> (Channel::RIGHT), 0, buffer.getNumSamples()));
+
+    inMeterValuesFifo.push (meterValues);
 
     if (mode == EqMode::MID_SIDE)
     {
@@ -218,6 +222,13 @@ void EqualizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     }
 
     outputGain.process (juce::dsp::ProcessContextReplacing<float> (block));
+
+    meterValues.leftPeakDb.setGain (buffer.getMagnitude (static_cast<int> (Channel::LEFT), 0, buffer.getNumSamples()));
+    meterValues.rightPeakDb.setGain (buffer.getMagnitude (static_cast<int> (Channel::RIGHT), 0, buffer.getNumSamples()));
+    meterValues.leftRmsDb.setGain (buffer.getRMSLevel (static_cast<int> (Channel::LEFT), 0, buffer.getNumSamples()));
+    meterValues.rightRmsDb.setGain (buffer.getRMSLevel (static_cast<int> (Channel::RIGHT), 0, buffer.getNumSamples()));
+
+    outMeterValuesFifo.push (meterValues);
 
 #ifdef USE_TEST_OSC
     buffer.clear();
