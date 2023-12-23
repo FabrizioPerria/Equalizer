@@ -1,7 +1,7 @@
 #pragma once
 
-#define NEGATIVE_INFINITY -66.0f
-#define MAX_DECIBELS 12.0f
+#define NEGATIVE_INFINITY -96.0f
+#define MAX_DECIBELS 18.0f
 
 #define FRAMES_PER_SECOND 60
 #define AVG_TIME_SECONDS 1
