@@ -10,6 +10,7 @@
 #include "PluginProcessor.h"
 #include "ui/MeterComponent.h"
 #include "utils/EqParam.h"
+#include "utils/MeterConstants.h"
 //==============================================================================
 EqualizerAudioProcessorEditor::EqualizerAudioProcessorEditor (EqualizerAudioProcessor& p) : AudioProcessorEditor (&p), audioProcessor (p)
 {
@@ -20,7 +21,7 @@ EqualizerAudioProcessorEditor::EqualizerAudioProcessorEditor (EqualizerAudioProc
     addAndMakeVisible (inputMeter);
     addAndMakeVisible (inputScale);
 
-    startTimerHz (60);
+    startTimerHz (FRAMES_PER_SECOND);
 }
 
 EqualizerAudioProcessorEditor::~EqualizerAudioProcessorEditor()
@@ -51,7 +52,7 @@ void EqualizerAudioProcessorEditor::resized()
     inputScale.setBounds (scaleBounds);
     inputMeter.setBounds (meterBounds);
 
-    inputScale.buildBackgroundImage (6, meterBounds, NEGATIVE_INFINITY, MAX_DECIBELS);
+    inputScale.buildBackgroundImage (TICKS_INTERVAL, meterBounds, NEGATIVE_INFINITY, MAX_DECIBELS);
 }
 
 void EqualizerAudioProcessorEditor::timerCallback()

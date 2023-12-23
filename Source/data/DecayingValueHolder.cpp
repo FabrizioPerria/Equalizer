@@ -3,7 +3,7 @@
 DecayingValueHolder::DecayingValueHolder()
 {
     setDecayRate (3);
-    startTimerHz (60);
+    startTimerHz (FRAMES_PER_SECOND);
 }
 
 void DecayingValueHolder::updateHeldValue (float input)
@@ -33,7 +33,7 @@ void DecayingValueHolder::setHoldTime (int ms)
 
 void DecayingValueHolder::setDecayRate (float dbPerSec)
 {
-    decayRatePerFrame = dbPerSec / 60.f;
+    decayRatePerFrame = dbPerSec / FRAMES_PER_SECOND;
 }
 
 void DecayingValueHolder::timerCallback()

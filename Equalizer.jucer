@@ -17,6 +17,7 @@
               file="Source/ui/MeterComponent.h"/>
       </GROUP>
       <GROUP id="{DF623B76-4BBC-978B-59BD-4C329A2F163D}" name="data">
+        <FILE id="YUOwXx" name="Averager.h" compile="0" resource="0" file="Source/data/Averager.h"/>
         <FILE id="oodeOc" name="DecayingValueHolder.cpp" compile="1" resource="0"
               file="Source/data/DecayingValueHolder.cpp"/>
         <FILE id="xbxUVX" name="DecayingValueHolder.h" compile="0" resource="0"
