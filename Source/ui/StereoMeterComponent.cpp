@@ -15,13 +15,16 @@ void StereoMeterComponent::paint (juce::Graphics& g)
 void StereoMeterComponent::resized()
 {
     auto bounds = getLocalBounds();
-    const auto meterWidth = 15;
-    const auto scaleWidth = 20;
-    const auto margin = 10;
 
-    auto leftMeterBounds = bounds.removeFromLeft (meterWidth).withTrimmedTop (margin).withTrimmedBottom (margin);
-    auto scaleBounds = bounds.removeFromLeft (scaleWidth);
-    auto rightMeterBounds = bounds.removeFromLeft (meterWidth).withTrimmedTop (margin).withTrimmedBottom (margin);
+    auto leftMeterBounds = bounds.removeFromLeft (MONO_METER_WIDTH)
+                               .withTrimmedTop (MONO_METER_Y_MARGIN)
+                               .withTrimmedBottom (MONO_METER_Y_MARGIN);
+
+    auto scaleBounds = bounds.removeFromLeft (SCALE_WIDTH);
+
+    auto rightMeterBounds = bounds.removeFromLeft (MONO_METER_WIDTH)
+                                .withTrimmedTop (MONO_METER_Y_MARGIN)
+                                .withTrimmedBottom (MONO_METER_Y_MARGIN);
 
 #ifdef USE_TEST_OSC
     meterBounds.setY (JUCE_LIVE_CONSTANT (meterBounds.getY()));

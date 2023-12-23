@@ -6,6 +6,7 @@ struct Tick
 {
     float db { 0.f };
     int y { 0 };
+    juce::String displayText;
 };
 
 struct DbScaleComponent : juce::Component

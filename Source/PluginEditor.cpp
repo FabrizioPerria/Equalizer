@@ -33,14 +33,22 @@ EqualizerAudioProcessorEditor::~EqualizerAudioProcessorEditor()
 void EqualizerAudioProcessorEditor::paint (juce::Graphics& g)
 {
     g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
+    auto pluginBounds = getLocalBounds();
+    pluginBounds.reduce (5, 5);
+    g.setColour (juce::Colours::aquamarine);
+    g.drawRoundedRectangle (pluginBounds.toFloat(), 10, 1);
+
+    g.setColour (juce::Colour { 0x1A1B29 });
+    g.fillRoundedRectangle (pluginBounds.toFloat(), 10);
 }
 
 void EqualizerAudioProcessorEditor::resized()
 {
     auto pluginBounds = getLocalBounds();
-    //TODO: define margin and meter sizes here
-    inputMeter.setBounds (pluginBounds.removeFromLeft (JUCE_LIVE_CONSTANT (80)));
-    outputMeter.setBounds (pluginBounds.removeFromRight (JUCE_LIVE_CONSTANT (80 - 30)));
+    pluginBounds.reduce (10, 10);
+    auto stereoMeterWidth = MONO_METER_WIDTH + SCALE_WIDTH + MONO_METER_WIDTH;
+    inputMeter.setBounds (pluginBounds.removeFromLeft (stereoMeterWidth));
+    outputMeter.setBounds (pluginBounds.removeFromRight (stereoMeterWidth));
 }
 
 void EqualizerAudioProcessorEditor::timerCallback()
