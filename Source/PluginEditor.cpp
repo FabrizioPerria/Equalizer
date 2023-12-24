@@ -9,8 +9,6 @@
 #include "PluginEditor.h"
 #include "PluginProcessor.h"
 #include "data/MeterValues.h"
-#include "ui/MeterComponent.h"
-#include "utils/EqParam.h"
 #include "utils/MeterConstants.h"
 //==============================================================================
 EqualizerAudioProcessorEditor::EqualizerAudioProcessorEditor (EqualizerAudioProcessor& p) : AudioProcessorEditor (&p), audioProcessor (p)
@@ -38,7 +36,7 @@ void EqualizerAudioProcessorEditor::paint (juce::Graphics& g)
     g.setColour (juce::Colours::aquamarine);
     g.drawRoundedRectangle (pluginBounds.toFloat(), 10, 1);
 
-    g.setColour (juce::Colour { 0x1A1B29 });
+    g.setColour (juce::Colour { 0x1A, 0x1B, 0x29 });
     g.fillRoundedRectangle (pluginBounds.toFloat(), 10);
 }
 

@@ -19,4 +19,6 @@ private:
     DecayingValueHolder peakDbDecay;
 
     Averager<float> averageDb { FRAMES_PER_SECOND * AVG_TIME_SECONDS, NEGATIVE_INFINITY };
+
+    juce::String name;
 };

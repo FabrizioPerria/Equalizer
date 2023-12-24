@@ -17,4 +17,6 @@ private:
     MeterComponent rightMeter { "R" };
 
     DbScaleComponent dbScale;
+
+    juce::String name;
 };

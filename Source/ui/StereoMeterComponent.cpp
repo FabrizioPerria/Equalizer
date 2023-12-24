@@ -1,8 +1,10 @@
 #include "ui/StereoMeterComponent.h"
+#include "utils/MeterConstants.h"
 
 StereoMeterComponent::StereoMeterComponent (juce::String label)
 {
-    // TODO: add label
+    name = label;
+
     addAndMakeVisible (leftMeter);
     addAndMakeVisible (rightMeter);
     addAndMakeVisible (dbScale);
@@ -10,17 +12,23 @@ StereoMeterComponent::StereoMeterComponent (juce::String label)
 
 void StereoMeterComponent::paint (juce::Graphics& g)
 {
+    auto labelBounds = getLocalBounds().removeFromBottom (METER_LABEL_TEXT_SIZE);
+
+    g.setColour (juce::Colours::aquamarine);
+    g.drawFittedText (name, labelBounds, juce::Justification::centred, 1);
 }
 
 void StereoMeterComponent::resized()
 {
     auto bounds = getLocalBounds();
 
+    bounds.removeFromBottom (METER_LABEL_TEXT_SIZE);
+
     auto leftMeterBounds = bounds.removeFromLeft (MONO_METER_WIDTH)
                                .withTrimmedTop (MONO_METER_Y_MARGIN)
                                .withTrimmedBottom (MONO_METER_Y_MARGIN);
 
-    auto scaleBounds = bounds.removeFromLeft (SCALE_WIDTH);
+    auto scaleBounds = bounds.removeFromLeft (SCALE_WIDTH).withTrimmedTop (METER_LABEL_TEXT_SIZE);
 
     auto rightMeterBounds = bounds.removeFromLeft (MONO_METER_WIDTH)
                                 .withTrimmedTop (MONO_METER_Y_MARGIN)
@@ -35,7 +43,10 @@ void StereoMeterComponent::resized()
     dbScale.setBounds (scaleBounds);
     rightMeter.setBounds (rightMeterBounds);
 
-    dbScale.buildBackgroundImage (TICKS_INTERVAL, leftMeterBounds, NEGATIVE_INFINITY, MAX_DECIBELS);
+    dbScale.buildBackgroundImage (TICKS_INTERVAL,
+                                  rightMeterBounds.withTrimmedBottom (METER_LABEL_TEXT_SIZE),
+                                  NEGATIVE_INFINITY,
+                                  MAX_DECIBELS);
 }
 
 void StereoMeterComponent::update (MeterValues meterValues)
