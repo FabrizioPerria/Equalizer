@@ -28,7 +28,7 @@ void StereoMeterComponent::resized()
                                .withTrimmedTop (MONO_METER_Y_MARGIN)
                                .withTrimmedBottom (MONO_METER_Y_MARGIN);
 
-    auto scaleBounds = bounds.removeFromLeft (SCALE_WIDTH).withTrimmedTop (METER_LABEL_TEXT_SIZE);
+    auto scaleBounds = bounds.removeFromLeft (SCALE_WIDTH).withTrimmedTop (METER_LABEL_TEXT_SIZE + 5);
 
     auto rightMeterBounds = bounds.removeFromLeft (MONO_METER_WIDTH)
                                 .withTrimmedTop (MONO_METER_Y_MARGIN)
@@ -44,7 +44,7 @@ void StereoMeterComponent::resized()
     rightMeter.setBounds (rightMeterBounds);
 
     dbScale.buildBackgroundImage (TICKS_INTERVAL,
-                                  rightMeterBounds.withTrimmedBottom (METER_LABEL_TEXT_SIZE),
+                                  rightMeterBounds.withTrimmedBottom (METER_LABEL_TEXT_SIZE + 5),
                                   NEGATIVE_INFINITY,
                                   MAX_DECIBELS);
 }

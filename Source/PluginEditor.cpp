@@ -43,7 +43,7 @@ void EqualizerAudioProcessorEditor::paint (juce::Graphics& g)
 void EqualizerAudioProcessorEditor::resized()
 {
     auto pluginBounds = getLocalBounds();
-    pluginBounds.reduce (10, 10);
+    pluginBounds.reduce (10, 5);
     auto stereoMeterWidth = MONO_METER_WIDTH + SCALE_WIDTH + MONO_METER_WIDTH;
     inputMeter.setBounds (pluginBounds.removeFromLeft (stereoMeterWidth));
     outputMeter.setBounds (pluginBounds.removeFromRight (stereoMeterWidth));
