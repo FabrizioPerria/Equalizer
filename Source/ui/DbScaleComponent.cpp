@@ -26,6 +26,7 @@ void DbScaleComponent::buildBackgroundImage (int dbDivision, juce::Rectangle<int
     bkgd = juce::Image (juce::Image::RGB, scaledWidth, scaledHeight, true);
 
     auto g = juce::Graphics (bkgd);
+
     g.addTransform (juce::AffineTransform::scale (desktopScaleFactor));
     g.setColour (juce::Colours::darkgrey);
 

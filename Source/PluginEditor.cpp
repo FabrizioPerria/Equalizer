@@ -10,6 +10,9 @@
 #include "PluginProcessor.h"
 #include "data/MeterValues.h"
 #include "utils/MeterConstants.h"
+
+#define PLUGIN_MARGIN 5
+
 //==============================================================================
 EqualizerAudioProcessorEditor::EqualizerAudioProcessorEditor (EqualizerAudioProcessor& p) : AudioProcessorEditor (&p), audioProcessor (p)
 {
@@ -30,9 +33,9 @@ EqualizerAudioProcessorEditor::~EqualizerAudioProcessorEditor()
 //==============================================================================
 void EqualizerAudioProcessorEditor::paint (juce::Graphics& g)
 {
-    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
-    auto pluginBounds = getLocalBounds();
-    pluginBounds.reduce (5, 5);
+    g.fillAll (juce::Colours::black);
+
+    auto pluginBounds = getLocalBounds().reduced (PLUGIN_MARGIN);
     g.setColour (juce::Colours::aquamarine);
     g.drawRoundedRectangle (pluginBounds.toFloat(), 10, 1);
 
@@ -42,9 +45,8 @@ void EqualizerAudioProcessorEditor::paint (juce::Graphics& g)
 
 void EqualizerAudioProcessorEditor::resized()
 {
-    auto pluginBounds = getLocalBounds();
-    pluginBounds.reduce (10, 5);
-    auto stereoMeterWidth = MONO_METER_WIDTH + SCALE_WIDTH + MONO_METER_WIDTH;
+    auto pluginBounds = getLocalBounds().reduced (PLUGIN_MARGIN + STEREO_METER_MARGIN, PLUGIN_MARGIN);
+    auto stereoMeterWidth = MONO_METER_WIDTH + STEREO_METER_SCALE_WIDTH + MONO_METER_WIDTH;
     inputMeter.setBounds (pluginBounds.removeFromLeft (stereoMeterWidth));
     outputMeter.setBounds (pluginBounds.removeFromRight (stereoMeterWidth));
 }

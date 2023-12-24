@@ -1,4 +1,5 @@
 #include "ui/MeterComponent.h"
+#include "utils/MeterConstants.h"
 #include <JuceHeader.h>
 
 MeterComponent::MeterComponent (juce::String label)
@@ -9,13 +10,14 @@ MeterComponent::MeterComponent (juce::String label)
 void MeterComponent::paint (juce::Graphics& g)
 {
     auto meterRect = getLocalBounds().toFloat();
-    auto labelRect = meterRect.removeFromTop (METER_LABEL_TEXT_SIZE).toNearestInt();
 
+    auto labelRect = meterRect.removeFromTop (METER_LABEL_TEXT_SIZE).toNearestInt();
     g.setColour (peakDb > 0 ? juce::Colours::red : juce::Colours::white);
     g.setFont (METER_LABEL_TEXT_SIZE);
     g.drawFittedText (name, labelRect, juce::Justification::centred, 1);
 
-    meterRect.removeFromTop (5);
+    meterRect.removeFromTop (MONO_METER_COMPONENT_SPACING);
+
     g.setColour (juce::Colours::darkgrey);
     g.drawRect (meterRect);
 
@@ -24,7 +26,7 @@ void MeterComponent::paint (juce::Graphics& g)
         paintRectangleForValue (g, peakDb, meterRect, juce::Colours::green);
     }
 
-    paintRectangleForValue (g, averageDb.getAvg(), meterRect.withTrimmedLeft (5).withTrimmedRight (5), juce::Colours::gold);
+    paintRectangleForValue (g, averageDb.getAvg(), meterRect.reduced (5, 0), juce::Colours::gold);
 
     auto tickPeak = juce::jmap (peakDbDecay.getCurrentValue(), NEGATIVE_INFINITY, MAX_DECIBELS, meterRect.getBottom(), meterRect.getY());
     auto peakLine = juce::Line<float> (meterRect.getX(), tickPeak, meterRect.getRight(), tickPeak);
