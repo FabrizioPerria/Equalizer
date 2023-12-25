@@ -18,4 +18,5 @@ struct DbScaleComponent : juce::Component
 
 private:
     juce::Image bkgd;
+    const int scaleTextHeight { 10 };
 };

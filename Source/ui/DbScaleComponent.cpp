@@ -1,5 +1,4 @@
 #include "ui/DbScaleComponent.h"
-#include "utils/MeterConstants.h"
 #include <JuceHeader.h>
 
 void DbScaleComponent::paint (juce::Graphics& g)
@@ -30,14 +29,14 @@ void DbScaleComponent::buildBackgroundImage (int dbDivision, juce::Rectangle<int
     g.addTransform (juce::AffineTransform::scale (desktopScaleFactor));
     g.setColour (juce::Colours::darkgrey);
 
-    g.setFont (SCALE_TEXT_SIZE);
+    g.setFont (static_cast<float> (scaleTextHeight));
     auto ticks = getTicks (dbDivision, meterBounds, minDb, maxDb);
 
+    bounds.setHeight (scaleTextHeight);
     for (auto& tick : ticks)
     {
         auto tickBounds = bounds;
-        tickBounds.setY (tick.y - SCALE_TEXT_SIZE / 2.f);
-        tickBounds.setHeight (SCALE_TEXT_SIZE);
+        tickBounds.setY (tick.y - scaleTextHeight / 2);
         g.drawFittedText (tick.displayText, tickBounds, juce::Justification::centred, 1);
     }
 }

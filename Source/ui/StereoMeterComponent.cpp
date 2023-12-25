@@ -12,7 +12,7 @@ StereoMeterComponent::StereoMeterComponent (juce::String label)
 
 void StereoMeterComponent::paint (juce::Graphics& g)
 {
-    auto labelBounds = getLocalBounds().removeFromBottom (METER_LABEL_TEXT_SIZE);
+    auto labelBounds = getLocalBounds().removeFromBottom (labelHeight);
 
     g.setColour (juce::Colours::aquamarine);
     g.drawFittedText (name, labelBounds, juce::Justification::centred, 1);
@@ -22,32 +22,18 @@ void StereoMeterComponent::resized()
 {
     auto bounds = getLocalBounds();
 
-    bounds.removeFromBottom (METER_LABEL_TEXT_SIZE);
+    bounds.removeFromBottom (labelHeight);
+    bounds.removeFromTop (componentsMargin);
 
-    auto leftMeterBounds = bounds.removeFromLeft (MONO_METER_WIDTH)
-                               .withTrimmedTop (MONO_METER_Y_MARGIN)
-                               .withTrimmedBottom (MONO_METER_Y_MARGIN);
-
-    auto scaleBounds = bounds.removeFromLeft (STEREO_METER_SCALE_WIDTH)
-                           .withTrimmedTop (METER_LABEL_TEXT_SIZE + MONO_METER_COMPONENT_SPACING);
-
-    auto rightMeterBounds = bounds.removeFromLeft (MONO_METER_WIDTH)
-                                .withTrimmedTop (MONO_METER_Y_MARGIN)
-                                .withTrimmedBottom (MONO_METER_Y_MARGIN);
-
-#ifdef USE_TEST_OSC
-    meterBounds.setY (JUCE_LIVE_CONSTANT (meterBounds.getY()));
-    meterBounds.setHeight (JUCE_LIVE_CONSTANT (meterBounds.getHeight()));
-#endif
+    auto leftMeterBounds = bounds.removeFromLeft (MONO_METER_WIDTH).withTrimmedBottom (componentsMargin);
+    auto rightMeterBounds = bounds.removeFromRight (MONO_METER_WIDTH).withTrimmedBottom (componentsMargin);
 
     leftMeter.setBounds (leftMeterBounds);
-    dbScale.setBounds (scaleBounds);
     rightMeter.setBounds (rightMeterBounds);
+    dbScale.setBounds (bounds);
 
-    dbScale.buildBackgroundImage (TICKS_INTERVAL,
-                                  rightMeterBounds.withTrimmedBottom (METER_LABEL_TEXT_SIZE + MONO_METER_COMPONENT_SPACING),
-                                  NEGATIVE_INFINITY,
-                                  MAX_DECIBELS);
+    const auto dbScaleTicksInterval = 6;
+    dbScale.buildBackgroundImage (dbScaleTicksInterval, leftMeter.getGaugeBounds(), NEGATIVE_INFINITY, MAX_DECIBELS);
 }
 
 void StereoMeterComponent::update (MeterValues meterValues)

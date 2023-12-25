@@ -19,4 +19,9 @@ private:
     DbScaleComponent dbScale;
 
     juce::String name;
+
+    const int labelHeight { 14 };
+    const int componentsMargin { 10 };
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (StereoMeterComponent)
 };

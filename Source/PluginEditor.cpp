@@ -8,10 +8,7 @@
 
 #include "PluginEditor.h"
 #include "PluginProcessor.h"
-#include "data/MeterValues.h"
 #include "utils/MeterConstants.h"
-
-#define PLUGIN_MARGIN 5
 
 //==============================================================================
 EqualizerAudioProcessorEditor::EqualizerAudioProcessorEditor (EqualizerAudioProcessor& p) : AudioProcessorEditor (&p), audioProcessor (p)
@@ -35,7 +32,7 @@ void EqualizerAudioProcessorEditor::paint (juce::Graphics& g)
 {
     g.fillAll (juce::Colours::black);
 
-    auto pluginBounds = getLocalBounds().reduced (PLUGIN_MARGIN);
+    auto pluginBounds = getLocalBounds().reduced (pluginMargin);
     g.setColour (juce::Colours::aquamarine);
     g.drawRoundedRectangle (pluginBounds.toFloat(), 10, 1);
 
@@ -45,36 +42,14 @@ void EqualizerAudioProcessorEditor::paint (juce::Graphics& g)
 
 void EqualizerAudioProcessorEditor::resized()
 {
-    auto pluginBounds = getLocalBounds().reduced (PLUGIN_MARGIN + STEREO_METER_MARGIN, PLUGIN_MARGIN);
-    auto stereoMeterWidth = MONO_METER_WIDTH + STEREO_METER_SCALE_WIDTH + MONO_METER_WIDTH;
+    auto pluginBounds = getLocalBounds().reduced (2 * pluginMargin, pluginMargin);
+    auto stereoMeterWidth = MONO_METER_WIDTH + METER_SCALE_WIDTH + MONO_METER_WIDTH;
     inputMeter.setBounds (pluginBounds.removeFromLeft (stereoMeterWidth));
     outputMeter.setBounds (pluginBounds.removeFromRight (stereoMeterWidth));
 }
 
 void EqualizerAudioProcessorEditor::timerCallback()
 {
-    //TODO: refactor this
-    if (audioProcessor.inMeterValuesFifo.getNumAvailableForReading() > 0)
-    {
-        MeterValues inputMeterValues;
-        while (audioProcessor.inMeterValuesFifo.getNumAvailableForReading() > 0)
-        {
-            auto success = audioProcessor.inMeterValuesFifo.pull (inputMeterValues);
-            jassert (success);
-        }
-
-        inputMeter.update (inputMeterValues);
-    }
-
-    if (audioProcessor.outMeterValuesFifo.getNumAvailableForReading() > 0)
-    {
-        MeterValues outputMeterValues;
-        while (audioProcessor.outMeterValuesFifo.getNumAvailableForReading() > 0)
-        {
-            auto success = audioProcessor.outMeterValuesFifo.pull (outputMeterValues);
-            jassert (success);
-        }
-
-        outputMeter.update (outputMeterValues);
-    }
+    updateMeterValues (audioProcessor.inMeterValuesFifo, inputMeter);
+    updateMeterValues (audioProcessor.outMeterValuesFifo, outputMeter);
 }

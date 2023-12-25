@@ -220,6 +220,20 @@ private:
         rightChain.get<filterIndex>().performInnerLoopFilterUpdate (onRealTimeThread, chunkSize);
     }
 
+    template <typename FifoType, typename BufferType>
+    void updateMeterFifos (FifoType& fifo, BufferType& buffer)
+    {
+        const auto leftChannel = static_cast<int> (Channel::LEFT);
+        const auto rightChannel = static_cast<int> (Channel::RIGHT);
+        MeterValues meterValues;
+        meterValues.leftPeakDb.setGain (buffer.getMagnitude (leftChannel, 0, buffer.getNumSamples()));
+        meterValues.rightPeakDb.setGain (buffer.getMagnitude (rightChannel, 0, buffer.getNumSamples()));
+        meterValues.leftRmsDb.setGain (buffer.getRMSLevel (leftChannel, 0, buffer.getNumSamples()));
+        meterValues.rightRmsDb.setGain (buffer.getRMSLevel (rightChannel, 0, buffer.getNumSamples()));
+
+        fifo.push (meterValues);
+    }
+
     void updateTrimGains();
 
     MonoChain leftChain, rightChain;
