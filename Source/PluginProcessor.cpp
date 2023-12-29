@@ -109,6 +109,12 @@ void EqualizerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBl
     outputGain.prepare (spec);
 
     initializeFilters();
+
+#ifdef USE_TEST_OSC
+    testOscillator.prepare (spec);
+    testOscillator.setFrequency (440.0f);
+    testGain.prepare (spec);
+#endif
 }
 
 void EqualizerAudioProcessor::releaseResources()
@@ -163,6 +169,24 @@ void EqualizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     auto block = juce::dsp::AudioBlock<float> (buffer);
     inputGain.process (juce::dsp::ProcessContextReplacing<float> (block));
 
+#ifdef USE_TEST_OSC
+    testGain.setGainDecibels (JUCE_LIVE_CONSTANT (0.0f));
+
+    buffer.clear();
+    for (auto samplePosition = 0; samplePosition < buffer.getNumSamples(); ++samplePosition)
+    {
+        auto sample = testOscillator.processSample (0.0f);
+        for (auto channel = 0; channel < buffer.getNumChannels(); ++channel)
+        {
+            buffer.setSample (channel, samplePosition, sample);
+        }
+    }
+
+    testGain.process (juce::dsp::ProcessContextReplacing<float> (block));
+#endif
+
+    updateMeterFifos (inMeterValuesFifo, buffer);
+
     if (mode == EqMode::MID_SIDE)
     {
         midSideProcessor.process (juce::dsp::ProcessContextReplacing<float> (block));
@@ -192,6 +216,12 @@ void EqualizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     }
 
     outputGain.process (juce::dsp::ProcessContextReplacing<float> (block));
+
+    updateMeterFifos (outMeterValuesFifo, buffer);
+
+#ifdef USE_TEST_OSC
+    buffer.clear();
+#endif
 }
 
 //==============================================================================
@@ -202,8 +232,8 @@ bool EqualizerAudioProcessor::hasEditor() const
 
 juce::AudioProcessorEditor* EqualizerAudioProcessor::createEditor()
 {
-    return new juce::GenericAudioProcessorEditor (*this);
-    /* return new EqualizerAudioProcessorEditor (*this); */
+    /* return new juce::GenericAudioProcessorEditor (*this); */
+    return new EqualizerAudioProcessorEditor (*this);
 }
 
 //==============================================================================

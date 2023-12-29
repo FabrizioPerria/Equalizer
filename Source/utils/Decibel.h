@@ -1,5 +1,6 @@
 #pragma once
 
+#include "utils/MeterConstants.h"
 #include <JuceHeader.h>
 
 template <typename FloatType>
@@ -43,7 +44,7 @@ public:
 
     FloatType getGain() const
     {
-        return juce::Decibels::decibelsToGain (dbValue, MINUS_INF);
+        return juce::Decibels::decibelsToGain (dbValue, NEGATIVE_INFINITY);
     }
 
     FloatType getDb() const
@@ -53,7 +54,7 @@ public:
 
     void setGain (FloatType g)
     {
-        dbValue = juce::Decibels::gainToDecibels (g, MINUS_INF);
+        dbValue = juce::Decibels::gainToDecibels (g, NEGATIVE_INFINITY);
     }
 
     void setDb (FloatType db)
@@ -117,6 +118,4 @@ public:
 
 private:
     FloatType dbValue;
-
-    static constexpr FloatType MINUS_INF = -48.0f;
 };

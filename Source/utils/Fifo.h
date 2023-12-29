@@ -57,17 +57,22 @@ struct Fifo
         static_assert (std::is_same_v<T, juce::AudioBuffer<float>>,
                        "T must be AudioBuffer<float> when using prepare(numSamples, numChannels)");
 
-        buffer.setSize (numChannels, numSamples, false, true, true);
-        buffer.clear();
+        for (auto& audioBuffer : buffer)
+        {
+            audioBuffer.setSize (numChannels, numSamples, false, false, true);
+            audioBuffer.clear();
+        }
     }
 
     //used when T is std::vector<float>
     void prepare (size_t numElements)
     {
         static_assert (std::is_same_v<T, std::vector<float>>, "T must be vector<float> when using prepare(numElements)");
-
-        buffer.clear();
-        buffer.resize (numElements, 0);
+        for (auto& item : buffer)
+        {
+            item.clear();
+            item.resize (numElements, 0.0f);
+        }
     }
 
     bool push (const T& t)

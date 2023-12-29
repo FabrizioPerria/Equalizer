@@ -6,12 +6,32 @@
               companyName="fp">
   <MAINGROUP id="Do3AsA" name="Equalizer">
     <GROUP id="{947A9606-09DB-5F3A-08CC-6B17C53CAE0F}" name="Source">
+      <GROUP id="{7B339522-B1D5-D067-0094-2F67CA15145D}" name="ui">
+        <FILE id="jioKe9" name="DbScaleComponent.cpp" compile="1" resource="0"
+              file="Source/ui/DbScaleComponent.cpp"/>
+        <FILE id="C8P3QR" name="DbScaleComponent.h" compile="0" resource="0"
+              file="Source/ui/DbScaleComponent.h"/>
+        <FILE id="izWLyB" name="MeterComponent.cpp" compile="1" resource="0"
+              file="Source/ui/MeterComponent.cpp"/>
+        <FILE id="L9RxGF" name="MeterComponent.h" compile="0" resource="0"
+              file="Source/ui/MeterComponent.h"/>
+        <FILE id="xRuEXk" name="StereoMeterComponent.cpp" compile="1" resource="0"
+              file="Source/ui/StereoMeterComponent.cpp"/>
+        <FILE id="rIEfKM" name="StereoMeterComponent.h" compile="0" resource="0"
+              file="Source/ui/StereoMeterComponent.h"/>
+      </GROUP>
       <GROUP id="{DF623B76-4BBC-978B-59BD-4C329A2F163D}" name="data">
+        <FILE id="YUOwXx" name="Averager.h" compile="0" resource="0" file="Source/data/Averager.h"/>
+        <FILE id="oodeOc" name="DecayingValueHolder.cpp" compile="1" resource="0"
+              file="Source/data/DecayingValueHolder.cpp"/>
+        <FILE id="xbxUVX" name="DecayingValueHolder.h" compile="0" resource="0"
+              file="Source/data/DecayingValueHolder.h"/>
         <FILE id="gCkjWk" name="FilterLink.h" compile="0" resource="0" file="Source/data/FilterLink.h"/>
         <FILE id="oRHJNO" name="FilterParameters.cpp" compile="1" resource="0"
               file="Source/data/FilterParameters.cpp"/>
         <FILE id="o4VI1g" name="FilterParameters.h" compile="0" resource="0"
               file="Source/data/FilterParameters.h"/>
+        <FILE id="Lbal0G" name="MeterValues.h" compile="0" resource="0" file="Source/data/MeterValues.h"/>
       </GROUP>
       <GROUP id="{CE98CBDF-8DE1-DA86-8C69-BF52E9C7297A}" name="utils">
         <FILE id="OjzSog" name="CoefficientsMaker.h" compile="0" resource="0"
@@ -26,6 +46,8 @@
         <FILE id="tBWZke" name="FilterParam.cpp" compile="1" resource="0" file="Source/utils/FilterParam.cpp"/>
         <FILE id="sGVlXw" name="FilterParam.h" compile="0" resource="0" file="Source/utils/FilterParam.h"/>
         <FILE id="gR2Gmg" name="FilterType.h" compile="0" resource="0" file="Source/utils/FilterType.h"/>
+        <FILE id="MRAnSs" name="MeterConstants.h" compile="0" resource="0"
+              file="Source/utils/MeterConstants.h"/>
         <FILE id="DYOhOa" name="MidSideProcessor.h" compile="0" resource="0"
               file="Source/utils/MidSideProcessor.h"/>
         <FILE id="P5KFW3" name="ReleasePool.h" compile="0" resource="0" file="Source/utils/ReleasePool.h"/>
