@@ -25,18 +25,19 @@ void DbScaleComponent::buildBackgroundImage (int dbDivision, juce::Rectangle<int
     bkgd = juce::Image (juce::Image::RGB, scaledWidth, scaledHeight, true);
 
     auto g = juce::Graphics (bkgd);
-    g.addTransform (juce::AffineTransform::scale (desktopScaleFactor));
-    g.setColour (juce::Colours::lightgrey);
 
+    g.addTransform (juce::AffineTransform::scale (desktopScaleFactor));
+    g.setColour (juce::Colours::darkgrey);
+
+    g.setFont (static_cast<float> (scaleTextHeight));
     auto ticks = getTicks (dbDivision, meterBounds, minDb, maxDb);
 
-    const int textHeight = 14;
+    bounds.setHeight (scaleTextHeight);
     for (auto& tick : ticks)
     {
         auto tickBounds = bounds;
-        tickBounds.setY (tick.y - textHeight / 2.f);
-        tickBounds.setHeight (textHeight);
-        g.drawFittedText (juce::String (tick.db), tickBounds, juce::Justification::centred, 1);
+        tickBounds.setY (tick.y - scaleTextHeight / 2);
+        g.drawFittedText (tick.displayText, tickBounds, juce::Justification::centred, 1);
     }
 }
 
@@ -55,6 +56,14 @@ std::vector<Tick> DbScaleComponent::getTicks (int dbDivision, juce::Rectangle<in
         Tick tick;
         tick.db = static_cast<float> (db);
         tick.y = juce::jmap (db, minDb, maxDb, meterBounds.getBottom(), meterBounds.getY());
+        if (db <= 0)
+        {
+            tick.displayText = juce::String (db);
+        }
+        else
+        {
+            tick.displayText = juce::String ("+") + juce::String (db);
+        }
         ticks.push_back (tick);
     }
 

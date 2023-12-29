@@ -12,6 +12,7 @@
 
 #include "data/FilterLink.h"
 #include "data/FilterParameters.h"
+#include "data/MeterValues.h"
 #include "utils/CoefficientsMaker.h"
 #include "utils/EqParam.h"
 #include "utils/FilterParam.h"
@@ -75,7 +76,8 @@ public:
 
     juce::AudioProcessorValueTreeState apvts { *this, nullptr, "Params", createParameterLayout() };
 
-    Fifo<juce::AudioBuffer<float>, 20> inputMeterFifo;
+    Fifo<MeterValues, 20> inMeterValuesFifo;
+    Fifo<MeterValues, 20> outMeterValuesFifo;
 
     using GainTrim = juce::dsp::Gain<float>;
     using Filter = juce::dsp::IIR::Filter<float>;
@@ -216,6 +218,20 @@ private:
         const int filterIndex = static_cast<int> (FilterPosition);
         leftChain.get<filterIndex>().performInnerLoopFilterUpdate (onRealTimeThread, chunkSize);
         rightChain.get<filterIndex>().performInnerLoopFilterUpdate (onRealTimeThread, chunkSize);
+    }
+
+    template <typename FifoType, typename BufferType>
+    void updateMeterFifos (FifoType& fifo, BufferType& buffer)
+    {
+        const auto leftChannel = static_cast<int> (Channel::LEFT);
+        const auto rightChannel = static_cast<int> (Channel::RIGHT);
+        MeterValues meterValues;
+        meterValues.leftPeakDb.setGain (buffer.getMagnitude (leftChannel, 0, buffer.getNumSamples()));
+        meterValues.rightPeakDb.setGain (buffer.getMagnitude (rightChannel, 0, buffer.getNumSamples()));
+        meterValues.leftRmsDb.setGain (buffer.getRMSLevel (leftChannel, 0, buffer.getNumSamples()));
+        meterValues.rightRmsDb.setGain (buffer.getRMSLevel (rightChannel, 0, buffer.getNumSamples()));
+
+        fifo.push (meterValues);
     }
 
     void updateTrimGains();

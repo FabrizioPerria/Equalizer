@@ -9,8 +9,7 @@
 #pragma once
 
 #include "PluginProcessor.h"
-#include "ui/DbScaleComponent.h"
-#include "ui/MeterComponent.h"
+#include "ui/StereoMeterComponent.h"
 #include <JuceHeader.h>
 
 //==============================================================================
@@ -33,9 +32,26 @@ private:
     // access the processor object that created it.
     EqualizerAudioProcessor& audioProcessor;
 
-    DbScaleComponent inputScale;
-    MeterComponent inputMeter;
-    juce::AudioBuffer<float> inputMeterBuffer;
+    template <typename FifoType, typename MeterType>
+    void updateMeterValues (FifoType& fifo, MeterType& meter)
+    {
+        if (fifo.getNumAvailableForReading() > 0)
+        {
+            MeterValues meterValues;
+            while (fifo.getNumAvailableForReading() > 0)
+            {
+                auto success = fifo.pull (meterValues);
+                jassert (success);
+            }
+
+            meter.update (meterValues);
+        }
+    }
+
+    StereoMeterComponent inputMeter { "PRE EQ" };
+    StereoMeterComponent outputMeter { "POST EQ" };
+
+    const int pluginMargin { 5 };
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (EqualizerAudioProcessorEditor)
 };

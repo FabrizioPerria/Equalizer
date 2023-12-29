@@ -108,8 +108,6 @@ void EqualizerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBl
     inputGain.prepare (spec);
     outputGain.prepare (spec);
 
-    inputMeterFifo.prepare (samplesPerBlock, 2);
-
     initializeFilters();
 
 #ifdef USE_TEST_OSC
@@ -187,7 +185,7 @@ void EqualizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     testGain.process (juce::dsp::ProcessContextReplacing<float> (block));
 #endif
 
-    inputMeterFifo.push (buffer);
+    updateMeterFifos (inMeterValuesFifo, buffer);
 
     if (mode == EqMode::MID_SIDE)
     {
@@ -218,6 +216,8 @@ void EqualizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     }
 
     outputGain.process (juce::dsp::ProcessContextReplacing<float> (block));
+
+    updateMeterFifos (outMeterValuesFifo, buffer);
 
 #ifdef USE_TEST_OSC
     buffer.clear();
