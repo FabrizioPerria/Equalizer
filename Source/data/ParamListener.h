@@ -7,24 +7,10 @@ template <typename ValueType>
 struct ParamListener : juce::Timer
 {
     ParamListener (juce::RangedAudioParameter* paramToUse, std::function<void (ValueType)> callbackToUse)
+        : param (paramToUse), callback (callbackToUse)
     {
-        if (paramToUse != nullptr)
-        {
-            param = paramToUse;
-        }
-        else
-        {
-            jassertfalse;
-        }
-
-        if (callbackToUse != nullptr)
-        {
-            callback = callbackToUse;
-        }
-        else
-        {
-            jassertfalse;
-        }
+        jassert (paramToUse);
+        jassert (callbackToUse);
 
         value = param->getValue();
         startTimerHz (FRAMES_PER_SECOND);
