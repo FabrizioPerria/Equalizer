@@ -6,13 +6,7 @@
 
 struct TextOnlyHorizontalSlider : juce::Slider
 {
-    TextOnlyHorizontalSlider() : juce::Slider (juce::Slider::SliderStyle::LinearHorizontal, juce::Slider::TextEntryBoxPosition::NoTextBox)
-    {
-        /*
-         setting this to false prevents the slider from snapping its value to wherever you click inside the slider bounds.
-         */
-        setSliderSnapsToMousePosition (false);
-    }
+    TextOnlyHorizontalSlider();
     virtual ~TextOnlyHorizontalSlider() = default;
     virtual juce::String getDisplayString() = 0;
 };
@@ -28,30 +22,7 @@ struct CustomLookAndFeel : juce::LookAndFeel_V4
                            float minSliderPos,
                            float maxSliderPos,
                            Slider::SliderStyle style,
-                           Slider& slider) override
-    {
-        if (TextOnlyHorizontalSlider* textSlider = dynamic_cast<TextOnlyHorizontalSlider*> (&slider))
-        {
-            auto text = textSlider->getDisplayString();
-            auto bounds = slider.getLocalBounds().toFloat().reduced (2.0f);
-
-            auto relativeSliderPos = juce::jmap (sliderPos,
-                                                 static_cast<float> (x),
-                                                 static_cast<float> (x + width),
-                                                 bounds.getX(),
-                                                 bounds.getWidth());
-            g.setColour (juce::Colours::darkgrey);
-            g.fillRect (bounds.withWidth (relativeSliderPos));
-
-            g.setColour (juce::Colours::white);
-            g.setFont (12.0f);
-            g.drawFittedText (text, bounds.toNearestInt(), juce::Justification::centred, true);
-        }
-        else
-        {
-            juce::LookAndFeel_V4::drawLinearSlider (g, x, y, width, height, sliderPos, minSliderPos, maxSliderPos, style, slider);
-        }
-    }
+                           Slider& slider) override;
 };
 
 struct HertzSlider : TextOnlyHorizontalSlider
@@ -74,16 +45,14 @@ struct GainSlider : TextOnlyHorizontalSlider
     juce::String getDisplayString() override;
 };
 
-class EqParamWidget : public juce::Component
+struct EqParamWidget : juce::Component
 {
-    EqParamWidget (juce::AudioProcessorValueTreeState& apvtsToUse);
+    EqParamWidget (juce::AudioProcessorValueTreeState& apvtsToUse, int filterIndex, bool isCut);
+    ~EqParamWidget() override;
 
     void paint (juce::Graphics& g) override;
-    void resized() override
-    {
-        // resize bounds of all widgets
-        buildGridImage();
-    }
+
+    void resized() override;
 
     void refreshButtons (EqMode dspMode);
     void refreshSliders (Channel channel);
@@ -102,9 +71,9 @@ private:
     std::unique_ptr<SliderAttachment> qualityAttachment;
     std::unique_ptr<SliderAttachment> slopeOrGainAttachment;
 
-    ParamListener<float> dspModeListener;
-    ParamListener<float> leftMidBypassListener;
-    ParamListener<float> rightSideBypassListener;
+    std::unique_ptr<ParamListener<float>> dspModeListener;
+    std::unique_ptr<ParamListener<float>> leftMidBypassListener;
+    std::unique_ptr<ParamListener<float>> rightSideBypassListener;
 
     juce::TextButton leftMidBypass;
     juce::TextButton rightSideBypass;
@@ -112,6 +81,9 @@ private:
     CustomLookAndFeel customLookAndFeel;
 
     juce::Image widgetGridImage;
+
+    int filterIndex;
+    bool isCut;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (EqParamWidget)
 };
