@@ -19,7 +19,14 @@ EqualizerAudioProcessorEditor::EqualizerAudioProcessorEditor (EqualizerAudioProc
 
     addAndMakeVisible (inputMeter);
     addAndMakeVisible (outputMeter);
-    addAndMakeVisible (eqParamWidget);
+    addAndMakeVisible (eqParamWidget0);
+    addAndMakeVisible (eqParamWidget1);
+    addAndMakeVisible (eqParamWidget2);
+    addAndMakeVisible (eqParamWidget3);
+    addAndMakeVisible (eqParamWidget4);
+    addAndMakeVisible (eqParamWidget5);
+    addAndMakeVisible (eqParamWidget6);
+    addAndMakeVisible (eqParamWidget7);
 
     startTimerHz (FRAMES_PER_SECOND);
 }
@@ -48,7 +55,17 @@ void EqualizerAudioProcessorEditor::resized()
     inputMeter.setBounds (pluginBounds.removeFromLeft (stereoMeterWidth));
     outputMeter.setBounds (pluginBounds.removeFromRight (stereoMeterWidth));
 
-    eqParamWidget.setBounds (pluginBounds.removeFromBottom (80));
+    pluginBounds.reduce (2 * pluginMargin, 0);
+    auto eqParamWidgetBounds = pluginBounds.removeFromBottom (84);
+    auto eqParamWidgetWidth = eqParamWidgetBounds.getWidth() / 8;
+    eqParamWidget0.setBounds (eqParamWidgetBounds.removeFromLeft (eqParamWidgetWidth));
+    eqParamWidget1.setBounds (eqParamWidgetBounds.removeFromLeft (eqParamWidgetWidth));
+    eqParamWidget2.setBounds (eqParamWidgetBounds.removeFromLeft (eqParamWidgetWidth));
+    eqParamWidget3.setBounds (eqParamWidgetBounds.removeFromLeft (eqParamWidgetWidth));
+    eqParamWidget4.setBounds (eqParamWidgetBounds.removeFromLeft (eqParamWidgetWidth));
+    eqParamWidget5.setBounds (eqParamWidgetBounds.removeFromLeft (eqParamWidgetWidth));
+    eqParamWidget6.setBounds (eqParamWidgetBounds.removeFromLeft (eqParamWidgetWidth));
+    eqParamWidget7.setBounds (eqParamWidgetBounds.removeFromLeft (eqParamWidgetWidth));
 }
 
 void EqualizerAudioProcessorEditor::timerCallback()

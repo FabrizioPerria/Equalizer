@@ -23,6 +23,12 @@ struct CustomLookAndFeel : juce::LookAndFeel_V4
                            float maxSliderPos,
                            Slider::SliderStyle style,
                            Slider& slider) override;
+
+    void drawButtonBackground (juce::Graphics& g,
+                               juce::Button& button,
+                               const juce::Colour& backgroundColour,
+                               bool shouldDrawButtonAsHighlighted,
+                               bool shouldDrawButtonAsDown) override;
 };
 
 struct HertzSlider : TextOnlyHorizontalSlider
@@ -50,15 +56,12 @@ struct EqParamWidget : juce::Component
     EqParamWidget (juce::AudioProcessorValueTreeState& apvtsToUse, int filterIndex, bool isCut);
     ~EqParamWidget() override;
 
-    void paint (juce::Graphics& g) override;
-
     void resized() override;
 
+private:
     void refreshButtons (EqMode dspMode);
     void refreshSliders (Channel channel);
-
-private:
-    void buildGridImage();
+    void setupBypassButton (juce::TextButton& button);
 
     juce::AudioProcessorValueTreeState& apvts;
 
@@ -75,15 +78,15 @@ private:
     std::unique_ptr<ParamListener<float>> leftMidBypassListener;
     std::unique_ptr<ParamListener<float>> rightSideBypassListener;
 
-    juce::TextButton leftMidBypass;
-    juce::TextButton rightSideBypass;
+    juce::TextButton leftMidButton;
+    juce::TextButton rightSideButton;
 
     CustomLookAndFeel customLookAndFeel;
 
     juce::Image widgetGridImage;
 
-    int filterIndex;
-    bool isCut;
+    int filterIndexInChain;
+    bool isCutFilter;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (EqParamWidget)
 };

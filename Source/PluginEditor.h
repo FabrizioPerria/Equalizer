@@ -52,7 +52,14 @@ private:
     StereoMeterComponent inputMeter { "PRE EQ" };
     StereoMeterComponent outputMeter { "POST EQ" };
 
-    EqParamWidget eqParamWidget { audioProcessor.apvts, 0, true };
+    EqParamWidget eqParamWidget0 { audioProcessor.apvts, 0, true };
+    EqParamWidget eqParamWidget1 { audioProcessor.apvts, 1, false };
+    EqParamWidget eqParamWidget2 { audioProcessor.apvts, 2, false };
+    EqParamWidget eqParamWidget3 { audioProcessor.apvts, 3, false };
+    EqParamWidget eqParamWidget4 { audioProcessor.apvts, 4, false };
+    EqParamWidget eqParamWidget5 { audioProcessor.apvts, 5, false };
+    EqParamWidget eqParamWidget6 { audioProcessor.apvts, 6, false };
+    EqParamWidget eqParamWidget7 { audioProcessor.apvts, 7, true };
 
     const int pluginMargin { 5 };
 

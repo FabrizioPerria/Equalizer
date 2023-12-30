@@ -26,14 +26,14 @@ void CustomLookAndFeel::drawLinearSlider (Graphics& g,
     if (TextOnlyHorizontalSlider* textSlider = dynamic_cast<TextOnlyHorizontalSlider*> (&slider))
     {
         auto text = textSlider->getDisplayString();
-        auto bounds = slider.getLocalBounds().toFloat().reduced (2.0f);
+        auto bounds = slider.getLocalBounds().toFloat();
 
         auto relativeSliderPos = juce::jmap (sliderPos,
                                              static_cast<float> (x),
                                              static_cast<float> (x + width),
                                              bounds.getX(),
                                              bounds.getWidth());
-        g.setColour (juce::Colours::darkgrey);
+        g.setColour (juce::Colour { 0x33, 0x33, 0x33 });
         g.fillRect (bounds.withWidth (relativeSliderPos));
 
         g.setColour (juce::Colours::white);
@@ -44,6 +44,23 @@ void CustomLookAndFeel::drawLinearSlider (Graphics& g,
     {
         juce::LookAndFeel_V4::drawLinearSlider (g, x, y, width, height, sliderPos, minSliderPos, maxSliderPos, style, slider);
     }
+}
+
+void CustomLookAndFeel::drawButtonBackground (juce::Graphics& g,
+                                              juce::Button& button,
+                                              const juce::Colour& backgroundColour,
+                                              bool shouldDrawButtonAsHighlighted,
+                                              bool shouldDrawButtonAsDown)
+{
+    auto bounds = button.getLocalBounds();
+    if (button.getToggleState())
+        g.setColour (juce::Colours::green);
+    else
+        g.setColour (juce::Colours::black);
+
+    g.fillRect (bounds);
+    g.setColour (juce::Colours::white);
+    g.drawRect (bounds, 1);
 }
 
 juce::String HertzSlider::getDisplayString()
@@ -76,7 +93,7 @@ juce::String GainSlider::getDisplayString()
 }
 
 EqParamWidget::EqParamWidget (juce::AudioProcessorValueTreeState& apvtsToUse, int filterIndex, bool isCut)
-    : apvts (apvtsToUse), filterIndex (filterIndex), isCut (isCut)
+    : apvts (apvtsToUse), filterIndexInChain (filterIndex), isCutFilter (isCut)
 {
     setLookAndFeel (&customLookAndFeel);
 
@@ -94,16 +111,12 @@ EqParamWidget::EqParamWidget (juce::AudioProcessorValueTreeState& apvtsToUse, in
 
     refreshSliders (Channel::LEFT);
 
-    //TODO: DRY
-    addChildComponent (leftMidBypass);
-    leftMidBypass.setRadioGroupId (1);
-    leftMidBypass.setClickingTogglesState (true);
-    addChildComponent (rightSideBypass);
-    rightSideBypass.setRadioGroupId (1);
-    leftMidBypass.setClickingTogglesState (true);
+    setupBypassButton (leftMidButton);
+    setupBypassButton (rightSideButton);
+    leftMidButton.setToggleState (true, juce::NotificationType::dontSendNotification);
 
     auto safePtr = juce::Component::SafePointer<EqParamWidget> (this);
-    leftMidBypass.onClick = [safePtr]()
+    leftMidButton.onClick = [safePtr]()
     {
         if (auto* comp = safePtr.getComponent())
         {
@@ -111,7 +124,7 @@ EqParamWidget::EqParamWidget (juce::AudioProcessorValueTreeState& apvtsToUse, in
         }
     };
 
-    rightSideBypass.onClick = [safePtr]()
+    rightSideButton.onClick = [safePtr]()
     {
         if (auto* comp = safePtr.getComponent())
         {
@@ -120,11 +133,16 @@ EqParamWidget::EqParamWidget (juce::AudioProcessorValueTreeState& apvtsToUse, in
     };
 
     auto eqModeParam = apvts.getParameter ("eq_mode");
-    auto mode = static_cast<EqMode> (eqModeParam->getValue());
+
+    auto mode = static_cast<EqMode> (apvts.getRawParameterValue ("eq_mode")->load());
     refreshButtons (mode);
 
-    dspModeListener = std::make_unique<ParamListener<float>> (eqModeParam,
-                                                              [this] (float newValue) { refreshButtons (static_cast<EqMode> (newValue)); });
+    auto dspModeCallback = [this] (float newDspMode)
+    {
+        auto dspMode = static_cast<EqMode> (newDspMode);
+        refreshButtons (dspMode);
+    };
+    dspModeListener = std::make_unique<ParamListener<float>> (eqModeParam, dspModeCallback);
 }
 
 EqParamWidget::~EqParamWidget()
@@ -132,32 +150,41 @@ EqParamWidget::~EqParamWidget()
     setLookAndFeel (nullptr);
 }
 
-void EqParamWidget::paint (juce::Graphics& g)
-{
-    /* g.drawImage (widgetGridImage, getLocalBounds().toFloat()); */
-}
-
 void EqParamWidget::resized()
 {
-    // resize bounds of all widgets
-    // then
-    /* buildGridImage(); */
+    auto bounds = getLocalBounds();
+    auto buttonsArea = bounds.removeFromBottom (20);
+    auto leftButtonArea = buttonsArea.removeFromLeft (buttonsArea.getWidth() / 2);
+    leftMidButton.setBounds (leftButtonArea.removeFromRight (leftButtonArea.getHeight()).reduced (2));
+    auto rightButtonArea = buttonsArea;
+    rightSideButton.setBounds (rightButtonArea.removeFromLeft (rightButtonArea.getHeight()).reduced (2));
+
+    bounds.removeFromBottom (4);
+
+    auto slidersArea = bounds;
+    const auto sliderHeight = slidersArea.getHeight() / 3;
+    auto frequencyArea = slidersArea.removeFromTop (sliderHeight);
+    frequencySlider.setBounds (frequencyArea);
+    auto qualityArea = slidersArea.removeFromTop (sliderHeight);
+    qualitySlider.setBounds (qualityArea);
+    auto slopeOrGainArea = slidersArea;
+    slopeOrGainSlider->setBounds (slopeOrGainArea);
 }
 
 void EqParamWidget::refreshButtons (EqMode dspMode)
 {
     if (dspMode == EqMode::STEREO)
     {
-        leftMidBypass.setVisible (false);
-        rightSideBypass.setVisible (false);
-        leftMidBypass.setToggleState (true, juce::NotificationType::sendNotification);
+        leftMidButton.setVisible (false);
+        rightSideButton.setVisible (false);
+        leftMidButton.setToggleState (true, juce::NotificationType::sendNotification);
     }
     else
     {
-        leftMidBypass.setVisible (true);
-        leftMidBypass.setButtonText (dspMode == EqMode::DUAL_MONO ? "L" : "M");
-        rightSideBypass.setVisible (true);
-        rightSideBypass.setButtonText (dspMode == EqMode::DUAL_MONO ? "R" : "S");
+        leftMidButton.setVisible (true);
+        leftMidButton.setButtonText (dspMode == EqMode::DUAL_MONO ? "L" : "M");
+        rightSideButton.setVisible (true);
+        rightSideButton.setButtonText (dspMode == EqMode::DUAL_MONO ? "R" : "S");
     }
 }
 
@@ -167,22 +194,54 @@ void EqParamWidget::refreshSliders (Channel channel)
     qualityAttachment.reset();
     slopeOrGainAttachment.reset();
 
-    auto frequencyName = FilterInfo::getParameterName (filterIndex, channel, FilterInfo::FilterParam::FREQUENCY);
+    auto frequencyName = FilterInfo::getParameterName (filterIndexInChain, channel, FilterInfo::FilterParam::FREQUENCY);
     frequencyAttachment = std::make_unique<SliderAttachment> (apvts, //
                                                               frequencyName,
                                                               frequencySlider);
 
-    auto qualityName = FilterInfo::getParameterName (filterIndex, channel, FilterInfo::FilterParam::Q);
+    auto qualityName = FilterInfo::getParameterName (filterIndexInChain, channel, FilterInfo::FilterParam::Q);
     qualityAttachment = std::make_unique<SliderAttachment> (apvts, //
                                                             qualityName,
                                                             qualitySlider);
 
-    auto slopeOrGainName = FilterInfo::getParameterName (filterIndex,
+    auto slopeOrGainName = FilterInfo::getParameterName (filterIndexInChain,
                                                          channel,
-                                                         isCut ? FilterInfo::FilterParam::SLOPE : FilterInfo::FilterParam::GAIN);
+                                                         isCutFilter ? FilterInfo::FilterParam::SLOPE : FilterInfo::FilterParam::GAIN);
     slopeOrGainAttachment = std::make_unique<SliderAttachment> (apvts, slopeOrGainName, *slopeOrGainSlider);
 }
 
-void EqParamWidget::buildGridImage()
+/* void EqParamWidget::buildGridImage() */
+/* { */
+/*     auto globalDisplayScale = juce::Desktop::getInstance().getGlobalScaleFactor(); */
+/*     auto width = static_cast<int> (getWidth() * globalDisplayScale); */
+/*     auto height = static_cast<int> (getHeight() * globalDisplayScale); */
+/*     widgetGridImage = juce::Image (juce::Image::PixelFormat::RGB, width, height, true); */
+/*     auto g = juce::Graphics (widgetGridImage); */
+/**/
+/*     g.addTransform (juce::AffineTransform::scale (globalDisplayScale)); */
+/**/
+/*     g.setColour (juce::Colours::aquamarine); */
+/**/
+/*     auto bounds = getLocalBounds(); */
+/*     bounds.removeFromBottom (24); */
+/**/
+/*     auto slidersArea = bounds; */
+/*     const auto sliderHeight = slidersArea.getHeight() / 3; */
+/**/
+/*     auto frequencyArea = slidersArea.removeFromTop (sliderHeight); */
+/*     g.drawLine (frequencyArea.getX(), frequencyArea.getBottom(), frequencyArea.getRight(), frequencyArea.getBottom(), 1); */
+/*     g.drawLine (frequencyArea.getRight(), frequencyArea.getY(), frequencyArea.getRight(), frequencyArea.getBottom(), 1); */
+/*     auto qualityArea = slidersArea.removeFromTop (sliderHeight); */
+/*     g.drawLine (qualityArea.getX(), qualityArea.getBottom(), qualityArea.getRight(), qualityArea.getBottom(), 1); */
+/*     g.drawLine (qualityArea.getRight(), qualityArea.getY(), qualityArea.getRight(), qualityArea.getBottom(), 1); */
+/*     auto slopeOrGainArea = slidersArea; */
+/*     g.drawLine (slopeOrGainArea.getX(), slopeOrGainArea.getBottom(), slopeOrGainArea.getRight(), slopeOrGainArea.getBottom(), 1); */
+/*     g.drawLine (slopeOrGainArea.getRight(), slopeOrGainArea.getY(), slopeOrGainArea.getRight(), slopeOrGainArea.getBottom(), 1); */
+/* } */
+
+void EqParamWidget::setupBypassButton (juce::TextButton& button)
 {
+    addChildComponent (button);
+    button.setRadioGroupId (1);
+    button.setClickingTogglesState (true);
 }
