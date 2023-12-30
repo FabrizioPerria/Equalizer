@@ -40,15 +40,24 @@ void EqParamContainer::paintOverChildren (juce::Graphics& g)
     g.setColour (juce::Colours::aquamarine);
 
     auto bounds = getLocalBounds().toFloat();
-    bounds.removeFromBottom (static_cast<float> (eqParamWidget0.buttonSideLength + eqParamWidget0.buttonMargin));
+    bounds.removeFromBottom (static_cast<float> (buttonArea));
     g.drawRect (bounds);
 
     auto eqParamWidgetWidth = bounds.getWidth() / 8;
-    auto sliderHeight = bounds.getHeight() / 3;
 
-    g.drawLine (bounds.getX(), bounds.getY() + sliderHeight, bounds.getRight(), bounds.getY() + sliderHeight, 1);
-    g.drawLine (bounds.getX(), bounds.getY() + 2 * sliderHeight, bounds.getRight(), bounds.getY() + 2 * sliderHeight, 1);
+    // separate the 3 sliders for each band
+    g.drawLine (bounds.getX(),
+                bounds.getY() + EqParamWidget::sliderHeight,
+                bounds.getRight(),
+                bounds.getY() + EqParamWidget::sliderHeight,
+                1);
+    g.drawLine (bounds.getX(),
+                bounds.getY() + 2 * EqParamWidget::sliderHeight,
+                bounds.getRight(),
+                bounds.getY() + 2 * EqParamWidget::sliderHeight,
+                1);
 
+    // separate the 8 bands vertically without drawing the first and the last line (they are already drawn by the drawRect above)
     while (bounds.getWidth() >= 2 * eqParamWidgetWidth)
     {
         auto eqParamWidgetBounds = bounds.removeFromLeft (eqParamWidgetWidth);

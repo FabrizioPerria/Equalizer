@@ -58,8 +58,9 @@ struct EqParamWidget : juce::Component
 
     void resized() override;
 
-    const int buttonSideLength { 20 };
-    const int buttonMargin { 4 };
+    static const int buttonSideLength { 20 };
+    static const int buttonMargin { 4 };
+    static const int sliderHeight { 20 };
 
 private:
     void refreshButtons (EqMode dspMode);

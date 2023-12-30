@@ -10,6 +10,9 @@ struct EqParamContainer : juce::Component
     void paintOverChildren (juce::Graphics& g) override;
     void resized() override;
 
+    static const int buttonArea = EqParamWidget::buttonSideLength + EqParamWidget::buttonMargin;
+    static const int sliderArea = 3 * EqParamWidget::sliderHeight;
+
 private:
     juce::AudioProcessorValueTreeState& apvts;
 

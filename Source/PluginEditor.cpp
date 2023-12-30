@@ -50,7 +50,7 @@ void EqualizerAudioProcessorEditor::resized()
     outputMeter.setBounds (pluginBounds.removeFromRight (stereoMeterWidth));
 
     pluginBounds.reduce (2 * pluginMargin, 0);
-    auto eqParamWidgetBounds = pluginBounds.removeFromBottom (84);
+    auto eqParamWidgetBounds = pluginBounds.removeFromBottom (EqParamContainer::sliderArea + EqParamContainer::buttonArea);
     eqParamContainer.setBounds (eqParamWidgetBounds);
 }
 
