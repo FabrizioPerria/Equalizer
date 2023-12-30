@@ -1,5 +1,6 @@
 #pragma once
 
+#include "PluginProcessor.h"
 #include "ui/EqParamWidget.h"
 #include <JuceHeader.h>
 
@@ -16,14 +17,14 @@ struct EqParamContainer : juce::Component
 private:
     juce::AudioProcessorValueTreeState& apvts;
 
-    EqParamWidget eqParamWidget0 { apvts, 0, true };
-    EqParamWidget eqParamWidget1 { apvts, 1, false };
-    EqParamWidget eqParamWidget2 { apvts, 2, false };
-    EqParamWidget eqParamWidget3 { apvts, 3, false };
-    EqParamWidget eqParamWidget4 { apvts, 4, false };
-    EqParamWidget eqParamWidget5 { apvts, 5, false };
-    EqParamWidget eqParamWidget6 { apvts, 6, false };
-    EqParamWidget eqParamWidget7 { apvts, 7, true };
+    EqParamWidget lowcutWidget { apvts, static_cast<int> (ChainPositions::LOWCUT), true };
+    EqParamWidget lowShelfWidget { apvts, static_cast<int> (ChainPositions::LOWSHELF), false };
+    EqParamWidget peakWidget1 { apvts, static_cast<int> (ChainPositions::PEAK1), false };
+    EqParamWidget peakWidget2 { apvts, static_cast<int> (ChainPositions::PEAK2), false };
+    EqParamWidget peakWidget3 { apvts, static_cast<int> (ChainPositions::PEAK3), false };
+    EqParamWidget peakWidget4 { apvts, static_cast<int> (ChainPositions::PEAK4), false };
+    EqParamWidget highShelfWidget { apvts, static_cast<int> (ChainPositions::HIGHSHELF), false };
+    EqParamWidget highCutWidget { apvts, static_cast<int> (ChainPositions::HIGHCUT), true };
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (EqParamContainer)
 };

@@ -1,38 +1,29 @@
 #include "ui/EqParamContainer.h"
 
-EqParamContainer::EqParamContainer (juce::AudioProcessorValueTreeState& apvtsToUse)
-    : apvts (apvtsToUse)
-    , eqParamWidget0 (apvts, 0, true)
-    , eqParamWidget1 (apvts, 1, false)
-    , eqParamWidget2 (apvts, 2, false)
-    , eqParamWidget3 (apvts, 3, false)
-    , eqParamWidget4 (apvts, 4, false)
-    , eqParamWidget5 (apvts, 5, false)
-    , eqParamWidget6 (apvts, 6, false)
-    , eqParamWidget7 (apvts, 7, true)
+EqParamContainer::EqParamContainer (juce::AudioProcessorValueTreeState& apvtsToUse) : apvts (apvtsToUse)
 {
-    addAndMakeVisible (eqParamWidget0);
-    addAndMakeVisible (eqParamWidget1);
-    addAndMakeVisible (eqParamWidget2);
-    addAndMakeVisible (eqParamWidget3);
-    addAndMakeVisible (eqParamWidget4);
-    addAndMakeVisible (eqParamWidget5);
-    addAndMakeVisible (eqParamWidget6);
-    addAndMakeVisible (eqParamWidget7);
+    addAndMakeVisible (lowcutWidget);
+    addAndMakeVisible (lowShelfWidget);
+    addAndMakeVisible (peakWidget1);
+    addAndMakeVisible (peakWidget2);
+    addAndMakeVisible (peakWidget3);
+    addAndMakeVisible (peakWidget4);
+    addAndMakeVisible (highShelfWidget);
+    addAndMakeVisible (highCutWidget);
 }
 
 void EqParamContainer::resized()
 {
     auto eqParamContainerBounds = getLocalBounds();
     auto eqParamWidgetWidth = eqParamContainerBounds.getWidth() / 8;
-    eqParamWidget0.setBounds (eqParamContainerBounds.removeFromLeft (eqParamWidgetWidth));
-    eqParamWidget1.setBounds (eqParamContainerBounds.removeFromLeft (eqParamWidgetWidth));
-    eqParamWidget2.setBounds (eqParamContainerBounds.removeFromLeft (eqParamWidgetWidth));
-    eqParamWidget3.setBounds (eqParamContainerBounds.removeFromLeft (eqParamWidgetWidth));
-    eqParamWidget4.setBounds (eqParamContainerBounds.removeFromLeft (eqParamWidgetWidth));
-    eqParamWidget5.setBounds (eqParamContainerBounds.removeFromLeft (eqParamWidgetWidth));
-    eqParamWidget6.setBounds (eqParamContainerBounds.removeFromLeft (eqParamWidgetWidth));
-    eqParamWidget7.setBounds (eqParamContainerBounds.removeFromLeft (eqParamWidgetWidth));
+    lowcutWidget.setBounds (eqParamContainerBounds.removeFromLeft (eqParamWidgetWidth));
+    lowShelfWidget.setBounds (eqParamContainerBounds.removeFromLeft (eqParamWidgetWidth));
+    peakWidget1.setBounds (eqParamContainerBounds.removeFromLeft (eqParamWidgetWidth));
+    peakWidget2.setBounds (eqParamContainerBounds.removeFromLeft (eqParamWidgetWidth));
+    peakWidget3.setBounds (eqParamContainerBounds.removeFromLeft (eqParamWidgetWidth));
+    peakWidget4.setBounds (eqParamContainerBounds.removeFromLeft (eqParamWidgetWidth));
+    highShelfWidget.setBounds (eqParamContainerBounds.removeFromLeft (eqParamWidgetWidth));
+    highCutWidget.setBounds (eqParamContainerBounds.removeFromLeft (eqParamWidgetWidth));
 }
 
 void EqParamContainer::paintOverChildren (juce::Graphics& g)

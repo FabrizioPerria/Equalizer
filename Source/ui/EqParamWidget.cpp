@@ -52,12 +52,9 @@ void CustomLookAndFeel::drawButtonBackground (juce::Graphics& g,
                                               bool shouldDrawButtonAsHighlighted,
                                               bool shouldDrawButtonAsDown)
 {
-    auto bounds = button.getLocalBounds();
-    if (button.getToggleState())
-        g.setColour (juce::Colours::green);
-    else
-        g.setColour (juce::Colours::black);
+    g.setColour (button.getToggleState() ? juce::Colours::green : juce::Colours::black);
 
+    auto bounds = button.getLocalBounds();
     g.fillRect (bounds);
     g.setColour (juce::Colours::white);
     g.drawRect (bounds, 1);
@@ -132,11 +129,10 @@ EqParamWidget::EqParamWidget (juce::AudioProcessorValueTreeState& apvtsToUse, in
         }
     };
 
-    auto eqModeParam = apvts.getParameter ("eq_mode");
-
     auto mode = static_cast<EqMode> (apvts.getRawParameterValue ("eq_mode")->load());
     refreshButtons (mode);
 
+    auto eqModeParam = apvts.getParameter ("eq_mode");
     auto dspModeCallback = [this] (float newDspMode)
     {
         auto dspMode = static_cast<EqMode> (newDspMode);
@@ -160,10 +156,9 @@ void EqParamWidget::resized()
     auto rightButtonArea = buttonsArea;
     rightSideButton.setBounds (rightButtonArea.removeFromLeft (buttonSideLength).reduced (2));
 
-    bounds.removeFromBottom (4);
+    bounds.removeFromBottom (buttonMargin);
 
     auto slidersArea = bounds;
-    const auto sliderHeight = slidersArea.getHeight() / 3;
     auto frequencyArea = slidersArea.removeFromTop (sliderHeight);
     frequencySlider.setBounds (frequencyArea);
     auto qualityArea = slidersArea.removeFromTop (sliderHeight);
