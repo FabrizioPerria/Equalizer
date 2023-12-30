@@ -12,7 +12,7 @@ TextOnlyHorizontalSlider::TextOnlyHorizontalSlider()
     setSliderSnapsToMousePosition (false);
 }
 
-void CustomLookAndFeel::drawLinearSlider (Graphics& g,
+void CustomLookAndFeel::drawLinearSlider (juce::Graphics& g,
                                           int x,
                                           int y,
                                           int width,
@@ -20,8 +20,8 @@ void CustomLookAndFeel::drawLinearSlider (Graphics& g,
                                           float sliderPos,
                                           float minSliderPos,
                                           float maxSliderPos,
-                                          Slider::SliderStyle style,
-                                          Slider& slider)
+                                          juce::Slider::SliderStyle style,
+                                          juce::Slider& slider)
 {
     if (TextOnlyHorizontalSlider* textSlider = dynamic_cast<TextOnlyHorizontalSlider*> (&slider))
     {
@@ -153,11 +153,12 @@ EqParamWidget::~EqParamWidget()
 void EqParamWidget::resized()
 {
     auto bounds = getLocalBounds();
-    auto buttonsArea = bounds.removeFromBottom (20);
+    auto buttonsArea = bounds.removeFromBottom (buttonSideLength);
+
     auto leftButtonArea = buttonsArea.removeFromLeft (buttonsArea.getWidth() / 2);
-    leftMidButton.setBounds (leftButtonArea.removeFromRight (leftButtonArea.getHeight()).reduced (2));
+    leftMidButton.setBounds (leftButtonArea.removeFromRight (buttonSideLength).reduced (2));
     auto rightButtonArea = buttonsArea;
-    rightSideButton.setBounds (rightButtonArea.removeFromLeft (rightButtonArea.getHeight()).reduced (2));
+    rightSideButton.setBounds (rightButtonArea.removeFromLeft (buttonSideLength).reduced (2));
 
     bounds.removeFromBottom (4);
 
@@ -209,35 +210,6 @@ void EqParamWidget::refreshSliders (Channel channel)
                                                          isCutFilter ? FilterInfo::FilterParam::SLOPE : FilterInfo::FilterParam::GAIN);
     slopeOrGainAttachment = std::make_unique<SliderAttachment> (apvts, slopeOrGainName, *slopeOrGainSlider);
 }
-
-/* void EqParamWidget::buildGridImage() */
-/* { */
-/*     auto globalDisplayScale = juce::Desktop::getInstance().getGlobalScaleFactor(); */
-/*     auto width = static_cast<int> (getWidth() * globalDisplayScale); */
-/*     auto height = static_cast<int> (getHeight() * globalDisplayScale); */
-/*     widgetGridImage = juce::Image (juce::Image::PixelFormat::RGB, width, height, true); */
-/*     auto g = juce::Graphics (widgetGridImage); */
-/**/
-/*     g.addTransform (juce::AffineTransform::scale (globalDisplayScale)); */
-/**/
-/*     g.setColour (juce::Colours::aquamarine); */
-/**/
-/*     auto bounds = getLocalBounds(); */
-/*     bounds.removeFromBottom (24); */
-/**/
-/*     auto slidersArea = bounds; */
-/*     const auto sliderHeight = slidersArea.getHeight() / 3; */
-/**/
-/*     auto frequencyArea = slidersArea.removeFromTop (sliderHeight); */
-/*     g.drawLine (frequencyArea.getX(), frequencyArea.getBottom(), frequencyArea.getRight(), frequencyArea.getBottom(), 1); */
-/*     g.drawLine (frequencyArea.getRight(), frequencyArea.getY(), frequencyArea.getRight(), frequencyArea.getBottom(), 1); */
-/*     auto qualityArea = slidersArea.removeFromTop (sliderHeight); */
-/*     g.drawLine (qualityArea.getX(), qualityArea.getBottom(), qualityArea.getRight(), qualityArea.getBottom(), 1); */
-/*     g.drawLine (qualityArea.getRight(), qualityArea.getY(), qualityArea.getRight(), qualityArea.getBottom(), 1); */
-/*     auto slopeOrGainArea = slidersArea; */
-/*     g.drawLine (slopeOrGainArea.getX(), slopeOrGainArea.getBottom(), slopeOrGainArea.getRight(), slopeOrGainArea.getBottom(), 1); */
-/*     g.drawLine (slopeOrGainArea.getRight(), slopeOrGainArea.getY(), slopeOrGainArea.getRight(), slopeOrGainArea.getBottom(), 1); */
-/* } */
 
 void EqParamWidget::setupBypassButton (juce::TextButton& button)
 {

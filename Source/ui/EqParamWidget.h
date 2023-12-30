@@ -13,7 +13,7 @@ struct TextOnlyHorizontalSlider : juce::Slider
 
 struct CustomLookAndFeel : juce::LookAndFeel_V4
 {
-    void drawLinearSlider (Graphics& g,
+    void drawLinearSlider (juce::Graphics& g,
                            int x,
                            int y,
                            int width,
@@ -21,8 +21,8 @@ struct CustomLookAndFeel : juce::LookAndFeel_V4
                            float sliderPos,
                            float minSliderPos,
                            float maxSliderPos,
-                           Slider::SliderStyle style,
-                           Slider& slider) override;
+                           juce::Slider::SliderStyle style,
+                           juce::Slider& slider) override;
 
     void drawButtonBackground (juce::Graphics& g,
                                juce::Button& button,
@@ -57,6 +57,9 @@ struct EqParamWidget : juce::Component
     ~EqParamWidget() override;
 
     void resized() override;
+
+    const int buttonSideLength { 20 };
+    const int buttonMargin { 4 };
 
 private:
     void refreshButtons (EqMode dspMode);
