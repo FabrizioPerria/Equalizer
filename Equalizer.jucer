@@ -11,6 +11,7 @@
               file="Source/ui/DbScaleComponent.cpp"/>
         <FILE id="C8P3QR" name="DbScaleComponent.h" compile="0" resource="0"
               file="Source/ui/DbScaleComponent.h"/>
+        <FILE id="BsFKYC" name="EqParamWidget.h" compile="0" resource="0" file="Source/ui/EqParamWidget.h"/>
         <FILE id="izWLyB" name="MeterComponent.cpp" compile="1" resource="0"
               file="Source/ui/MeterComponent.cpp"/>
         <FILE id="L9RxGF" name="MeterComponent.h" compile="0" resource="0"
