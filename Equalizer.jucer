@@ -11,6 +11,13 @@
               file="Source/ui/DbScaleComponent.cpp"/>
         <FILE id="C8P3QR" name="DbScaleComponent.h" compile="0" resource="0"
               file="Source/ui/DbScaleComponent.h"/>
+        <FILE id="w48MCR" name="EqParamContainer.cpp" compile="1" resource="0"
+              file="Source/ui/EqParamContainer.cpp"/>
+        <FILE id="E8DFlx" name="EqParamContainer.h" compile="0" resource="0"
+              file="Source/ui/EqParamContainer.h"/>
+        <FILE id="LABlUZ" name="EqParamWidget.cpp" compile="1" resource="0"
+              file="Source/ui/EqParamWidget.cpp"/>
+        <FILE id="BsFKYC" name="EqParamWidget.h" compile="0" resource="0" file="Source/ui/EqParamWidget.h"/>
         <FILE id="izWLyB" name="MeterComponent.cpp" compile="1" resource="0"
               file="Source/ui/MeterComponent.cpp"/>
         <FILE id="L9RxGF" name="MeterComponent.h" compile="0" resource="0"

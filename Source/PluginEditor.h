@@ -9,6 +9,7 @@
 #pragma once
 
 #include "PluginProcessor.h"
+#include "ui/EqParamContainer.h"
 #include "ui/StereoMeterComponent.h"
 #include <JuceHeader.h>
 
@@ -50,6 +51,8 @@ private:
 
     StereoMeterComponent inputMeter { "PRE EQ" };
     StereoMeterComponent outputMeter { "POST EQ" };
+
+    EqParamContainer eqParamContainer { audioProcessor.apvts };
 
     const int pluginMargin { 5 };
 

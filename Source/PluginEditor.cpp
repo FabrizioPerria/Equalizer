@@ -20,6 +20,8 @@ EqualizerAudioProcessorEditor::EqualizerAudioProcessorEditor (EqualizerAudioProc
     addAndMakeVisible (inputMeter);
     addAndMakeVisible (outputMeter);
 
+    addAndMakeVisible (eqParamContainer);
+
     startTimerHz (FRAMES_PER_SECOND);
 }
 
@@ -46,6 +48,10 @@ void EqualizerAudioProcessorEditor::resized()
     auto stereoMeterWidth = MONO_METER_WIDTH + METER_SCALE_WIDTH + MONO_METER_WIDTH;
     inputMeter.setBounds (pluginBounds.removeFromLeft (stereoMeterWidth));
     outputMeter.setBounds (pluginBounds.removeFromRight (stereoMeterWidth));
+
+    pluginBounds.reduce (2 * pluginMargin, 0);
+    auto eqParamWidgetBounds = pluginBounds.removeFromBottom (EqParamContainer::sliderArea + EqParamContainer::buttonArea);
+    eqParamContainer.setBounds (eqParamWidgetBounds);
 }
 
 void EqualizerAudioProcessorEditor::timerCallback()
