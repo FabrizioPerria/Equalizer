@@ -39,26 +39,29 @@ void BypassButton::paintButton (juce::Graphics& g, bool shouldDrawButtonAsHighli
 void GlobalBypassButton::paintButton (juce::Graphics& g, bool shouldDrawButtonAsHighlighted, bool shouldDrawButtonAsDown)
 {
     auto bounds = getLocalBounds().toFloat();
-    juce::Path powerSymbol;
-    g.setColour (juce::Colours::white);
-    auto size = juce::jmin (bounds.getWidth(), bounds.getHeight()) * 0.8f;
+    g.setColour (juce::Colours::red);
 
-    auto r = bounds.withSizeKeepingCentre (size, size).toFloat();
+    if (isShowingAsOn())
+    {
+        g.setColour (juce::Colours::green);
+    }
+    juce::Path powerSymbol;
+    auto size = juce::jmin (bounds.getWidth(), bounds.getHeight()) * 0.6f;
+
+    auto r = bounds.withSizeKeepingCentre (size, size);
     float angInRadians = juce::degreesToRadians (30.0f);
-    //TODO: play with this
-    size -= 6;
 
     powerSymbol.addCentredArc (r.getCentreX(),
                                r.getCentreY(),
-                               size * 0.5f,
-                               size * 0.5f,
+                               size / 2,
+                               size / 2,
                                0.0f,
                                angInRadians,
                                juce::MathConstants<float>::twoPi - angInRadians,
                                true);
 
     powerSymbol.startNewSubPath (r.getCentreX(), r.getY());
-    powerSymbol.lineTo (bounds.getCentre());
+    powerSymbol.lineTo (r.getCentre());
 
     juce::PathStrokeType strokeType (2.0f);
     g.strokePath (powerSymbol, strokeType);

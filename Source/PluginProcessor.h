@@ -74,6 +74,9 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
+    void setGlobalBypass (bool bypass);
+    bool isAnyFilterActive();
+
     juce::AudioProcessorValueTreeState apvts { *this, nullptr, "Params", createParameterLayout() };
 
     Fifo<MeterValues, 20> inMeterValuesFifo;
@@ -232,6 +235,23 @@ private:
         meterValues.rightRmsDb.setGain (buffer.getRMSLevel (rightChannel, 0, buffer.getNumSamples()));
 
         fifo.push (meterValues);
+    }
+
+    template <ChainPositions FilterPosition, Channel FilterChannel>
+    void setupBypassFilter (bool bypass)
+    {
+        auto bypassName = FilterInfo::getParameterName (static_cast<int> (FilterPosition), FilterChannel, FilterInfo::FilterParam::BYPASS);
+        auto param = dynamic_cast<juce::AudioParameterBool*> (apvts.getParameter (bypassName));
+        param->beginChangeGesture();
+        *param = bypass;
+        param->endChangeGesture();
+    }
+
+    template <ChainPositions FilterPosition, Channel FilterChannel>
+    bool isFilterActive()
+    {
+        auto bypassName = FilterInfo::getParameterName (static_cast<int> (FilterPosition), FilterChannel, FilterInfo::FilterParam::BYPASS);
+        return getRawParameter (bypassName) > 0.5f;
     }
 
     void updateTrimGains();
