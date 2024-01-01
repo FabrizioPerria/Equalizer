@@ -54,6 +54,13 @@ void EqualizerAudioProcessorEditor::resized()
     outputMeter.setBounds (pluginBounds.removeFromRight (stereoMeterWidth));
 
     pluginBounds.reduce (2 * pluginMargin, 0);
+
+    auto buttonHeight = JUCE_LIVE_CONSTANT (30);
+    auto globalBypassButtonBounds = pluginBounds.removeFromTop (buttonHeight);
+    globalBypassButton.setBounds (globalBypassButtonBounds.removeFromRight (JUCE_LIVE_CONSTANT (100)));
+    auto bypassButtonContainerBounds = pluginBounds.removeFromTop (buttonHeight);
+    bypassButtonContainer.setBounds (bypassButtonContainerBounds);
+
     auto eqParamWidgetBounds = pluginBounds.removeFromBottom (EqParamContainer::sliderArea + EqParamContainer::buttonArea);
     eqParamContainer.setBounds (eqParamWidgetBounds);
 }
