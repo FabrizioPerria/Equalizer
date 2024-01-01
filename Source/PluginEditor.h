@@ -9,7 +9,9 @@
 #pragma once
 
 #include "PluginProcessor.h"
+#include "ui/BypassButtonContainer.h"
 #include "ui/EqParamContainer.h"
+#include "ui/GlobalBypassButton.h"
 #include "ui/StereoMeterComponent.h"
 #include <JuceHeader.h>
 
@@ -53,6 +55,9 @@ private:
     StereoMeterComponent outputMeter { "POST EQ" };
 
     EqParamContainer eqParamContainer { audioProcessor.apvts };
+
+    GlobalBypassButton globalBypassButton { audioProcessor };
+    BypassButtonContainer bypassButtonContainer { audioProcessor.apvts };
 
     const int pluginMargin { 5 };
 

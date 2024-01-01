@@ -22,6 +22,9 @@ EqualizerAudioProcessorEditor::EqualizerAudioProcessorEditor (EqualizerAudioProc
 
     addAndMakeVisible (eqParamContainer);
 
+    addAndMakeVisible (globalBypassButton);
+    addAndMakeVisible (bypassButtonContainer);
+
     startTimerHz (FRAMES_PER_SECOND);
 }
 
@@ -45,6 +48,7 @@ void EqualizerAudioProcessorEditor::paint (juce::Graphics& g)
 void EqualizerAudioProcessorEditor::resized()
 {
     auto pluginBounds = getLocalBounds().reduced (2 * pluginMargin, pluginMargin);
+
     auto stereoMeterWidth = MONO_METER_WIDTH + METER_SCALE_WIDTH + MONO_METER_WIDTH;
     inputMeter.setBounds (pluginBounds.removeFromLeft (stereoMeterWidth));
     outputMeter.setBounds (pluginBounds.removeFromRight (stereoMeterWidth));
