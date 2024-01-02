@@ -23,7 +23,7 @@ void StereoMeterComponent::resized()
     auto bounds = getLocalBounds();
 
     bounds.removeFromBottom (labelHeight);
-    bounds.removeFromTop (componentsMargin);
+    /* bounds.removeFromTop (componentsMargin); */
 
     auto leftMeterBounds = bounds.removeFromLeft (MONO_METER_WIDTH).withTrimmedBottom (componentsMargin);
     auto rightMeterBounds = bounds.removeFromRight (MONO_METER_WIDTH).withTrimmedBottom (componentsMargin);

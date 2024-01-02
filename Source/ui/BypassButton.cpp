@@ -15,8 +15,8 @@ void BypassButton::paintButton (juce::Graphics& g, bool shouldDrawButtonAsHighli
     if (isShowingAsOn())
     {
         auto bounds = getLocalBounds().toFloat();
-        bounds.removeFromTop (5);
-        bounds.removeFromBottom (5);
+        /* bounds.removeFromTop (5); */
+        /* bounds.removeFromBottom (5); */
 
         if (isPaired)
         {

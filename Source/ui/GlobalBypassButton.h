@@ -40,10 +40,7 @@ struct GlobalBypassButton : BypassButton, juce::Timer
         {
             g.setColour (juce::Colours::green);
         }
-        juce::Path powerSymbol = PathFactory::createPowerSymbol (bounds);
-
-        juce::PathStrokeType strokeType (2.0f);
-        g.strokePath (powerSymbol, strokeType);
+        PathDrawer::drawPowerSymbol (g, bounds);
         g.drawRect (bounds);
     }
 

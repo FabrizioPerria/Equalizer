@@ -48,6 +48,7 @@ void EqualizerAudioProcessorEditor::paint (juce::Graphics& g)
 void EqualizerAudioProcessorEditor::resized()
 {
     auto pluginBounds = getLocalBounds().reduced (2 * pluginMargin, pluginMargin);
+    pluginBounds.removeFromTop (2 * pluginMargin);
 
     auto stereoMeterWidth = MONO_METER_WIDTH + METER_SCALE_WIDTH + MONO_METER_WIDTH;
     inputMeter.setBounds (pluginBounds.removeFromLeft (stereoMeterWidth));
@@ -55,9 +56,12 @@ void EqualizerAudioProcessorEditor::resized()
 
     pluginBounds.reduce (2 * pluginMargin, 0);
 
-    auto buttonHeight = JUCE_LIVE_CONSTANT (30);
+    auto buttonHeight = JUCE_LIVE_CONSTANT (20);
     auto globalBypassButtonBounds = pluginBounds.removeFromTop (buttonHeight);
-    globalBypassButton.setBounds (globalBypassButtonBounds.removeFromRight (JUCE_LIVE_CONSTANT (100)));
+    globalBypassButton.setBounds (globalBypassButtonBounds.removeFromRight (JUCE_LIVE_CONSTANT (40)));
+
+    pluginBounds.removeFromTop (2 * pluginMargin);
+
     auto bypassButtonContainerBounds = pluginBounds.removeFromTop (buttonHeight);
     bypassButtonContainer.setBounds (bypassButtonContainerBounds);
 

@@ -27,7 +27,7 @@ void BypassButtonContainer::resized()
 
     for (auto& button : bypassButtons)
     {
-        flexBox.items.add (juce::FlexItem (*button).withMinWidth (height * 2).withMinHeight (height));
+        flexBox.items.add (juce::FlexItem (*button).withMinWidth (height * 3).withMinHeight (height));
     }
 
     flexBox.performLayout (getLocalBounds().toFloat());

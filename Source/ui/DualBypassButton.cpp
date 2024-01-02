@@ -1,5 +1,6 @@
 #include "ui/DualBypassButton.h"
 #include "utils/EqParam.h"
+#include "utils/PathFactory.h"
 
 DualBypassButton::DualBypassButton (ChainPositions pos, AudioProcessorValueTreeState& apvtsToUse) : chainPosition (pos), apvts (apvtsToUse)
 {
@@ -36,23 +37,32 @@ void DualBypassButton::paintOverChildren (juce::Graphics& g)
     //TODO: handle colors
     //TODO: draw dotted line if not stereo
     //TODO: get path from factory
+
     switch (chainPosition)
     {
         case ChainPositions::LOWCUT:
+            PathDrawer::drawCutFilterSymbol (g, getLocalBounds().toFloat(), false, true, true);
             break;
         case ChainPositions::LOWSHELF:
+            PathDrawer::drawShelfFilterSymbol (g, getLocalBounds().toFloat(), false, true, true);
             break;
         case ChainPositions::PEAK1:
+            PathDrawer::drawPeakFilterSymbol (g, getLocalBounds().toFloat(), true, true);
             break;
         case ChainPositions::PEAK2:
+            PathDrawer::drawPeakFilterSymbol (g, getLocalBounds().toFloat(), true, true);
             break;
         case ChainPositions::PEAK3:
+            PathDrawer::drawPeakFilterSymbol (g, getLocalBounds().toFloat(), true, true);
             break;
         case ChainPositions::PEAK4:
+            PathDrawer::drawPeakFilterSymbol (g, getLocalBounds().toFloat(), true, true);
             break;
         case ChainPositions::HIGHSHELF:
+            PathDrawer::drawShelfFilterSymbol (g, getLocalBounds().toFloat(), true, true, true);
             break;
         case ChainPositions::HIGHCUT:
+            PathDrawer::drawCutFilterSymbol (g, getLocalBounds().toFloat(), true, true, true);
             break;
         default:
             jassertfalse;
