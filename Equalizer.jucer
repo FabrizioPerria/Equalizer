@@ -64,6 +64,10 @@
         <FILE id="kv2nfT" name="EqCutFilterDesign.h" compile="0" resource="0"
               file="Source/utils/EqCutFilterDesign.h"/>
         <FILE id="NnMOtd" name="EqParam.h" compile="0" resource="0" file="Source/utils/EqParam.h"/>
+        <FILE id="Wtlyy7" name="FFTDataGenerator.cpp" compile="1" resource="0"
+              file="Source/utils/FFTDataGenerator.cpp"/>
+        <FILE id="gUrGHI" name="FFTDataGenerator.h" compile="0" resource="0"
+              file="Source/utils/FFTDataGenerator.h"/>
         <FILE id="gJASSV" name="Fifo.h" compile="0" resource="0" file="Source/utils/Fifo.h"/>
         <FILE id="qaxQpL" name="FilterCoefficientGenerator.h" compile="0" resource="0"
               file="Source/utils/FilterCoefficientGenerator.h"/>
