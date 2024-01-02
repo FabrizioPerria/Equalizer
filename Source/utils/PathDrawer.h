@@ -37,29 +37,15 @@ struct PathDrawer
     {
         auto anchorPoints = createAnchorPoints (bounds);
 
-        if (enableLeft)
-        {
-            g.setColour (juce::Colours::aquamarine);
-        }
-        else
-        {
-            g.setColour (juce::Colours::grey);
-        }
         juce::Path cutFilterSymbolLeft;
+        setColorByEnable (g, enableLeft);
         cutFilterSymbolLeft.startNewSubPath (anchorPoints.startX, anchorPoints.bottomY);
         cutFilterSymbolLeft.lineTo (anchorPoints.leftX, anchorPoints.topY);
         cutFilterSymbolLeft.lineTo (anchorPoints.centerX, anchorPoints.topY);
         g.strokePath (cutFilterSymbolLeft, juce::PathStrokeType (1.0f), transform);
 
-        if (enableRight)
-        {
-            g.setColour (juce::Colours::aquamarine);
-        }
-        else
-        {
-            g.setColour (juce::Colours::grey);
-        }
         juce::Path cutFilterSymbolRight;
+        setColorByEnable (g, enableRight);
         cutFilterSymbolRight.startNewSubPath (anchorPoints.centerX, anchorPoints.topY);
         cutFilterSymbolRight.lineTo (anchorPoints.endX, anchorPoints.topY);
         g.strokePath (cutFilterSymbolRight, juce::PathStrokeType (1.0f), transform);
@@ -74,33 +60,18 @@ struct PathDrawer
     {
         auto anchorPoints = createAnchorPoints (bounds);
 
-        if (enableLeft)
-        {
-            g.setColour (juce::Colours::aquamarine);
-        }
-        else
-        {
-            g.setColour (juce::Colours::grey);
-        }
         juce::Path shelfFilterSymbolLeft;
+        setColorByEnable (g, enableLeft);
         shelfFilterSymbolLeft.startNewSubPath (anchorPoints.startX, anchorPoints.bottomY);
         shelfFilterSymbolLeft.lineTo (anchorPoints.leftX, anchorPoints.bottomY);
         shelfFilterSymbolLeft.lineTo (anchorPoints.centerX, anchorPoints.centerY);
         shelfFilterSymbolLeft.startNewSubPath (anchorPoints.startX, anchorPoints.topY);
         shelfFilterSymbolLeft.lineTo (anchorPoints.leftX, anchorPoints.topY);
         shelfFilterSymbolLeft.lineTo (anchorPoints.centerX, anchorPoints.centerY);
-
         g.strokePath (shelfFilterSymbolLeft, juce::PathStrokeType (1.0f), transform);
 
-        if (enableRight)
-        {
-            g.setColour (juce::Colours::aquamarine);
-        }
-        else
-        {
-            g.setColour (juce::Colours::grey);
-        }
         juce::Path shelfFilterSymbolRight;
+        setColorByEnable (g, enableRight);
         shelfFilterSymbolRight.startNewSubPath (anchorPoints.centerX, anchorPoints.centerY);
         shelfFilterSymbolRight.lineTo (anchorPoints.endX, anchorPoints.centerY);
         g.strokePath (shelfFilterSymbolRight, juce::PathStrokeType (1.0f), transform);
@@ -111,40 +82,22 @@ struct PathDrawer
     {
         auto anchorPoints = createAnchorPoints (bounds);
 
-        if (enableLeft)
-        {
-            g.setColour (juce::Colours::aquamarine);
-        }
-        else
-        {
-            g.setColour (juce::Colours::grey);
-        }
-
         juce::Path peakFilterSymbolLeft;
+        setColorByEnable (g, enableLeft);
         peakFilterSymbolLeft.startNewSubPath (anchorPoints.startX, anchorPoints.centerY);
         peakFilterSymbolLeft.lineTo (anchorPoints.leftX, anchorPoints.centerY);
         peakFilterSymbolLeft.lineTo (anchorPoints.centerX, anchorPoints.topY);
         peakFilterSymbolLeft.startNewSubPath (anchorPoints.leftX, anchorPoints.centerY);
         peakFilterSymbolLeft.lineTo (anchorPoints.centerX, anchorPoints.bottomY);
-
         g.strokePath (peakFilterSymbolLeft, juce::PathStrokeType (1.0f));
 
-        if (enableRight)
-        {
-            g.setColour (juce::Colours::aquamarine);
-        }
-        else
-        {
-            g.setColour (juce::Colours::grey);
-        }
-
         juce::Path peakFilterSymbolRight;
+        setColorByEnable (g, enableRight);
         peakFilterSymbolRight.startNewSubPath (anchorPoints.centerX, anchorPoints.topY);
         peakFilterSymbolRight.lineTo (anchorPoints.rightX, anchorPoints.centerY);
         peakFilterSymbolRight.lineTo (anchorPoints.endX, anchorPoints.centerY);
         peakFilterSymbolRight.startNewSubPath (anchorPoints.centerX, anchorPoints.bottomY);
         peakFilterSymbolRight.lineTo (anchorPoints.rightX, anchorPoints.centerY);
-
         g.strokePath (peakFilterSymbolRight, juce::PathStrokeType (1.0f));
     }
 
@@ -177,5 +130,17 @@ private:
         anchorPoints.bottomY = y + 3 * height / 4;
 
         return anchorPoints;
+    }
+
+    static void setColorByEnable (juce::Graphics& g, bool enable)
+    {
+        if (enable)
+        {
+            g.setColour (juce::Colours::aquamarine);
+        }
+        else
+        {
+            g.setColour (juce::Colours::grey);
+        }
     }
 };

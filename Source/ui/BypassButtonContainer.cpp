@@ -1,6 +1,5 @@
 #include "ui/BypassButtonContainer.h"
 #include "PluginProcessor.h"
-#include "utils/PathFactory.h"
 
 BypassButtonContainer::BypassButtonContainer (juce::AudioProcessorValueTreeState& apvts)
 {
@@ -13,13 +12,9 @@ BypassButtonContainer::BypassButtonContainer (juce::AudioProcessorValueTreeState
     }
 }
 
-void BypassButtonContainer::paint (juce::Graphics& g)
-{
-}
-
 void BypassButtonContainer::resized()
 {
-    auto height = getLocalBounds().getHeight();
+    auto height = getLocalBounds().toFloat().getHeight();
 
     juce::FlexBox flexBox;
     flexBox.flexDirection = juce::FlexBox::Direction::row;
