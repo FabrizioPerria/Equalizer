@@ -76,6 +76,8 @@
               file="Source/utils/MidSideProcessor.h"/>
         <FILE id="VkXdMM" name="PathDrawer.h" compile="0" resource="0" file="Source/utils/PathDrawer.h"/>
         <FILE id="P5KFW3" name="ReleasePool.h" compile="0" resource="0" file="Source/utils/ReleasePool.h"/>
+        <FILE id="avNqkB" name="SingleChannelSampleFifo.h" compile="0" resource="0"
+              file="Source/utils/SingleChannelSampleFifo.h"/>
       </GROUP>
       <FILE id="IQfYle" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
