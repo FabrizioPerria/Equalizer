@@ -12,28 +12,26 @@ bool BypassButton::isShowingAsOn() const
 
 void BypassButton::paintButton (juce::Graphics& g, bool shouldDrawButtonAsHighlighted, bool shouldDrawButtonAsDown)
 {
+    const int margin = 3;
     if (isShowingAsOn())
     {
         auto bounds = getLocalBounds().toFloat();
-        bounds.removeFromTop (2);
-        bounds.removeFromBottom (2);
+        bounds.reduce (0, margin);
 
         if (isPaired)
         {
             if (onLeft)
             {
-                bounds.removeFromLeft (2);
+                bounds.removeFromLeft (margin);
             }
             else
             {
-                bounds.removeFromRight (2);
+                bounds.removeFromRight (margin);
             }
         }
         else
         {
-            //TODO: reduce??
-            bounds.removeFromLeft (2);
-            bounds.removeFromRight (2);
+            bounds.reduce (margin, 0);
         }
 
         g.setColour (juce::Colours::green);

@@ -56,9 +56,9 @@ void EqualizerAudioProcessorEditor::resized()
 
     pluginBounds.reduce (2 * pluginMargin, 0);
 
-    auto buttonHeight = JUCE_LIVE_CONSTANT (20);
-    auto globalBypassButtonBounds = pluginBounds.removeFromTop (buttonHeight);
-    globalBypassButton.setBounds (globalBypassButtonBounds.removeFromRight (JUCE_LIVE_CONSTANT (40)));
+    auto buttonHeight = 20;
+    auto globalBypassButtonBounds = pluginBounds.removeFromTop (buttonHeight).reduced (buttonHeight / 2, 0);
+    globalBypassButton.setBounds (globalBypassButtonBounds.removeFromRight (3 * buttonHeight));
 
     pluginBounds.removeFromTop (2 * pluginMargin);
 

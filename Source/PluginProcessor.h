@@ -251,7 +251,7 @@ private:
     bool isFilterActive()
     {
         auto bypassName = FilterInfo::getParameterName (static_cast<int> (FilterPosition), FilterChannel, FilterInfo::FilterParam::BYPASS);
-        return getRawParameter (bypassName) > 0.5f;
+        return getRawParameter (bypassName) < 0.5f;
     }
 
     void updateTrimGains();

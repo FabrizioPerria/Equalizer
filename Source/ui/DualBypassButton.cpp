@@ -2,7 +2,7 @@
 #include "utils/EqParam.h"
 #include "utils/PathFactory.h"
 
-DualBypassButton::DualBypassButton (ChainPositions pos, AudioProcessorValueTreeState& apvtsToUse) : chainPosition (pos), apvts (apvtsToUse)
+DualBypassButton::DualBypassButton (ChainPositions pos, AudioProcessorValueTreeState& apvtsToUse) : apvts (apvtsToUse), chainPosition (pos)
 {
     addAndMakeVisible (leftButton);
     addAndMakeVisible (rightButton);
@@ -34,14 +34,24 @@ DualBypassButton::DualBypassButton (ChainPositions pos, AudioProcessorValueTreeS
 
 void DualBypassButton::paintOverChildren (juce::Graphics& g)
 {
-    //TODO: handle colors
-    //TODO: draw dotted line if not stereo
-    //TODO: get path from factory
-
-    g.setColour (juce::Colours::aquamarine);
-    g.drawRect (getLocalBounds(), 1);
-
     auto bounds = getLocalBounds().toFloat();
+    g.setColour (juce::Colours::aquamarine);
+    g.drawRect (bounds);
+
+    if (static_cast<EqMode> (apvts.getRawParameterValue ("eq_mode")->load()) != EqMode::STEREO)
+    {
+        auto center = bounds.getCentreX();
+        auto top = bounds.getY();
+        auto bottom = bounds.getBottom();
+
+        juce::Line<float> line;
+        line.setStart ({ center, top });
+        line.setEnd ({ center, bottom });
+
+        float dashLengths[2] = { 2.0f, 1.0f };
+        g.drawDashedLine (line, dashLengths, 2.0f);
+    }
+
     auto unflipped = juce::AffineTransform();
     auto flipped = unflipped.scale (-1.f, 1.f, bounds.getCentreX(), bounds.getCentreY());
 

@@ -3,9 +3,9 @@
 #include "utils/PathFactory.h"
 #include <JuceHeader.h>
 
-struct GlobalBypassButton : BypassButton, juce::Timer
+struct GlobalBypassButton : juce::Button, juce::Timer
 {
-    GlobalBypassButton (EqualizerAudioProcessor& p) : audioProcessor (p)
+    GlobalBypassButton (EqualizerAudioProcessor& p) : audioProcessor (p), Button ("")
     {
         setClickingTogglesState (true);
         setToggleState (true, juce::dontSendNotification);
@@ -17,12 +17,12 @@ struct GlobalBypassButton : BypassButton, juce::Timer
         auto atLeastOneActive = audioProcessor.isAnyFilterActive();
         if (! atLeastOneActive && isShowingAsOn())
         {
-            setToggleState (false, juce::dontSendNotification);
+            setToggleState (true, juce::dontSendNotification);
         }
 
         if (atLeastOneActive && ! isShowingAsOn())
         {
-            setToggleState (true, juce::dontSendNotification);
+            setToggleState (false, juce::dontSendNotification);
         }
     }
 
@@ -45,5 +45,9 @@ struct GlobalBypassButton : BypassButton, juce::Timer
     }
 
 private:
+    bool isShowingAsOn()
+    {
+        return ! getToggleState();
+    }
     EqualizerAudioProcessor& audioProcessor;
 };
