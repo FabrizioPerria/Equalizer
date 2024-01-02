@@ -38,31 +38,35 @@ void DualBypassButton::paintOverChildren (juce::Graphics& g)
     //TODO: draw dotted line if not stereo
     //TODO: get path from factory
 
+    g.setColour (juce::Colours::aquamarine);
+    g.drawRect (getLocalBounds(), 1);
+
+    auto bounds = getLocalBounds().toFloat();
+    auto unflipped = juce::AffineTransform();
+    auto flipped = unflipped.scale (-1.f, 1.f, bounds.getCentreX(), bounds.getCentreY());
+
+    auto enableLeft = isShowingAsOn (Channel::LEFT);
+    auto enableRight = isShowingAsOn (Channel::RIGHT);
+
     switch (chainPosition)
     {
         case ChainPositions::LOWCUT:
-            PathDrawer::drawCutFilterSymbol (g, getLocalBounds().toFloat(), false, true, true);
+            PathDrawer::drawCutFilterSymbol (g, bounds, unflipped, enableLeft, enableRight);
             break;
         case ChainPositions::LOWSHELF:
-            PathDrawer::drawShelfFilterSymbol (g, getLocalBounds().toFloat(), false, true, true);
+            PathDrawer::drawShelfFilterSymbol (g, bounds, unflipped, enableLeft, enableRight);
             break;
         case ChainPositions::PEAK1:
-            PathDrawer::drawPeakFilterSymbol (g, getLocalBounds().toFloat(), true, true);
-            break;
         case ChainPositions::PEAK2:
-            PathDrawer::drawPeakFilterSymbol (g, getLocalBounds().toFloat(), true, true);
-            break;
         case ChainPositions::PEAK3:
-            PathDrawer::drawPeakFilterSymbol (g, getLocalBounds().toFloat(), true, true);
-            break;
         case ChainPositions::PEAK4:
-            PathDrawer::drawPeakFilterSymbol (g, getLocalBounds().toFloat(), true, true);
+            PathDrawer::drawPeakFilterSymbol (g, bounds, enableLeft, enableRight);
             break;
         case ChainPositions::HIGHSHELF:
-            PathDrawer::drawShelfFilterSymbol (g, getLocalBounds().toFloat(), true, true, true);
+            PathDrawer::drawShelfFilterSymbol (g, bounds, flipped, enableRight, enableLeft);
             break;
         case ChainPositions::HIGHCUT:
-            PathDrawer::drawCutFilterSymbol (g, getLocalBounds().toFloat(), true, true, true);
+            PathDrawer::drawCutFilterSymbol (g, bounds, flipped, enableRight, enableLeft);
             break;
         default:
             jassertfalse;

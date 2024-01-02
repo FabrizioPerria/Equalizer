@@ -29,16 +29,17 @@ struct PathDrawer
     }
 
     template <typename BoundType>
-    static void drawCutFilterSymbol (juce::Graphics& g, const BoundType& bounds, bool flipped, bool enableLeft, bool enableRight)
+    static void drawCutFilterSymbol (juce::Graphics& g,
+                                     const BoundType& bounds,
+                                     juce::AffineTransform& transform,
+                                     bool enableLeft,
+                                     bool enableRight)
     {
         auto anchorPoints = createAnchorPoints (bounds);
 
-        auto unflipped = juce::AffineTransform();
-        auto flip = unflipped.scale (flipped ? -1.f : 1.f, 1.f, anchorPoints.centerX, anchorPoints.centerY);
-
         if (enableLeft)
         {
-            g.setColour (juce::Colours::red);
+            g.setColour (juce::Colours::aquamarine);
         }
         else
         {
@@ -48,11 +49,11 @@ struct PathDrawer
         cutFilterSymbolLeft.startNewSubPath (anchorPoints.startX, anchorPoints.bottomY);
         cutFilterSymbolLeft.lineTo (anchorPoints.leftX, anchorPoints.topY);
         cutFilterSymbolLeft.lineTo (anchorPoints.centerX, anchorPoints.topY);
-        g.strokePath (cutFilterSymbolLeft, juce::PathStrokeType (1.0f), flip);
+        g.strokePath (cutFilterSymbolLeft, juce::PathStrokeType (1.0f), transform);
 
         if (enableRight)
         {
-            g.setColour (juce::Colours::red);
+            g.setColour (juce::Colours::aquamarine);
         }
         else
         {
@@ -61,20 +62,21 @@ struct PathDrawer
         juce::Path cutFilterSymbolRight;
         cutFilterSymbolRight.startNewSubPath (anchorPoints.centerX, anchorPoints.topY);
         cutFilterSymbolRight.lineTo (anchorPoints.endX, anchorPoints.topY);
-        g.strokePath (cutFilterSymbolRight, juce::PathStrokeType (1.0f), flip);
+        g.strokePath (cutFilterSymbolRight, juce::PathStrokeType (1.0f), transform);
     }
 
     template <typename BoundType>
-    static void drawShelfFilterSymbol (juce::Graphics& g, const BoundType bounds, bool flipped, bool enableLeft, bool enableRight)
+    static void drawShelfFilterSymbol (juce::Graphics& g,
+                                       const BoundType bounds,
+                                       juce::AffineTransform& transform,
+                                       bool enableLeft,
+                                       bool enableRight)
     {
         auto anchorPoints = createAnchorPoints (bounds);
 
-        auto unflipped = juce::AffineTransform();
-        auto flip = unflipped.scale (flipped ? -1.f : 1.f, 1.f, anchorPoints.centerX, anchorPoints.centerY);
-
         if (enableLeft)
         {
-            g.setColour (juce::Colours::red);
+            g.setColour (juce::Colours::aquamarine);
         }
         else
         {
@@ -88,11 +90,11 @@ struct PathDrawer
         shelfFilterSymbolLeft.lineTo (anchorPoints.leftX, anchorPoints.topY);
         shelfFilterSymbolLeft.lineTo (anchorPoints.centerX, anchorPoints.centerY);
 
-        g.strokePath (shelfFilterSymbolLeft, juce::PathStrokeType (1.0f), flip);
+        g.strokePath (shelfFilterSymbolLeft, juce::PathStrokeType (1.0f), transform);
 
         if (enableRight)
         {
-            g.setColour (juce::Colours::red);
+            g.setColour (juce::Colours::aquamarine);
         }
         else
         {
@@ -101,7 +103,7 @@ struct PathDrawer
         juce::Path shelfFilterSymbolRight;
         shelfFilterSymbolRight.startNewSubPath (anchorPoints.centerX, anchorPoints.centerY);
         shelfFilterSymbolRight.lineTo (anchorPoints.endX, anchorPoints.centerY);
-        g.strokePath (shelfFilterSymbolRight, juce::PathStrokeType (1.0f), flip);
+        g.strokePath (shelfFilterSymbolRight, juce::PathStrokeType (1.0f), transform);
     }
 
     template <typename BoundType>
@@ -111,7 +113,7 @@ struct PathDrawer
 
         if (enableLeft)
         {
-            g.setColour (juce::Colours::red);
+            g.setColour (juce::Colours::aquamarine);
         }
         else
         {
@@ -129,7 +131,7 @@ struct PathDrawer
 
         if (enableRight)
         {
-            g.setColour (juce::Colours::red);
+            g.setColour (juce::Colours::aquamarine);
         }
         else
         {

@@ -15,25 +15,25 @@ void BypassButton::paintButton (juce::Graphics& g, bool shouldDrawButtonAsHighli
     if (isShowingAsOn())
     {
         auto bounds = getLocalBounds().toFloat();
-        /* bounds.removeFromTop (5); */
-        /* bounds.removeFromBottom (5); */
+        bounds.removeFromTop (2);
+        bounds.removeFromBottom (2);
 
         if (isPaired)
         {
             if (onLeft)
             {
-                bounds.removeFromLeft (5);
+                bounds.removeFromLeft (2);
             }
             else
             {
-                bounds.removeFromRight (5);
+                bounds.removeFromRight (2);
             }
         }
         else
         {
             //TODO: reduce??
-            bounds.removeFromLeft (5);
-            bounds.removeFromRight (5);
+            bounds.removeFromLeft (2);
+            bounds.removeFromRight (2);
         }
 
         g.setColour (juce::Colours::green);
