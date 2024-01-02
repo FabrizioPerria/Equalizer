@@ -6,9 +6,7 @@
 struct BypassButtonContainer : juce::Component
 {
     BypassButtonContainer (juce::AudioProcessorValueTreeState& apvts);
-    ~BypassButtonContainer() override = default;
 
-    void paint (juce::Graphics&) override;
     void resized() override;
 
 private:

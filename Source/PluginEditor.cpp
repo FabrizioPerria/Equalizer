@@ -22,8 +22,8 @@ EqualizerAudioProcessorEditor::EqualizerAudioProcessorEditor (EqualizerAudioProc
                                                                                                          eqModeComboBox);
 
     eqModeComboBox.addItem ("Stereo", static_cast<int> (EqMode::STEREO) + 1);
-    eqModeComboBox.addItem ("Mid/Side", static_cast<int> (EqMode::MID_SIDE) + 1);
     eqModeComboBox.addItem ("Dual Mono", static_cast<int> (EqMode::DUAL_MONO) + 1);
+    eqModeComboBox.addItem ("Mid/Side", static_cast<int> (EqMode::MID_SIDE) + 1);
     eqModeComboBox.setSelectedId (static_cast<int> (p.apvts.getRawParameterValue ("eq_mode")->load()) + 1, juce::dontSendNotification);
 
     addAndMakeVisible (eqModeComboBox);
@@ -69,7 +69,7 @@ void EqualizerAudioProcessorEditor::resized()
     pluginBounds.reduce (2 * pluginMargin, 0);
 
     auto buttonHeight = 20;
-    auto globalBypassButtonBounds = pluginBounds.removeFromTop (buttonHeight).reduced (buttonHeight / 2, 0);
+    auto globalBypassButtonBounds = pluginBounds.removeFromTop (buttonHeight).reduced (2 * pluginMargin, 0);
 #ifdef TEST_EQ_MODE
     eqModeComboBox.setBounds (globalBypassButtonBounds.removeFromLeft (getWidth() / 2));
 #endif

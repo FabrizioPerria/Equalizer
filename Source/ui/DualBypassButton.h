@@ -7,7 +7,7 @@
 
 struct DualBypassButton : juce::Component
 {
-    DualBypassButton (ChainPositions pos, AudioProcessorValueTreeState& apvtsToUse);
+    DualBypassButton (ChainPositions pos, juce::AudioProcessorValueTreeState& apvtsToUse);
 
     void paintOverChildren (juce::Graphics& g) override;
 
@@ -18,9 +18,9 @@ struct DualBypassButton : juce::Component
     bool isShowingAsOn (Channel channel);
 
 private:
-    AudioProcessorValueTreeState& apvts;
+    juce::AudioProcessorValueTreeState& apvts;
 
-    bool isPaired;
+    bool isPaired { false };
 
     BypassButton leftButton;
     BypassButton rightButton;

@@ -152,9 +152,9 @@ void EqParamWidget::resized()
     auto buttonsArea = bounds.removeFromBottom (buttonSideLength);
 
     auto leftButtonArea = buttonsArea.removeFromLeft (buttonsArea.getWidth() / 2);
-    leftMidButton.setBounds (leftButtonArea.removeFromRight (buttonSideLength).reduced (2));
+    leftMidButton.setBounds (leftButtonArea.removeFromRight (buttonSideLength).reduced (1));
     auto rightButtonArea = buttonsArea;
-    rightSideButton.setBounds (rightButtonArea.removeFromLeft (buttonSideLength).reduced (2));
+    rightSideButton.setBounds (rightButtonArea.removeFromLeft (buttonSideLength).reduced (1));
 
     bounds.removeFromBottom (buttonMargin);
 

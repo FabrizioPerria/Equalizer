@@ -1,8 +1,8 @@
 #include "ui/DualBypassButton.h"
 #include "utils/EqParam.h"
-#include "utils/PathFactory.h"
+#include "utils/PathDrawer.h"
 
-DualBypassButton::DualBypassButton (ChainPositions pos, AudioProcessorValueTreeState& apvtsToUse) : apvts (apvtsToUse), chainPosition (pos)
+DualBypassButton::DualBypassButton (ChainPositions pos, juce::AudioProcessorValueTreeState& apvtsToUse) : apvts (apvtsToUse), chainPosition (pos)
 {
     addAndMakeVisible (leftButton);
     addAndMakeVisible (rightButton);
