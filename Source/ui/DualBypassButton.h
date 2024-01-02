@@ -20,6 +20,8 @@ struct DualBypassButton : juce::Component
 private:
     AudioProcessorValueTreeState& apvts;
 
+    bool isPaired;
+
     BypassButton leftButton;
     BypassButton rightButton;
 

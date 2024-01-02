@@ -16,6 +16,18 @@ EqualizerAudioProcessorEditor::EqualizerAudioProcessorEditor (EqualizerAudioProc
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
     setSize (800, 600);
+#ifdef TEST_EQ_MODE
+    eqModeComboBoxAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment> (audioProcessor.apvts,
+                                                                                                         "eq_mode",
+                                                                                                         eqModeComboBox);
+
+    eqModeComboBox.addItem ("Stereo", static_cast<int> (EqMode::STEREO) + 1);
+    eqModeComboBox.addItem ("Mid/Side", static_cast<int> (EqMode::MID_SIDE) + 1);
+    eqModeComboBox.addItem ("Dual Mono", static_cast<int> (EqMode::DUAL_MONO) + 1);
+    eqModeComboBox.setSelectedId (static_cast<int> (p.apvts.getRawParameterValue ("eq_mode")->load()) + 1, juce::dontSendNotification);
+
+    addAndMakeVisible (eqModeComboBox);
+#endif
 
     addAndMakeVisible (inputMeter);
     addAndMakeVisible (outputMeter);
@@ -58,6 +70,9 @@ void EqualizerAudioProcessorEditor::resized()
 
     auto buttonHeight = 20;
     auto globalBypassButtonBounds = pluginBounds.removeFromTop (buttonHeight).reduced (buttonHeight / 2, 0);
+#ifdef TEST_EQ_MODE
+    eqModeComboBox.setBounds (globalBypassButtonBounds.removeFromLeft (getWidth() / 2));
+#endif
     globalBypassButton.setBounds (globalBypassButtonBounds.removeFromRight (3 * buttonHeight));
 
     pluginBounds.removeFromTop (2 * pluginMargin);

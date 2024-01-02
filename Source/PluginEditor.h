@@ -15,6 +15,8 @@
 #include "ui/StereoMeterComponent.h"
 #include <JuceHeader.h>
 
+#define TEST_EQ_MODE 1
+
 //==============================================================================
 /**
 */
@@ -59,6 +61,10 @@ private:
     GlobalBypassButton globalBypassButton { audioProcessor };
     BypassButtonContainer bypassButtonContainer { audioProcessor.apvts };
 
+#ifdef TEST_EQ_MODE
+    juce::ComboBox eqModeComboBox;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> eqModeComboBoxAttachment;
+#endif
     const int pluginMargin { 5 };
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (EqualizerAudioProcessorEditor)

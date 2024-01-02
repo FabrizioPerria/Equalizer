@@ -38,8 +38,11 @@ void DualBypassButton::paintOverChildren (juce::Graphics& g)
     g.setColour (juce::Colours::aquamarine);
     g.drawRect (bounds);
 
-    if (static_cast<EqMode> (apvts.getRawParameterValue ("eq_mode")->load()) != EqMode::STEREO)
+    auto enableLeft = isShowingAsOn (Channel::LEFT);
+    auto enableRight = enableLeft;
+    if (isPaired)
     {
+        enableRight = isShowingAsOn (Channel::RIGHT);
         auto center = bounds.getCentreX();
         auto top = bounds.getY();
         auto bottom = bounds.getBottom();
@@ -54,9 +57,6 @@ void DualBypassButton::paintOverChildren (juce::Graphics& g)
 
     auto unflipped = juce::AffineTransform();
     auto flipped = unflipped.scale (-1.f, 1.f, bounds.getCentreX(), bounds.getCentreY());
-
-    auto enableLeft = isShowingAsOn (Channel::LEFT);
-    auto enableRight = isShowingAsOn (Channel::RIGHT);
 
     switch (chainPosition)
     {
@@ -96,6 +96,7 @@ void DualBypassButton::refreshButtons (EqMode mode)
     {
         rightButton.setVisible (true);
 
+        isPaired = true;
         leftButton.isPaired = true;
         leftButton.setBounds (bounds.removeFromLeft (getWidth() / 2));
 
@@ -103,6 +104,7 @@ void DualBypassButton::refreshButtons (EqMode mode)
     }
     else
     {
+        isPaired = false;
         leftButton.isPaired = false;
         leftButton.setBounds (bounds);
 
