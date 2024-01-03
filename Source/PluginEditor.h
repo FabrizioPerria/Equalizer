@@ -9,8 +9,13 @@
 #pragma once
 
 #include "PluginProcessor.h"
+#include "ui/BypassButtonContainer.h"
+#include "ui/EqParamContainer.h"
+#include "ui/GlobalBypassButton.h"
 #include "ui/StereoMeterComponent.h"
 #include <JuceHeader.h>
+
+#define TEST_EQ_MODE true
 
 //==============================================================================
 /**
@@ -51,6 +56,15 @@ private:
     StereoMeterComponent inputMeter { "PRE EQ" };
     StereoMeterComponent outputMeter { "POST EQ" };
 
+    EqParamContainer eqParamContainer { audioProcessor.apvts };
+
+    GlobalBypassButton globalBypassButton { audioProcessor };
+    BypassButtonContainer bypassButtonContainer { audioProcessor.apvts };
+
+#ifdef TEST_EQ_MODE
+    juce::ComboBox eqModeComboBox;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> eqModeComboBoxAttachment;
+#endif
     const int pluginMargin { 5 };
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (EqualizerAudioProcessorEditor)

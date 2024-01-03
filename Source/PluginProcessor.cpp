@@ -254,6 +254,34 @@ void EqualizerAudioProcessor::setStateInformation (const void* data, int sizeInB
     }
 }
 
+void EqualizerAudioProcessor::setGlobalBypass (bool bypassed)
+{
+    setupBypassFilter<ChainPositions::LOWCUT> (bypassed);
+    setupBypassFilter<ChainPositions::LOWSHELF> (bypassed);
+    setupBypassFilter<ChainPositions::PEAK1> (bypassed);
+    setupBypassFilter<ChainPositions::PEAK2> (bypassed);
+    setupBypassFilter<ChainPositions::PEAK3> (bypassed);
+    setupBypassFilter<ChainPositions::PEAK4> (bypassed);
+    setupBypassFilter<ChainPositions::HIGHSHELF> (bypassed);
+    setupBypassFilter<ChainPositions::HIGHCUT> (bypassed);
+}
+
+bool EqualizerAudioProcessor::isAnyFilterActive()
+{
+    bool anyActive = false;
+
+    anyActive |= isFilterActive<ChainPositions::LOWCUT>();
+    anyActive |= isFilterActive<ChainPositions::LOWSHELF>();
+    anyActive |= isFilterActive<ChainPositions::PEAK1>();
+    anyActive |= isFilterActive<ChainPositions::PEAK2>();
+    anyActive |= isFilterActive<ChainPositions::PEAK3>();
+    anyActive |= isFilterActive<ChainPositions::PEAK4>();
+    anyActive |= isFilterActive<ChainPositions::HIGHSHELF>();
+    anyActive |= isFilterActive<ChainPositions::HIGHCUT>();
+
+    return anyActive;
+}
+
 //==============================================================================
 // This creates new instances of the plugin..
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()

@@ -7,14 +7,37 @@
   <MAINGROUP id="Do3AsA" name="Equalizer">
     <GROUP id="{947A9606-09DB-5F3A-08CC-6B17C53CAE0F}" name="Source">
       <GROUP id="{7B339522-B1D5-D067-0094-2F67CA15145D}" name="ui">
+        <FILE id="Kla09h" name="BypassButton.cpp" compile="1" resource="0"
+              file="Source/ui/BypassButton.cpp"/>
+        <FILE id="bRhoQy" name="BypassButton.h" compile="0" resource="0" file="Source/ui/BypassButton.h"/>
+        <FILE id="ojiUnx" name="BypassButtonContainer.cpp" compile="1" resource="0"
+              file="Source/ui/BypassButtonContainer.cpp"/>
+        <FILE id="fYqZP0" name="BypassButtonContainer.h" compile="0" resource="0"
+              file="Source/ui/BypassButtonContainer.h"/>
         <FILE id="jioKe9" name="DbScaleComponent.cpp" compile="1" resource="0"
               file="Source/ui/DbScaleComponent.cpp"/>
         <FILE id="C8P3QR" name="DbScaleComponent.h" compile="0" resource="0"
               file="Source/ui/DbScaleComponent.h"/>
+        <FILE id="dsGi0n" name="DualBypassButton.cpp" compile="1" resource="0"
+              file="Source/ui/DualBypassButton.cpp"/>
+        <FILE id="PPNTAs" name="DualBypassButton.h" compile="0" resource="0"
+              file="Source/ui/DualBypassButton.h"/>
+        <FILE id="w48MCR" name="EqParamContainer.cpp" compile="1" resource="0"
+              file="Source/ui/EqParamContainer.cpp"/>
+        <FILE id="E8DFlx" name="EqParamContainer.h" compile="0" resource="0"
+              file="Source/ui/EqParamContainer.h"/>
+        <FILE id="LABlUZ" name="EqParamWidget.cpp" compile="1" resource="0"
+              file="Source/ui/EqParamWidget.cpp"/>
+        <FILE id="BsFKYC" name="EqParamWidget.h" compile="0" resource="0" file="Source/ui/EqParamWidget.h"/>
+        <FILE id="yaVZ3z" name="GlobalBypassButton.cpp" compile="1" resource="0"
+              file="Source/ui/GlobalBypassButton.cpp"/>
+        <FILE id="ZQl4Wo" name="GlobalBypassButton.h" compile="0" resource="0"
+              file="Source/ui/GlobalBypassButton.h"/>
         <FILE id="izWLyB" name="MeterComponent.cpp" compile="1" resource="0"
               file="Source/ui/MeterComponent.cpp"/>
         <FILE id="L9RxGF" name="MeterComponent.h" compile="0" resource="0"
               file="Source/ui/MeterComponent.h"/>
+        <FILE id="JheIff" name="PathFactory.h" compile="0" resource="0" file="Source/utils/PathFactory.h"/>
         <FILE id="xRuEXk" name="StereoMeterComponent.cpp" compile="1" resource="0"
               file="Source/ui/StereoMeterComponent.cpp"/>
         <FILE id="rIEfKM" name="StereoMeterComponent.h" compile="0" resource="0"
@@ -32,6 +55,7 @@
         <FILE id="o4VI1g" name="FilterParameters.h" compile="0" resource="0"
               file="Source/data/FilterParameters.h"/>
         <FILE id="Lbal0G" name="MeterValues.h" compile="0" resource="0" file="Source/data/MeterValues.h"/>
+        <FILE id="MpQYGz" name="ParamListener.h" compile="0" resource="0" file="Source/data/ParamListener.h"/>
       </GROUP>
       <GROUP id="{CE98CBDF-8DE1-DA86-8C69-BF52E9C7297A}" name="utils">
         <FILE id="OjzSog" name="CoefficientsMaker.h" compile="0" resource="0"
@@ -50,6 +74,7 @@
               file="Source/utils/MeterConstants.h"/>
         <FILE id="DYOhOa" name="MidSideProcessor.h" compile="0" resource="0"
               file="Source/utils/MidSideProcessor.h"/>
+        <FILE id="VkXdMM" name="PathDrawer.h" compile="0" resource="0" file="Source/utils/PathDrawer.h"/>
         <FILE id="P5KFW3" name="ReleasePool.h" compile="0" resource="0" file="Source/utils/ReleasePool.h"/>
       </GROUP>
       <FILE id="IQfYle" name="PluginProcessor.cpp" compile="1" resource="0"
