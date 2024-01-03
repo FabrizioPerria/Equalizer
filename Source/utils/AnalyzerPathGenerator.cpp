@@ -9,9 +9,24 @@ void AnalyzerPathGenerator::generatePath (const std::vector<float>& renderData,
 {
     auto numBins = fftSize / 2;
 
+    const auto minFrequency = std::log (20.f);
+    const auto maxFrequency = std::log (20000.f);
     auto toXCoordinate = [&] (int binIndex)
-    { return juce::jmap (binIndex * binWidth, 20.f, 20000.f, fftBounds.getX(), fftBounds.getRight()); };
-    auto toYCoordinate = [&] (float data) { return juce::jmap (data, negativeInfinity, maxDb, fftBounds.getBottom(), fftBounds.getY()); };
+    {
+        return juce::jmap (std::log (binIndex * binWidth), //
+                           minFrequency,
+                           maxFrequency,
+                           fftBounds.getX(),
+                           fftBounds.getRight());
+    };
+    auto toYCoordinate = [&] (float data)
+    {
+        return juce::jmap (data, //
+                           negativeInfinity,
+                           maxDb,
+                           fftBounds.getBottom(),
+                           fftBounds.getY());
+    };
 
     juce::Path p;
     auto x = toXCoordinate (1);
@@ -19,14 +34,20 @@ void AnalyzerPathGenerator::generatePath (const std::vector<float>& renderData,
     p.startNewSubPath (x, y);
     auto prevX = x;
 
-    for (auto i = 2; i < numBins + 1; ++i)
+    for (auto i = 2; i <= numBins + 1; ++i)
     {
-        auto x = toXCoordinate (i);
-        auto y = toYCoordinate (renderData[i]);
+        x = toXCoordinate (i);
+        y = toYCoordinate (renderData[i]);
 
         if (x - prevX > 1)
         {
             p.lineTo (x, y);
+            prevX = x;
+        }
+
+        if (x > fftBounds.getRight())
+        {
+            break;
         }
     }
     pathFifo.push (p);
