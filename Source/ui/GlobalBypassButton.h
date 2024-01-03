@@ -8,6 +8,7 @@ struct GlobalBypassButton : BypassButton, juce::Timer
     void timerCallback() override;
     void clicked() override;
     void paintButton (juce::Graphics& g, bool shouldDrawButtonAsHighlighted, bool shouldDrawButtonAsDown) override;
+    void setCurrentState();
 
 private:
     EqualizerAudioProcessor& audioProcessor;

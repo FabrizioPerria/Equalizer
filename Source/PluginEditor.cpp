@@ -17,14 +17,11 @@ EqualizerAudioProcessorEditor::EqualizerAudioProcessorEditor (EqualizerAudioProc
     // editor's size to whatever you need it to be.
     setSize (800, 600);
 #ifdef TEST_EQ_MODE
+    auto* modeParam = dynamic_cast<juce::AudioParameterChoice*> (p.apvts.getParameter ("eq_mode"));
+    eqModeComboBox.addItemList (modeParam->choices, 1);
     eqModeComboBoxAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment> (audioProcessor.apvts,
                                                                                                          "eq_mode",
                                                                                                          eqModeComboBox);
-
-    eqModeComboBox.addItem ("Stereo", static_cast<int> (EqMode::STEREO) + 1);
-    eqModeComboBox.addItem ("Dual Mono", static_cast<int> (EqMode::DUAL_MONO) + 1);
-    eqModeComboBox.addItem ("Mid/Side", static_cast<int> (EqMode::MID_SIDE) + 1);
-    eqModeComboBox.setSelectedId (static_cast<int> (p.apvts.getRawParameterValue ("eq_mode")->load()) + 1, juce::dontSendNotification);
 
     addAndMakeVisible (eqModeComboBox);
 #endif

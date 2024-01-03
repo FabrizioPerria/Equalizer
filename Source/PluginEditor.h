@@ -15,7 +15,7 @@
 #include "ui/StereoMeterComponent.h"
 #include <JuceHeader.h>
 
-#define TEST_EQ_MODE 1
+#define TEST_EQ_MODE true
 
 //==============================================================================
 /**

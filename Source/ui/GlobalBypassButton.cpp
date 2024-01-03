@@ -4,11 +4,16 @@
 GlobalBypassButton::GlobalBypassButton (EqualizerAudioProcessor& p) : audioProcessor (p)
 {
     setClickingTogglesState (true);
-    setToggleState (true, juce::dontSendNotification);
+    setCurrentState();
     startTimerHz (FRAMES_PER_SECOND);
 }
 
 void GlobalBypassButton::timerCallback()
+{
+    setCurrentState();
+}
+
+void GlobalBypassButton::setCurrentState()
 {
     auto atLeastOneActive = audioProcessor.isAnyFilterActive();
     if (! atLeastOneActive && isShowingAsOn())

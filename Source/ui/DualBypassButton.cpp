@@ -41,7 +41,7 @@ void DualBypassButton::paintOverChildren (juce::Graphics& g)
 
     auto enableLeft = isShowingAsOn (Channel::LEFT);
     auto enableRight = enableLeft;
-    if (isPaired)
+    if (leftButton.isPaired)
     {
         enableRight = isShowingAsOn (Channel::RIGHT);
         auto center = bounds.getCentreX();
@@ -97,7 +97,6 @@ void DualBypassButton::refreshButtons (EqMode mode)
     {
         rightButton.setVisible (true);
 
-        isPaired = true;
         leftButton.isPaired = true;
         leftButton.setBounds (bounds.removeFromLeft (getWidth() / 2));
 
@@ -105,7 +104,6 @@ void DualBypassButton::refreshButtons (EqMode mode)
     }
     else
     {
-        isPaired = false;
         leftButton.isPaired = false;
         leftButton.setBounds (bounds);
 
