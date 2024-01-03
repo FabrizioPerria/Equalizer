@@ -108,6 +108,9 @@ void EqualizerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBl
     inputGain.prepare (spec);
     outputGain.prepare (spec);
 
+    spectrumAnalyzerFifoLeft.prepare (samplesPerBlock);
+    spectrumAnalyzerFifoRight.prepare (samplesPerBlock);
+
     initializeFilters();
 
 #ifdef USE_TEST_OSC

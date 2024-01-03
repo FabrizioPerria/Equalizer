@@ -7,7 +7,7 @@ template <typename BlockType>
 struct SingleChannelSampleFifo
 {
     using SampleType = typename BlockType::SampleType;
-    SingleChannelSampleFifo (Channel ch) : channelToUse (ch), prepared (false)
+    SingleChannelSampleFifo (Channel ch) : channelToUse (ch)
     {
     }
 
@@ -79,8 +79,8 @@ struct SingleChannelSampleFifo
 private:
     Channel channelToUse;
     int fifoIndex = 0;
-    Fifo<BlockType, 50> audioBufferFifo; //TODO:check size
+    Fifo<BlockType, 50> audioBufferFifo;
     BlockType bufferToFill;
-    juce::Atomic<bool> prepared = false;
+    juce::Atomic<bool> prepared { false };
     juce::Atomic<int> size = 0;
 };
