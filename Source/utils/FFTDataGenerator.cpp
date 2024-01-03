@@ -5,7 +5,7 @@ void FFTDataGenerator::produceFFTDataForRendering (const juce::AudioBuffer<float
 {
     auto fftSize = getFFTSize();
 
-    std::fill (fftData.begin(), fftData.end(), 0.0f);
+    fftData.assign (fftSize, 0.0f);
 
     auto reader = audioData.getReadPointer (0);
     std::copy (reader, reader + fftSize, fftData.begin());
