@@ -1,11 +1,12 @@
 #include "utils/PathProducer.h"
 #include <JuceHeader.h>
 
+#define LOOP_DELAY 10
 template <typename BlockType>
-PathProducer<BlockType>::PathProducer (double sr, SingleChannelSampleFifo<BlockType>& scsf)
-    : sampleRate (sr), singleChannelSampleFifo (&scsf), Thread ("PathProducer")
+
+PathProducer<BlockType>::PathProducer (double sr, SingleChannelSampleFifo<BlockType>& fifoRef)
+    : Thread ("PathProducer"), singleChannelSampleFifo { &fifoRef }, sampleRate { sr }
 {
-    startThread();
 }
 
 template <typename BlockType>
@@ -22,12 +23,12 @@ void PathProducer<BlockType>::run()
     {
         if (! processingIsEnabled)
         {
-            wait (100);
+            wait (LOOP_DELAY);
             continue;
         }
         auto fftSize = getFFTSize();
-        auto bufferForGeneratorSize = bufferForGenerator.getSize();
-        auto tmpBuffer = BlockType (1, bufferForGeneratorSize);
+        auto bufferForGeneratorSize = bufferForGenerator.getNumSamples();
+        BlockType tmpBuffer (1, bufferForGeneratorSize);
 
         while (! threadShouldExit() && singleChannelSampleFifo->getNumCompleteBuffersAvailable() > 0)
         {
@@ -46,10 +47,10 @@ void PathProducer<BlockType>::run()
             std::vector<float> fftData;
             auto success = fftDataGenerator.getFFTData (std::move (fftData));
             jassert (success);
-            updateRenderData (renderData, fftData, fftSize, decayRateInDbPerSec);
+            updateRenderData (renderData, fftData, fftSize / 2, static_cast<float> (LOOP_DELAY) * decayRateInDbPerSec.load() / 1000.f);
             pathGenerator.generatePath (renderData, fftBounds, fftSize, getBinWidth());
         }
-        wait (100);
+        wait (LOOP_DELAY);
     }
 }
 template <typename BlockType>
@@ -58,14 +59,15 @@ void PathProducer<BlockType>::changeOrder (FFTOrder o)
     pauseThread();
     fftDataGenerator.changeOrder (o);
     renderData.clear();
-    renderData.resize (getFFTSize() / 2 + 1, negativeInfinity.load());
+    auto fftSize = getFFTSize();
+    renderData.resize (fftSize / 2 + 1, negativeInfinity.load());
 
-    bufferForGenerator.setSize (1, getFFTSize());
+    bufferForGenerator.setSize (1, fftSize, false, false, true);
     bufferForGenerator.clear();
 
     while (! singleChannelSampleFifo->isPrepared())
     {
-        wait (10);
+        wait (LOOP_DELAY);
     }
     if (! fftBounds.isEmpty())
     {
@@ -88,7 +90,7 @@ double PathProducer<BlockType>::getBinWidth() const
 template <typename BlockType>
 void PathProducer<BlockType>::pauseThread()
 {
-    auto didStop = stopThread (1000);
+    auto didStop = stopThread (10);
     jassert (didStop);
 }
 
@@ -112,7 +114,7 @@ void PathProducer<BlockType>::setDecayRate (float dr)
 }
 
 template <typename BlockType>
-bool PathProducer<BlockType>::pull (juce::Path&& path)
+bool PathProducer<BlockType>::pull (juce::Path& path)
 {
     //TODO: use tracer to see if move semantics is faster than copy semantics
     pathGenerator.getPath (std::move (path));
@@ -162,3 +164,5 @@ void PathProducer<BlockType>::updateRenderData (std::vector<float>& renderDataTo
         }
     }
 }
+
+template struct PathProducer<juce::AudioBuffer<float>>;

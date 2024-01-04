@@ -13,16 +13,20 @@ struct SingleChannelSampleFifo
 
     void update (const BlockType& buffer)
     {
-        if (buffer.getNumChannels() <= channelToUse)
+        if (! isPrepared())
         {
+            jassertfalse;
             return;
         }
 
-        auto* reader = buffer.getReadPointer (static_cast<int> (channelToUse));
-
-        for (int i = 0; i < buffer.getNumSamples(); ++i)
+        if (buffer.getNumChannels() > 0)
         {
-            pushNextSampleIntoFifo (reader[i]);
+            auto* reader = buffer.getReadPointer (static_cast<int> (channelToUse));
+
+            for (int i = 0; i < buffer.getNumSamples(); ++i)
+            {
+                pushNextSampleIntoFifo (reader[i]);
+            }
         }
     }
 

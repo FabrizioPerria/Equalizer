@@ -20,7 +20,7 @@ struct PathProducer : juce::Thread
     void setFFTRectBounds (juce::Rectangle<float>);
 
     void setDecayRate (float dr);
-    bool pull (juce::Path&&);
+    bool pull (juce::Path& path);
     int getNumAvailableForReading() const;
     void toggleProcessing (bool);
     void changePathRange (float negativeInfinityDb, float maxDb);

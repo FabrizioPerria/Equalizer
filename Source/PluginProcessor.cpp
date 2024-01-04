@@ -108,8 +108,8 @@ void EqualizerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBl
     inputGain.prepare (spec);
     outputGain.prepare (spec);
 
-    spectrumAnalyzerFifoLeft.prepare (samplesPerBlock);
-    spectrumAnalyzerFifoRight.prepare (samplesPerBlock);
+    spectrumAnalyzerFifoLeft.prepare (2048);
+    spectrumAnalyzerFifoRight.prepare (2048);
 
     initializeFilters();
 
@@ -187,6 +187,9 @@ void EqualizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
 
     testGain.process (juce::dsp::ProcessContextReplacing<float> (block));
 #endif
+
+    spectrumAnalyzerFifoLeft.update (buffer);
+    spectrumAnalyzerFifoRight.update (buffer);
 
     updateMeterFifos (inMeterValuesFifo, buffer);
 
