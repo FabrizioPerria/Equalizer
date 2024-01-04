@@ -9,16 +9,13 @@ void AnalyzerPathGenerator::generatePath (const std::vector<float>& renderData,
 {
     auto numBins = fftSize / 2;
 
-    const auto minFrequency = std::log (20.f);
-    const auto maxFrequency = std::log (20000.f);
     auto toXCoordinate = [&] (int binIndex)
     {
-        return juce::jmap (std::log (binIndex * binWidth), //
-                           minFrequency,
-                           maxFrequency,
-                           fftBounds.getX(),
-                           fftBounds.getRight());
+        auto binFreq = binIndex * binWidth;
+        int binX = static_cast<int> (std::floor (juce::mapFromLog10 (binFreq, 20.f, 20000.f) * fftBounds.getWidth()));
+        return binX + fftBounds.getX();
     };
+
     auto toYCoordinate = [&] (float data)
     {
         return juce::jmap (data, //
@@ -60,5 +57,5 @@ int AnalyzerPathGenerator::getNumPathsAvailable() const
 
 bool AnalyzerPathGenerator::getPath (juce::Path&& path)
 {
-    return pathFifo.exchange (std::move (path));
+    return pathFifo.pull(path);
 }
