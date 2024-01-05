@@ -8,7 +8,7 @@
 
 #pragma once
 
-/* #define USE_TEST_OSC 1 */
+#define USE_TEST_OSC true
 
 #include "data/FilterLink.h"
 #include "data/FilterParameters.h"

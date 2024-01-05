@@ -1,6 +1,7 @@
 #pragma once
 
 #include "utils/Fifo.h"
+#include "utils/MeterConstants.h"
 #include <JuceHeader.h>
 
 struct AnalyzerPathGenerator
@@ -12,8 +13,8 @@ struct AnalyzerPathGenerator
                        juce::Rectangle<float> fftBounds,
                        int fftSize,
                        float binWidth,
-                       float negativeInfinity = -60.f,
-                       float maxDb = 12.f);
+                       float negativeInfinity = NEGATIVE_INFINITY,
+                       float maxDb = MAX_DECIBELS);
 
     int getNumPathsAvailable() const;
     bool getPath (juce::Path&& path);

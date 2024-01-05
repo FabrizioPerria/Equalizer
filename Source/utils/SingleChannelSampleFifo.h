@@ -83,7 +83,7 @@ struct SingleChannelSampleFifo
 private:
     Channel channelToUse;
     int fifoIndex = 0;
-    Fifo<BlockType, 50> audioBufferFifo;
+    Fifo<BlockType, 100> audioBufferFifo;
     BlockType bufferToFill;
     juce::Atomic<bool> prepared { false };
     juce::Atomic<int> size = 0;

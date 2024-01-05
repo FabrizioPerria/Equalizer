@@ -188,9 +188,6 @@ void EqualizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     testGain.process (juce::dsp::ProcessContextReplacing<float> (block));
 #endif
 
-    spectrumAnalyzerFifoLeft.update (buffer);
-    spectrumAnalyzerFifoRight.update (buffer);
-
     updateMeterFifos (inMeterValuesFifo, buffer);
 
     if (mode == EqMode::MID_SIDE)
@@ -221,6 +218,8 @@ void EqualizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
         midSideProcessor.process (juce::dsp::ProcessContextReplacing<float> (block));
     }
 
+    spectrumAnalyzerFifoLeft.update (buffer);
+    spectrumAnalyzerFifoRight.update (buffer);
     outputGain.process (juce::dsp::ProcessContextReplacing<float> (block));
 
     updateMeterFifos (outMeterValuesFifo, buffer);

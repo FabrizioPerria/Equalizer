@@ -14,12 +14,12 @@ struct PathProducer : juce::Thread
     {
     }
 
-    ~PathProducer()
+    ~PathProducer() override
     {
         stopThread (1000);
     }
 
-    void run()
+    void run() override
     {
         BlockType bufferToFill;
         while (! threadShouldExit())
@@ -80,7 +80,7 @@ struct PathProducer : juce::Thread
 
     int getFFTSize() const
     {
-        return fftDataGenerator.getFFTSize();
+        return static_cast<int>(fftDataGenerator.getFFTSize());
     }
 
     double getBinWidth() const
@@ -90,7 +90,7 @@ struct PathProducer : juce::Thread
 
     void pauseThread()
     {
-        auto didStop = stopThread (100);
+        auto didStop = stopThread (500);
         jassert (didStop);
     }
 
@@ -114,7 +114,7 @@ struct PathProducer : juce::Thread
     bool pull (juce::Path& path)
     {
         //TODO: use tracer to see if move semantics is faster than copy semantics
-        pathGenerator.getPath (std::move (path));
+        return pathGenerator.getPath (std::move (path));
     }
 
     int getNumAvailableForReading() const
@@ -151,7 +151,7 @@ private:
     {
         if (decayRate >= 0.0f)
         {
-            for (auto bin = 0; bin < numBins; ++bin)
+            for (size_t bin = 0; bin < static_cast<size_t>(numBins); ++bin)
             {
                 auto previous = renderDataToUpdate[bin];
                 auto candidate = fftData[bin];

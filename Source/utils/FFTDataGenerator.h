@@ -31,5 +31,5 @@ private:
     std::unique_ptr<juce::dsp::FFT> forwardFFT;
     std::unique_ptr<juce::dsp::WindowingFunction<float>> window;
 
-    Fifo<std::vector<float>, 50> fftDataFifo;
+    Fifo<std::vector<float>, 100> fftDataFifo;
 };

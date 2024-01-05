@@ -17,6 +17,7 @@
 #include <JuceHeader.h>
 
 #define TEST_EQ_MODE true
+#define PATH_PRODUCER_TEST true
 
 //==============================================================================
 /**
@@ -68,8 +69,10 @@ private:
 #endif
     const int pluginMargin { 5 };
 
-    std::unique_ptr<PathProducer<juce::AudioBuffer<float>>> pathProducer;
+#ifdef PATH_PRODUCER_TEST
+    PathProducer<juce::AudioBuffer<float>> pathProducer { audioProcessor.getSampleRate(), audioProcessor.spectrumAnalyzerFifoLeft };
     juce::Rectangle<float> fftBounds;
+#endif
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (EqualizerAudioProcessorEditor)
 };

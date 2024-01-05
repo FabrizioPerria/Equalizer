@@ -8,7 +8,6 @@
 
 #include "PluginEditor.h"
 #include "PluginProcessor.h"
-#include "utils/FFTDataGenerator.h"
 #include "utils/MeterConstants.h"
 
 //==============================================================================
@@ -17,9 +16,6 @@ EqualizerAudioProcessorEditor::EqualizerAudioProcessorEditor (EqualizerAudioProc
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
     setSize (800, 600);
-    pathProducer = std::make_unique<PathProducer<juce::AudioBuffer<float>>> (audioProcessor.getSampleRate(),
-                                                                             audioProcessor.spectrumAnalyzerFifoLeft);
-
 #ifdef TEST_EQ_MODE
     auto* modeParam = dynamic_cast<juce::AudioParameterChoice*> (p.apvts.getParameter ("eq_mode"));
     eqModeComboBox.addItemList (modeParam->choices, 1);
@@ -38,9 +34,11 @@ EqualizerAudioProcessorEditor::EqualizerAudioProcessorEditor (EqualizerAudioProc
     addAndMakeVisible (globalBypassButton);
     addAndMakeVisible (bypassButtonContainer);
 
-    pathProducer->setDecayRate (120.f);
+#ifdef PATH_PRODUCER_TEST
+    pathProducer.setDecayRate (120.f);
 
-    pathProducer->changeOrder (FFTOrder::order4096);
+    pathProducer.changeOrder (FFTOrder::order4096);
+#endif
 
     startTimerHz (FRAMES_PER_SECOND);
 }
@@ -61,21 +59,21 @@ void EqualizerAudioProcessorEditor::paint (juce::Graphics& g)
     g.setColour (juce::Colour { 0x1A, 0x1B, 0x29 });
     g.fillRoundedRectangle (pluginBounds.toFloat(), 10);
 
+#ifdef PATH_PRODUCER_TEST
     g.setColour (juce::Colours::red);
     juce::Path fftPath;
-    /* g.reduceClipRegion (fftBounds.toNearestInt()); */
 
-    if (pathProducer->getNumAvailableForReading() > 0)
+    if (pathProducer.getNumAvailableForReading() > 0)
     {
-        while (pathProducer->getNumAvailableForReading() > 0)
-            pathProducer->pull (fftPath);
+        while (pathProducer.getNumAvailableForReading() > 0)
+        {
+            pathProducer.pull (fftPath);
+        }
 
-        fftPath.scaleToFit (fftBounds.getX(), fftBounds.getY(), fftBounds.getWidth(), fftBounds.getHeight(), true);
         g.strokePath (fftPath, juce::PathStrokeType (1));
     }
-
-    g.setColour (juce::Colours::lightblue);
-    /* g.drawRect (fftBounds); */
+    g.drawRoundedRectangle (fftBounds, 4, 1);
+#endif
 }
 
 void EqualizerAudioProcessorEditor::resized()
@@ -104,12 +102,19 @@ void EqualizerAudioProcessorEditor::resized()
     auto eqParamWidgetBounds = pluginBounds.removeFromBottom (EqParamContainer::sliderArea + EqParamContainer::buttonArea);
     eqParamContainer.setBounds (eqParamWidgetBounds);
 
+#ifdef PATH_PRODUCER_TEST
     fftBounds = pluginBounds.toFloat();
-    pathProducer->setFFTRectBounds (fftBounds);
+    pathProducer.setFFTRectBounds (fftBounds);
+#endif
 }
 
 void EqualizerAudioProcessorEditor::timerCallback()
 {
     updateMeterValues (audioProcessor.inMeterValuesFifo, inputMeter);
     updateMeterValues (audioProcessor.outMeterValuesFifo, outputMeter);
+
+#ifdef PATH_PRODUCER_TEST
+    if (pathProducer.getNumAvailableForReading() > 0)
+        repaint();
+#endif
 }
