@@ -72,6 +72,7 @@ private:
 #ifdef PATH_PRODUCER_TEST
     PathProducer<juce::AudioBuffer<float>> pathProducer { audioProcessor.getSampleRate(), audioProcessor.spectrumAnalyzerFifoLeft };
     juce::Rectangle<float> fftBounds;
+    juce::Path currentPath;
 #endif
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (EqualizerAudioProcessorEditor)

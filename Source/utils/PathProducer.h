@@ -80,7 +80,7 @@ struct PathProducer : juce::Thread
 
     int getFFTSize() const
     {
-        return static_cast<int>(fftDataGenerator.getFFTSize());
+        return static_cast<int> (fftDataGenerator.getFFTSize());
     }
 
     double getBinWidth() const
@@ -151,7 +151,7 @@ private:
     {
         if (decayRate >= 0.0f)
         {
-            for (size_t bin = 0; bin < static_cast<size_t>(numBins); ++bin)
+            for (size_t bin = 0; bin < static_cast<size_t> (numBins); ++bin)
             {
                 auto previous = renderDataToUpdate[bin];
                 auto candidate = fftData[bin];

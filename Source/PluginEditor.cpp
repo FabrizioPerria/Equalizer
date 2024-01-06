@@ -34,12 +34,6 @@ EqualizerAudioProcessorEditor::EqualizerAudioProcessorEditor (EqualizerAudioProc
     addAndMakeVisible (globalBypassButton);
     addAndMakeVisible (bypassButtonContainer);
 
-#ifdef PATH_PRODUCER_TEST
-    pathProducer.setDecayRate (120.f);
-
-    pathProducer.changeOrder (FFTOrder::order4096);
-#endif
-
     startTimerHz (FRAMES_PER_SECOND);
 }
 
@@ -61,17 +55,15 @@ void EqualizerAudioProcessorEditor::paint (juce::Graphics& g)
 
 #ifdef PATH_PRODUCER_TEST
     g.setColour (juce::Colours::red);
-    juce::Path fftPath;
 
     if (pathProducer.getNumAvailableForReading() > 0)
     {
         while (pathProducer.getNumAvailableForReading() > 0)
         {
-            pathProducer.pull (fftPath);
+            pathProducer.pull (currentPath);
         }
-
-        g.strokePath (fftPath, juce::PathStrokeType (1));
     }
+    g.strokePath (currentPath, juce::PathStrokeType (1));
     g.drawRoundedRectangle (fftBounds, 4, 1);
 #endif
 }
@@ -103,6 +95,9 @@ void EqualizerAudioProcessorEditor::resized()
     eqParamContainer.setBounds (eqParamWidgetBounds);
 
 #ifdef PATH_PRODUCER_TEST
+    pathProducer.setDecayRate (120.f);
+
+    pathProducer.changeOrder (audioProcessor.fftOrder);
     fftBounds = pluginBounds.toFloat();
     pathProducer.setFFTRectBounds (fftBounds);
 #endif

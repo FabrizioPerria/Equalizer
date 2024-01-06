@@ -109,13 +109,15 @@ void EqualizerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBl
     outputGain.prepare (spec);
 
     spectrumAnalyzerFifoLeft.prepare (2048);
-    spectrumAnalyzerFifoRight.prepare (2048);
 
     initializeFilters();
 
 #ifdef USE_TEST_OSC
+    auto fftSize = 1 << static_cast<int> (fftOrder);
     testOscillator.prepare (spec);
-    testOscillator.setFrequency (440.0f);
+    auto centerIndex = std::round (1000.0f / sampleRate * fftSize);
+    auto centerFreq = centerIndex * sampleRate / fftSize;
+    testOscillator.setFrequency (centerFreq);
     testGain.prepare (spec);
 #endif
 }
@@ -219,7 +221,7 @@ void EqualizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     }
 
     spectrumAnalyzerFifoLeft.update (buffer);
-    spectrumAnalyzerFifoRight.update (buffer);
+
     outputGain.process (juce::dsp::ProcessContextReplacing<float> (block));
 
     updateMeterFifos (outMeterValuesFifo, buffer);
@@ -315,7 +317,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout EqualizerAudioProcessor::cre
 
 void EqualizerAudioProcessor::addEqModeParameterToLayout (juce::AudioProcessorValueTreeState::ParameterLayout& layout)
 {
-    layout.add (std::make_unique<juce::AudioParameterChoice> ("eq_mode",
+    layout.add (std::make_unique<juce::AudioParameterChoice> (juce::ParameterID { "eq_mode", 1 },
                                                               "eq_mode",
                                                               juce::StringArray { "Stereo", "Dual Mono", "Mid/Side" },
                                                               0));
@@ -324,7 +326,10 @@ void EqualizerAudioProcessor::addEqModeParameterToLayout (juce::AudioProcessorVa
 void EqualizerAudioProcessor::addGainTrimParameterToLayout (juce::AudioProcessorValueTreeState::ParameterLayout& layout,
                                                             const juce::String& name)
 {
-    layout.add (std::make_unique<juce::AudioParameterFloat> (name, name, juce::NormalisableRange<float> (-18.0f, 18.0f, 0.1f), 0.0f));
+    layout.add (std::make_unique<juce::AudioParameterFloat> (juce::ParameterID { name, 1 },
+                                                             name,
+                                                             juce::NormalisableRange<float> (-18.0f, 18.0f, 0.1f),
+                                                             0.0f));
 }
 
 juce::StringArray EqualizerAudioProcessor::getSlopeNames()
