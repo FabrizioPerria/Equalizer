@@ -8,6 +8,7 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "utils/AnalyzerProperties.h"
 #include "utils/EqParam.h"
 #include "utils/FFTDataGenerator.h"
 #include "utils/FilterParam.h"
@@ -314,6 +315,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout EqualizerAudioProcessor::cre
     addFilterParameterToLayout<ChainPositions::HIGHSHELF> (layout, false);
     addFilterParameterToLayout<ChainPositions::HIGHCUT> (layout, true);
     addGainTrimParameterToLayout (layout, "output_gain");
+    AnalyzerProperties::AddAnalyzerParams (layout);
 
     return layout;
 }

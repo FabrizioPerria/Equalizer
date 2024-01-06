@@ -62,6 +62,8 @@
               file="Source/utils/AnalyzerPathGenerator.cpp"/>
         <FILE id="xtP2Xg" name="AnalyzerPathGenerator.h" compile="0" resource="0"
               file="Source/utils/AnalyzerPathGenerator.h"/>
+        <FILE id="ZgmZWJ" name="AnalyzerProperties.h" compile="0" resource="0"
+              file="Source/utils/AnalyzerProperties.h"/>
         <FILE id="OjzSog" name="CoefficientsMaker.h" compile="0" resource="0"
               file="Source/utils/CoefficientsMaker.h"/>
         <FILE id="Kc5spL" name="Decibel.h" compile="0" resource="0" file="Source/utils/Decibel.h"/>
