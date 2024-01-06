@@ -58,7 +58,7 @@ void AddAnalyzerParams (juce::AudioProcessorValueTreeState::ParameterLayout& lay
     layout.add (std::make_unique<juce::AudioParameterFloat> (juce::ParameterID { params.at (ParamNames::AnalyzerDecayRate), 2 },
                                                              params.at (ParamNames::AnalyzerDecayRate),
                                                              juce::NormalisableRange<float> { 0.0f, 30.0f, 1.0f, 1.0f },
-                                                             1.0f));
+                                                             30.0f));
     juce::StringArray orders;
     for (const auto& order : GetAnalyzerPoints())
     {
@@ -67,7 +67,7 @@ void AddAnalyzerParams (juce::AudioProcessorValueTreeState::ParameterLayout& lay
     layout.add (std::make_unique<juce::AudioParameterChoice> (juce::ParameterID { params.at (ParamNames::AnalyzerPoints), 3 },
                                                               params.at (ParamNames::AnalyzerPoints),
                                                               orders,
-                                                              1));
+                                                              0));
 
     juce::StringArray modes;
     for (const auto& mode : GetProcessingModes())

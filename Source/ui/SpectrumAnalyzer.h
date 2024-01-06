@@ -63,12 +63,12 @@ struct SpectrumAnalyzer : AnalyzerBase, juce::Timer
         {
             while (leftPathProducer.getNumAvailableForReading() > 0)
             {
-                leftPathProducer.pull (leftAnalyzerPath);
+                leftPathProducer.pull (std::move (leftAnalyzerPath));
             }
 
             while (rightPathProducer.getNumAvailableForReading() > 0)
             {
-                rightPathProducer.pull (rightAnalyzerPath);
+                rightPathProducer.pull (std::move (rightAnalyzerPath));
             }
         }
         repaint();
@@ -90,6 +90,7 @@ struct SpectrumAnalyzer : AnalyzerBase, juce::Timer
     void paint (juce::Graphics& g) override
     {
         paintBackground (g);
+
         g.reduceClipRegion (fftBoundingBox);
         g.setColour (juce::Colours::cyan);
         g.strokePath (leftAnalyzerPath, juce::PathStrokeType (1.0f));
@@ -97,12 +98,12 @@ struct SpectrumAnalyzer : AnalyzerBase, juce::Timer
         g.strokePath (rightAnalyzerPath, juce::PathStrokeType (1.0f));
     }
 
-    void customizeScales (int leftScaleMin, int leftScaleMax, int rightScaleMin, int rightScaleMax, int division)
+    void customizeScales (int leftMin, int leftMax, int rightMin, int rightMax, int division)
     {
-        leftScaleMin = leftScaleMin;
-        leftScaleMax = leftScaleMax;
-        rightScaleMin = rightScaleMin;
-        rightScaleMax = rightScaleMax;
+        leftScaleMin = leftMin;
+        leftScaleMax = leftMax;
+        rightScaleMin = rightMin;
+        rightScaleMax = rightMax;
         scaleDivision = division;
 
         leftPathProducer.changePathRange (leftScaleMin, leftScaleMax);
@@ -116,11 +117,12 @@ struct SpectrumAnalyzer : AnalyzerBase, juce::Timer
             repaint();
         }
     }
+
     void changeSampleRate (double sr)
     {
         sampleRate = sr;
-        leftPathProducer.setSampleRate (sampleRate);
-        rightPathProducer.setSampleRate (sampleRate);
+        leftPathProducer.changeSampleRate (sampleRate);
+        rightPathProducer.changeSampleRate (sampleRate);
     }
 
 private:
@@ -192,8 +194,9 @@ private:
 
     void updateOrder (float value)
     {
-        leftPathProducer.changeOrder (static_cast<FFTOrder> (static_cast<int> (value) + 11));
-        rightPathProducer.changeOrder (static_cast<FFTOrder> (static_cast<int> (value) + 11));
+        auto lowestOrder = static_cast<int> (FFTOrder::order2048);
+        leftPathProducer.changeOrder (static_cast<FFTOrder> (static_cast<int> (value) + lowestOrder));
+        rightPathProducer.changeOrder (static_cast<FFTOrder> (static_cast<int> (value) + lowestOrder));
     }
 
     void animate()

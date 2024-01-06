@@ -113,7 +113,9 @@ void EqualizerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBl
     fftOrder = FFTOrder::order2048;
 
     auto fftSize = 1 << static_cast<int> (fftOrder);
+
     spectrumAnalyzerFifoLeft.prepare (fftSize);
+    spectrumAnalyzerFifoRight.prepare (fftSize);
 
     initializeFilters();
 
