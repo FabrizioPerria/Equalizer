@@ -39,6 +39,8 @@
         <FILE id="L9RxGF" name="MeterComponent.h" compile="0" resource="0"
               file="Source/ui/MeterComponent.h"/>
         <FILE id="JheIff" name="PathFactory.h" compile="0" resource="0" file="Source/utils/PathFactory.h"/>
+        <FILE id="A3VK9O" name="SpectrumAnalyzer.h" compile="0" resource="0"
+              file="Source/ui/SpectrumAnalyzer.h"/>
         <FILE id="xRuEXk" name="StereoMeterComponent.cpp" compile="1" resource="0"
               file="Source/ui/StereoMeterComponent.cpp"/>
         <FILE id="rIEfKM" name="StereoMeterComponent.h" compile="0" resource="0"
