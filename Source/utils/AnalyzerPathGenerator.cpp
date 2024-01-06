@@ -17,6 +17,8 @@ void AnalyzerPathGenerator::generatePath (const std::vector<float>& renderData,
         //avoid to draw out of bounds; for binX < 0, it will be drawn at the left border of the fftBounds
         return juce::jmax (binX, 0) + startX;
     };
+    auto mapX = [&] (size_t i)
+    { return std::floor (juce::jmap (std::log (i * binWidth), 20.0f, 20000.0f, fftBounds.getX(), fftBounds.getWidth())); };
 
     auto toYCoordinate = [&] (float data)
     {
@@ -28,7 +30,9 @@ void AnalyzerPathGenerator::generatePath (const std::vector<float>& renderData,
     };
 
     juce::Path p;
+    //TODO:
     auto x = toXCoordinate (1);
+    auto x2 = mapX (1);
     auto y = toYCoordinate (renderData[1]);
 
     if (x > startX)
@@ -45,6 +49,7 @@ void AnalyzerPathGenerator::generatePath (const std::vector<float>& renderData,
     for (size_t i = 2; i <= numBins; ++i)
     {
         x = toXCoordinate (i);
+        x2 = mapX (i);
         y = toYCoordinate (renderData[i]);
 
         if (x > prevX)

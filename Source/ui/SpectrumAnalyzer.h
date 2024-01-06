@@ -8,8 +8,8 @@
 #include "utils/SingleChannelSampleFifo.h"
 #include <JuceHeader.h>
 
-#define RESPONSE_CURVE_MIN_DB -60.f
-#define RESPONSE_CURVE_MAX_DB 0.f
+#define RESPONSE_CURVE_MIN_DB -30.f
+#define RESPONSE_CURVE_MAX_DB 30.f
 
 template <typename BlockType>
 struct SpectrumAnalyzer : AnalyzerBase, juce::Timer
@@ -70,20 +70,19 @@ struct SpectrumAnalyzer : AnalyzerBase, juce::Timer
             {
                 rightPathProducer.pull (rightAnalyzerPath);
             }
-
-            repaint();
         }
+        repaint();
     }
 
     void resized() override
     {
         AnalyzerBase::resized();
-        leftPathProducer.setFFTRectBounds (getBoundsForFFT().toFloat());
-        rightPathProducer.setFFTRectBounds (getBoundsForFFT().toFloat());
+        leftPathProducer.setFFTRectBounds (fftBoundingBox.toFloat());
+        rightPathProducer.setFFTRectBounds (fftBoundingBox.toFloat());
 
         auto bounds = getLocalBounds();
-        analyzerScale.setBounds (bounds.removeFromLeft (getTextWidth()));
-        eqScale.setBounds (bounds.removeFromRight (getTextWidth()));
+        analyzerScale.setBounds (bounds.removeFromLeft (getTextWidth() * 1.5f));
+        eqScale.setBounds (bounds.removeFromRight (getTextWidth() * 1.5f));
 
         customizeScales (leftScaleMin, leftScaleMax, rightScaleMin, rightScaleMax, scaleDivision);
     }
@@ -107,16 +106,15 @@ struct SpectrumAnalyzer : AnalyzerBase, juce::Timer
         scaleDivision = division;
 
         leftPathProducer.changePathRange (leftScaleMin, leftScaleMax);
-        rightPathProducer.changePathRange (rightScaleMin, rightScaleMax);
+        rightPathProducer.changePathRange (leftScaleMin, leftScaleMax);
 
         analyzerScale.buildBackgroundImage (scaleDivision, fftBoundingBox, leftScaleMin, leftScaleMax);
         eqScale.buildBackgroundImage (scaleDivision, fftBoundingBox, rightScaleMin, rightScaleMax);
 
-        if (analyzerScale.getBounds().isEmpty() || eqScale.getBounds().isEmpty())
+        if (! getLocalBounds().isEmpty())
         {
-            return;
+            repaint();
         }
-        repaint();
     }
     void changeSampleRate (double sr)
     {
@@ -135,28 +133,45 @@ private:
 
     void paintBackground (juce::Graphics& g)
     {
-        auto bounds = getLocalBounds().toFloat();
         g.setColour (juce::Colours::aquamarine);
-        g.drawRect (bounds);
+        g.drawRect (getLocalBounds());
 
-        for (auto i = leftScaleMin; i <= leftScaleMax; i += scaleDivision)
+        auto scale = leftScaleMax;
+        while (scale >= leftScaleMin)
         {
-            g.drawHorizontalLine (juce::jmap (i, leftScaleMin, leftScaleMax, bounds.getY(), bounds.getBottom()),
-                                  bounds.getX(),
-                                  bounds.getRight());
+            auto y = juce::jmap (scale, leftScaleMin, leftScaleMax, fftBoundingBox.toFloat().getBottom(), fftBoundingBox.toFloat().getY());
+
+            g.drawHorizontalLine (y, fftBoundingBox.getX(), fftBoundingBox.getRight());
+
+            scale -= scaleDivision;
+            //we change the color after printing the first line to keep it highlighted
+            g.setColour (juce::Colours::darkgrey);
         }
 
         std::vector<float> freqs { 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000 };
 
-        g.setFont (getTextHeight());
+        g.setFont (10);
+        auto textBound = fftBoundingBox.withWidth (2 * getTextWidth()).withHeight (getTextHeight()).translated (0, 2);
         for (auto freq : freqs)
         {
-            auto x = juce::mapFromLog10 (freq, 20.f, 20000.f) * bounds.getWidth() + bounds.getX();
-            g.setColour (juce::Colours::darkgrey);
-            g.drawVerticalLine (x, bounds.getY(), bounds.getBottom());
-            auto freqStr = freq >= 1000.0f ? juce::String (freq / 1000.f, 2) + "k" : juce::String (freq);
-            //TODO: bounds?
-            g.drawFittedText (freqStr, getLocalBounds(), juce::Justification::topLeft, 1);
+            auto x = juce::mapFromLog10 (freq, 20.f, 20000.f) * fftBoundingBox.getWidth() + fftBoundingBox.getX();
+            auto freqStr = freq >= 1000.0f ? juce::String (freq / 1000.f, 0) + "k" : juce::String (freq);
+            if (freq == 20000.0f)
+            {
+                // don't draw 20k on top of the eqScale!
+                x -= getTextWidth();
+            }
+            else if (freq == 20.0f)
+            {
+                // give the first tick the unit
+                freqStr = freqStr + "Hz";
+            }
+            else
+            {
+                // don't draw first and last line
+                g.drawVerticalLine (x, fftBoundingBox.getY() + 1, fftBoundingBox.getBottom());
+            }
+            g.drawFittedText (freqStr, textBound.withX (x + 2), juce::Justification::topLeft, 1);
         }
     }
 
@@ -177,8 +192,8 @@ private:
 
     void updateOrder (float value)
     {
-        leftPathProducer.changeOrder (static_cast<FFTOrder> (static_cast<int> (value)+11));
-        rightPathProducer.changeOrder (static_cast<FFTOrder> (static_cast<int> (value)+11));
+        leftPathProducer.changeOrder (static_cast<FFTOrder> (static_cast<int> (value) + 11));
+        rightPathProducer.changeOrder (static_cast<FFTOrder> (static_cast<int> (value) + 11));
     }
 
     void animate()
