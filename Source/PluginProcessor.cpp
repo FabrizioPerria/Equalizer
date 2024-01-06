@@ -225,6 +225,7 @@ void EqualizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     }
 
     spectrumAnalyzerFifoLeft.update (buffer);
+    spectrumAnalyzerFifoRight.update (buffer);
 
     outputGain.process (juce::dsp::ProcessContextReplacing<float> (block));
 

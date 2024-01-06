@@ -85,6 +85,7 @@ public:
     Fifo<MeterValues, 20> outMeterValuesFifo;
 
     SingleChannelSampleFifo<juce::AudioBuffer<float>> spectrumAnalyzerFifoLeft { Channel::LEFT };
+    SingleChannelSampleFifo<juce::AudioBuffer<float>> spectrumAnalyzerFifoRight { Channel::RIGHT };
 
     FFTOrder fftOrder { FFTOrder::order2048 };
 

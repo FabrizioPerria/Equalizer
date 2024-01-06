@@ -33,6 +33,7 @@ EqualizerAudioProcessorEditor::EqualizerAudioProcessorEditor (EqualizerAudioProc
 
     addAndMakeVisible (globalBypassButton);
     addAndMakeVisible (bypassButtonContainer);
+    addAndMakeVisible(spectrumAnalyzer);
 
     pathProducer.setDecayRate (120.f);
     pathProducer.changeOrder (audioProcessor.fftOrder);
@@ -93,6 +94,8 @@ void EqualizerAudioProcessorEditor::resized()
 #ifdef PATH_PRODUCER_TEST
     fftBounds = pluginBounds.toFloat();
     pathProducer.setFFTRectBounds (fftBounds);
+#else
+    spectrumAnalyzer.setBounds (pluginBounds);
 #endif
 }
 

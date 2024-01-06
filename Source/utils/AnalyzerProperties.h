@@ -67,7 +67,7 @@ void AddAnalyzerParams (juce::AudioProcessorValueTreeState::ParameterLayout& lay
     layout.add (std::make_unique<juce::AudioParameterChoice> (juce::ParameterID { params.at (ParamNames::AnalyzerPoints), 3 },
                                                               params.at (ParamNames::AnalyzerPoints),
                                                               orders,
-                                                              0));
+                                                              1));
 
     juce::StringArray modes;
     for (const auto& mode : GetProcessingModes())

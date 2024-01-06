@@ -20,17 +20,28 @@ struct SpectrumAnalyzer : AnalyzerBase, juce::Timer
                       juce::AudioProcessorValueTreeState& apv)
         : sampleRate { sr }, leftPathProducer { sampleRate, leftScsf }, rightPathProducer { sampleRate, rightScsf }
     {
-        analyzerEnabledParamListener = std::make_unique<ParamListener> (apv,
-                                                                        "Enable Analyzer",
-                                                                        [this] (float value) { setActive (value > 0.5f); });
+        auto safePtr = juce::Component::SafePointer<SpectrumAnalyzer<BlockType>> (this);
 
-        analyzerDecayRateParamListener = std::make_unique<ParamListener> (apv,
-                                                                          "Analyzer Decay Rate",
-                                                                          [this] (float value) { updateDecayRate (value); });
+        analyzerEnabledParamListener = std::make_unique<ParamListener<float>> (apv.getParameter ("Enable Analyzer"),
+                                                                               [safePtr] (float value)
+                                                                               {
+                                                                                   if (auto* comp = safePtr.getComponent())
+                                                                                       comp->setActive (value > 0.5f);
+                                                                               });
 
-        analyzerOrderParamListener = std::make_unique<ParamListener> (apv,
-                                                                      "Analyzer Points",
-                                                                      [this] (float value) { updateOrder (value); });
+        analyzerDecayRateParamListener = std::make_unique<ParamListener<float>> (apv.getParameter ("Analyzer Decay Rate"),
+                                                                                 [safePtr] (float value)
+                                                                                 {
+                                                                                     if (auto* comp = safePtr.getComponent())
+                                                                                         comp->updateDecayRate (value);
+                                                                                 });
+
+        analyzerOrderParamListener = std::make_unique<ParamListener<float>> (apv.getParameter ("Analyzer Points"),
+                                                                             [safePtr] (float value)
+                                                                             {
+                                                                                 if (auto* comp = safePtr.getComponent())
+                                                                                     comp->updateOrder (value);
+                                                                             });
 
         updateDecayRate (apv.getRawParameterValue ("Analyzer Decay Rate")->load());
         updateOrder (apv.getRawParameterValue ("Analyzer Points")->load());
@@ -50,12 +61,12 @@ struct SpectrumAnalyzer : AnalyzerBase, juce::Timer
         }
         else
         {
-            while (leftPathProducer.getNumPathsAvailable() > 0)
+            while (leftPathProducer.getNumAvailableForReading() > 0)
             {
                 leftPathProducer.pull (leftAnalyzerPath);
             }
 
-            while (rightPathProducer.getNumPathsAvailable() > 0)
+            while (rightPathProducer.getNumAvailableForReading() > 0)
             {
                 rightPathProducer.pull (rightAnalyzerPath);
             }
@@ -67,8 +78,8 @@ struct SpectrumAnalyzer : AnalyzerBase, juce::Timer
     void resized() override
     {
         AnalyzerBase::resized();
-        leftPathProducer.setFFTBounds (getBoundsForFFT());
-        rightPathProducer.setFFTBounds (getBoundsForFFT());
+        leftPathProducer.setFFTRectBounds (getBoundsForFFT().toFloat());
+        rightPathProducer.setFFTRectBounds (getBoundsForFFT().toFloat());
 
         auto bounds = getLocalBounds();
         analyzerScale.setBounds (bounds.removeFromLeft (getTextWidth()));
@@ -95,8 +106,8 @@ struct SpectrumAnalyzer : AnalyzerBase, juce::Timer
         rightScaleMax = rightScaleMax;
         scaleDivision = division;
 
-        leftPathProducer.setDbRange (leftScaleMin, leftScaleMax);
-        rightPathProducer.setDbRange (rightScaleMin, rightScaleMax);
+        leftPathProducer.changePathRange (leftScaleMin, leftScaleMax);
+        rightPathProducer.changePathRange (rightScaleMin, rightScaleMax);
 
         analyzerScale.buildBackgroundImage (scaleDivision, fftBoundingBox, leftScaleMin, leftScaleMax);
         eqScale.buildBackgroundImage (scaleDivision, fftBoundingBox, rightScaleMin, rightScaleMax);
@@ -124,7 +135,7 @@ private:
 
     void paintBackground (juce::Graphics& g)
     {
-        auto bounds = getLocalBounds();
+        auto bounds = getLocalBounds().toFloat();
         g.setColour (juce::Colours::aquamarine);
         g.drawRect (bounds);
 
@@ -145,7 +156,7 @@ private:
             g.drawVerticalLine (x, bounds.getY(), bounds.getBottom());
             auto freqStr = freq >= 1000.0f ? juce::String (freq / 1000.f, 2) + "k" : juce::String (freq);
             //TODO: bounds?
-            g.drawFittedText (freqStr, bounds, juce::Justification::topLeft, 1);
+            g.drawFittedText (freqStr, getLocalBounds(), juce::Justification::topLeft, 1);
         }
     }
 
@@ -166,8 +177,8 @@ private:
 
     void updateOrder (float value)
     {
-        leftPathProducer.setOrder (static_cast<FFTOrder> (static_cast<int> (value)));
-        rightPathProducer.setOrder (static_cast<FFTOrder> (static_cast<int> (value)));
+        leftPathProducer.changeOrder (static_cast<FFTOrder> (static_cast<int> (value)+11));
+        rightPathProducer.changeOrder (static_cast<FFTOrder> (static_cast<int> (value)+11));
     }
 
     void animate()

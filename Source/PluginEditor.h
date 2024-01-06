@@ -12,12 +12,13 @@
 #include "ui/BypassButtonContainer.h"
 #include "ui/EqParamContainer.h"
 #include "ui/GlobalBypassButton.h"
+#include "ui/SpectrumAnalyzer.h"
 #include "ui/StereoMeterComponent.h"
 #include "utils/PathProducer.h"
 #include <JuceHeader.h>
 
 #define TEST_EQ_MODE true
-#define PATH_PRODUCER_TEST true
+/* #define PATH_PRODUCER_TEST true */
 
 //==============================================================================
 /**
@@ -73,6 +74,11 @@ private:
     PathProducer<juce::AudioBuffer<float>> pathProducer { audioProcessor.getSampleRate(), audioProcessor.spectrumAnalyzerFifoLeft };
     juce::Rectangle<float> fftBounds;
     juce::Path currentPath;
+#else
+    SpectrumAnalyzer<juce::AudioBuffer<float>> spectrumAnalyzer { audioProcessor.getSampleRate(),
+                                                                  audioProcessor.spectrumAnalyzerFifoLeft,
+                                                                  audioProcessor.spectrumAnalyzerFifoRight,
+                                                                  audioProcessor.apvts };
 #endif
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (EqualizerAudioProcessorEditor)
