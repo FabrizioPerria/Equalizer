@@ -31,17 +31,24 @@ struct PathProducer : juce::Thread
             }
             auto fftSize = getFFTSize();
             auto bufferForGeneratorSize = bufferForGenerator.getNumSamples();
-            BlockType tmpBuffer (1, bufferForGeneratorSize);
 
             while (! threadShouldExit() && singleChannelSampleFifo->getNumCompleteBuffersAvailable() > 0)
             {
                 auto success = singleChannelSampleFifo->getAudioBuffer (bufferToFill);
                 jassert (success);
                 auto bufferToFillSize = bufferToFill.getNumSamples();
+                jassert (bufferToFillSize <= bufferForGeneratorSize && bufferForGeneratorSize % bufferToFillSize == 0);
 
-                tmpBuffer.copyFrom (0, 0, bufferForGenerator, 0, bufferToFillSize, bufferForGeneratorSize - bufferToFillSize);
-                tmpBuffer.copyFrom (0, bufferForGeneratorSize - bufferToFillSize, bufferToFill, 0, 0, bufferToFillSize);
-                std::swap (bufferForGenerator, tmpBuffer);
+                auto writePointer = bufferForGenerator.getWritePointer (0);
+                if (bufferForGeneratorSize > bufferToFillSize)
+                {
+                    auto readPointerEOB = bufferForGenerator.getReadPointer (0) + bufferForGeneratorSize;
+                    std::copy (readPointerEOB - bufferToFillSize, readPointerEOB, writePointer);
+                }
+
+                auto destination = writePointer + bufferForGeneratorSize - bufferToFillSize;
+                juce::FloatVectorOperations::copy (destination, bufferToFill.getReadPointer (0), bufferToFillSize);
+
                 fftDataGenerator.produceFFTDataForRendering (bufferForGenerator);
             }
 
@@ -111,9 +118,8 @@ struct PathProducer : juce::Thread
         decayRateInDbPerSec = dr;
     }
 
-    bool pull (juce::Path& path)
+    bool pull (juce::Path&& path)
     {
-        //TODO: use tracer to see if move semantics is faster than copy semantics
         return pathGenerator.getPath (std::move (path));
     }
 

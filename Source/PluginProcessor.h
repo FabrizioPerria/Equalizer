@@ -86,7 +86,7 @@ public:
 
     SingleChannelSampleFifo<juce::AudioBuffer<float>> spectrumAnalyzerFifoLeft { Channel::LEFT };
 
-    FFTOrder fftOrder { FFTOrder::order4096 };
+    FFTOrder fftOrder { FFTOrder::order2048 };
 
     using GainTrim = juce::dsp::Gain<float>;
     using Filter = juce::dsp::IIR::Filter<float>;

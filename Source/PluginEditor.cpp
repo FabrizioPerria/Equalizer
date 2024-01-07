@@ -34,6 +34,9 @@ EqualizerAudioProcessorEditor::EqualizerAudioProcessorEditor (EqualizerAudioProc
     addAndMakeVisible (globalBypassButton);
     addAndMakeVisible (bypassButtonContainer);
 
+    pathProducer.setDecayRate (120.f);
+    pathProducer.changeOrder (audioProcessor.fftOrder);
+
     startTimerHz (FRAMES_PER_SECOND);
 }
 
@@ -56,13 +59,6 @@ void EqualizerAudioProcessorEditor::paint (juce::Graphics& g)
 #ifdef PATH_PRODUCER_TEST
     g.setColour (juce::Colours::red);
 
-    if (pathProducer.getNumAvailableForReading() > 0)
-    {
-        while (pathProducer.getNumAvailableForReading() > 0)
-        {
-            pathProducer.pull (currentPath);
-        }
-    }
     g.strokePath (currentPath, juce::PathStrokeType (1));
     g.drawRoundedRectangle (fftBounds, 4, 1);
 #endif
@@ -95,9 +91,6 @@ void EqualizerAudioProcessorEditor::resized()
     eqParamContainer.setBounds (eqParamWidgetBounds);
 
 #ifdef PATH_PRODUCER_TEST
-    pathProducer.setDecayRate (120.f);
-
-    pathProducer.changeOrder (audioProcessor.fftOrder);
     fftBounds = pluginBounds.toFloat();
     pathProducer.setFFTRectBounds (fftBounds);
 #endif
@@ -110,6 +103,12 @@ void EqualizerAudioProcessorEditor::timerCallback()
 
 #ifdef PATH_PRODUCER_TEST
     if (pathProducer.getNumAvailableForReading() > 0)
+    {
+        while (pathProducer.getNumAvailableForReading() > 0)
+        {
+            pathProducer.pull (std::move(currentPath));
+        }
         repaint();
+    }
 #endif
 }
