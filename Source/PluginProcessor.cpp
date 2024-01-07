@@ -9,6 +9,7 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 #include "utils/EqParam.h"
+#include "utils/FFTDataGenerator.h"
 #include "utils/FilterParam.h"
 #include "utils/FilterType.h"
 
@@ -108,12 +109,14 @@ void EqualizerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBl
     inputGain.prepare (spec);
     outputGain.prepare (spec);
 
-    spectrumAnalyzerFifoLeft.prepare (2048);
+    fftOrder = FFTOrder::order2048;
+
+    auto fftSize = 1 << static_cast<int> (fftOrder);
+    spectrumAnalyzerFifoLeft.prepare (fftSize);
 
     initializeFilters();
 
 #ifdef USE_TEST_OSC
-    auto fftSize = 1 << static_cast<int> (fftOrder);
     testOscillator.prepare (spec);
     auto centerIndex = std::round (1000.0f / sampleRate * fftSize);
     auto centerFreq = centerIndex * sampleRate / fftSize;

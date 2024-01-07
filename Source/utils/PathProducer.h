@@ -32,33 +32,34 @@ struct PathProducer : juce::Thread
             auto fftSize = getFFTSize();
             auto bufferForGeneratorSize = bufferForGenerator.getNumSamples();
 
-            while (! threadShouldExit() && singleChannelSampleFifo->getNumCompleteBuffersAvailable() > 0)
+            if (singleChannelSampleFifo->getNumCompleteBuffersAvailable() > 0)
             {
-                auto success = singleChannelSampleFifo->getAudioBuffer (bufferToFill);
-                jassert (success);
-                auto bufferToFillSize = bufferToFill.getNumSamples();
-                jassert (bufferToFillSize <= bufferForGeneratorSize && bufferForGeneratorSize % bufferToFillSize == 0);
-
-                auto writePointer = bufferForGenerator.getWritePointer (0);
-                if (bufferForGeneratorSize > bufferToFillSize)
+                while (! threadShouldExit() && singleChannelSampleFifo->getNumCompleteBuffersAvailable() > 0)
                 {
-                    auto readPointerEOB = bufferForGenerator.getReadPointer (0) + bufferForGeneratorSize;
-                    std::copy (readPointerEOB - bufferToFillSize, readPointerEOB, writePointer);
+                    auto success = singleChannelSampleFifo->getAudioBuffer (bufferToFill);
+                    jassert (success);
+                    auto bufferToFillSize = bufferToFill.getNumSamples();
+                    jassert (bufferToFillSize <= bufferForGeneratorSize && bufferForGeneratorSize % bufferToFillSize == 0);
+
+                    auto writePointer = bufferForGenerator.getWritePointer (0);
+                    if (bufferForGeneratorSize > bufferToFillSize)
+                    {
+                        auto readPointerEOB = bufferForGenerator.getReadPointer (0) + bufferForGeneratorSize;
+                        std::copy (readPointerEOB - bufferToFillSize, readPointerEOB, writePointer);
+                    }
+
+                    auto destination = writePointer + bufferForGeneratorSize - bufferToFillSize;
+                    juce::FloatVectorOperations::copy (destination, bufferToFill.getReadPointer (0), bufferToFillSize);
                 }
-
-                auto destination = writePointer + bufferForGeneratorSize - bufferToFillSize;
-                juce::FloatVectorOperations::copy (destination, bufferToFill.getReadPointer (0), bufferToFillSize);
-
                 fftDataGenerator.produceFFTDataForRendering (bufferForGenerator);
             }
-
             while (! threadShouldExit() && fftDataGenerator.getNumAvailableFFTDataBlocks() > 0)
             {
                 std::vector<float> fftData;
                 auto success = fftDataGenerator.getFFTData (std::move (fftData));
                 jassert (success);
                 updateRenderData (renderData, fftData, fftSize / 2, static_cast<float> (LOOP_DELAY) * decayRateInDbPerSec.load() / 1000.f);
-                pathGenerator.generatePath (renderData, fftBounds, fftSize, getBinWidth());
+                pathGenerator.generatePath (renderData, fftBounds, fftSize, getBinWidth(), negativeInfinity.load(), maxDecibels.load());
             }
             wait (LOOP_DELAY);
         }
@@ -157,7 +158,7 @@ private:
     {
         if (decayRate >= 0.0f)
         {
-            for (size_t bin = 0; bin < static_cast<size_t> (numBins); ++bin)
+            for (size_t bin = 0; bin <= static_cast<size_t> (numBins); ++bin)
             {
                 auto previous = renderDataToUpdate[bin];
                 auto candidate = fftData[bin];
