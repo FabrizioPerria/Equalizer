@@ -91,11 +91,12 @@ struct SpectrumAnalyzer : AnalyzerBase, juce::Timer
     {
         paintBackground (g);
 
+        juce::PathStrokeType strokeType (1.0f, juce::PathStrokeType::JointStyle::curved);
         g.reduceClipRegion (fftBoundingBox);
         g.setColour (juce::Colours::cyan);
-        g.strokePath (leftAnalyzerPath, juce::PathStrokeType (1.0f));
+        g.strokePath (leftAnalyzerPath, strokeType);
         g.setColour (juce::Colours::purple);
-        g.strokePath (rightAnalyzerPath, juce::PathStrokeType (1.0f));
+        g.strokePath (rightAnalyzerPath, strokeType);
     }
 
     void customizeScales (int leftMin, int leftMax, int rightMin, int rightMax, int division)

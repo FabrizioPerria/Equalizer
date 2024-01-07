@@ -47,7 +47,7 @@ inline const std::map<ProcessingModes, juce::String>& GetProcessingModes()
     return map;
 }
 
-void AddAnalyzerParams (juce::AudioProcessorValueTreeState::ParameterLayout& layout)
+inline void AddAnalyzerParams (juce::AudioProcessorValueTreeState::ParameterLayout& layout)
 {
     const auto& params = GetAnalyzerParams();
 

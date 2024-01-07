@@ -9,6 +9,7 @@
 #pragma once
 
 #include "PluginProcessor.h"
+#include "ui/AnalyzerControls.h"
 #include "ui/BypassButtonContainer.h"
 #include "ui/EqParamContainer.h"
 #include "ui/GlobalBypassButton.h"
@@ -63,6 +64,7 @@ private:
 
     GlobalBypassButton globalBypassButton { audioProcessor };
     BypassButtonContainer bypassButtonContainer { audioProcessor.apvts };
+    AnalyzerControls analyzerControls { audioProcessor.apvts };
 
 #ifdef TEST_EQ_MODE
     juce::ComboBox eqModeComboBox;

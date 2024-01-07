@@ -33,6 +33,7 @@ EqualizerAudioProcessorEditor::EqualizerAudioProcessorEditor (EqualizerAudioProc
 
     addAndMakeVisible (globalBypassButton);
     addAndMakeVisible (bypassButtonContainer);
+    addAndMakeVisible (analyzerControls);
 
 #ifdef PATH_PRODUCER_TEST
     pathProducer.setDecayRate (120.f);
@@ -72,6 +73,9 @@ void EqualizerAudioProcessorEditor::resized()
 {
     auto pluginBounds = getLocalBounds().reduced (2 * pluginMargin, pluginMargin);
     pluginBounds.removeFromTop (2 * pluginMargin);
+
+    auto analyzerControlsBounds = pluginBounds.removeFromBottom (100);
+    analyzerControls.setBounds (analyzerControlsBounds);
 
     auto stereoMeterWidth = MONO_METER_WIDTH + METER_SCALE_WIDTH + MONO_METER_WIDTH;
     inputMeter.setBounds (pluginBounds.removeFromLeft (stereoMeterWidth));
