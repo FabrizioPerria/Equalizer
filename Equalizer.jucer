@@ -83,6 +83,7 @@
         <FILE id="DYOhOa" name="MidSideProcessor.h" compile="0" resource="0"
               file="Source/utils/MidSideProcessor.h"/>
         <FILE id="VkXdMM" name="PathDrawer.h" compile="0" resource="0" file="Source/utils/PathDrawer.h"/>
+        <FILE id="fhMzKb" name="PathProducer.h" compile="0" resource="0" file="Source/utils/PathProducer.h"/>
         <FILE id="P5KFW3" name="ReleasePool.h" compile="0" resource="0" file="Source/utils/ReleasePool.h"/>
         <FILE id="avNqkB" name="SingleChannelSampleFifo.h" compile="0" resource="0"
               file="Source/utils/SingleChannelSampleFifo.h"/>

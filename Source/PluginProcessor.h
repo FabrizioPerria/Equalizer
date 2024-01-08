@@ -8,7 +8,8 @@
 
 #pragma once
 
-/* #define USE_TEST_OSC 1 */
+#include "utils/FFTDataGenerator.h"
+#define USE_TEST_OSC true
 
 #include "data/FilterLink.h"
 #include "data/FilterParameters.h"
@@ -84,7 +85,8 @@ public:
     Fifo<MeterValues, 20> outMeterValuesFifo;
 
     SingleChannelSampleFifo<juce::AudioBuffer<float>> spectrumAnalyzerFifoLeft { Channel::LEFT };
-    SingleChannelSampleFifo<juce::AudioBuffer<float>> spectrumAnalyzerFifoRight { Channel::RIGHT };
+
+    FFTOrder fftOrder { FFTOrder::order2048 };
 
     using GainTrim = juce::dsp::Gain<float>;
     using Filter = juce::dsp::IIR::Filter<float>;

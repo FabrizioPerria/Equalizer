@@ -26,10 +26,10 @@ struct FFTDataGenerator
     bool getFFTData (std::vector<float>&& fftDataReceiver);
 
 private:
-    FFTOrder order;
+    FFTOrder order { FFTOrder::order2048 };
     std::vector<float> fftData;
     std::unique_ptr<juce::dsp::FFT> forwardFFT;
     std::unique_ptr<juce::dsp::WindowingFunction<float>> window;
 
-    Fifo<std::vector<float>, 50> fftDataFifo;
+    Fifo<std::vector<float>, 100> fftDataFifo;
 };

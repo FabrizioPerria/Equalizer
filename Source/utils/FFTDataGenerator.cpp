@@ -27,8 +27,8 @@ void FFTDataGenerator::produceFFTDataForRendering (const juce::AudioBuffer<float
 
 void FFTDataGenerator::changeOrder (FFTOrder newOrder)
 {
-    auto fftSize = getFFTSize();
     order = newOrder;
+    auto fftSize = getFFTSize();
     window = std::make_unique<juce::dsp::WindowingFunction<float>> (fftSize, juce::dsp::WindowingFunction<float>::blackmanHarris);
     forwardFFT = std::make_unique<juce::dsp::FFT> (static_cast<int> (order));
     fftData.clear();

@@ -13,9 +13,11 @@
 #include "ui/EqParamContainer.h"
 #include "ui/GlobalBypassButton.h"
 #include "ui/StereoMeterComponent.h"
+#include "utils/PathProducer.h"
 #include <JuceHeader.h>
 
 #define TEST_EQ_MODE true
+#define PATH_PRODUCER_TEST true
 
 //==============================================================================
 /**
@@ -66,6 +68,12 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> eqModeComboBoxAttachment;
 #endif
     const int pluginMargin { 5 };
+
+#ifdef PATH_PRODUCER_TEST
+    PathProducer<juce::AudioBuffer<float>> pathProducer { audioProcessor.getSampleRate(), audioProcessor.spectrumAnalyzerFifoLeft };
+    juce::Rectangle<float> fftBounds;
+    juce::Path currentPath;
+#endif
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (EqualizerAudioProcessorEditor)
 };
