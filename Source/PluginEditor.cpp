@@ -34,6 +34,9 @@ EqualizerAudioProcessorEditor::EqualizerAudioProcessorEditor (EqualizerAudioProc
     addAndMakeVisible (globalBypassButton);
     addAndMakeVisible (bypassButtonContainer);
 
+    pathProducer.setDecayRate (120.f);
+    pathProducer.changeOrder (audioProcessor.fftOrder);
+
     startTimerHz (FRAMES_PER_SECOND);
 }
 
@@ -52,6 +55,13 @@ void EqualizerAudioProcessorEditor::paint (juce::Graphics& g)
 
     g.setColour (juce::Colour { 0x1A, 0x1B, 0x29 });
     g.fillRoundedRectangle (pluginBounds.toFloat(), 10);
+
+#ifdef PATH_PRODUCER_TEST
+    g.setColour (juce::Colours::red);
+
+    g.strokePath (currentPath, juce::PathStrokeType (1));
+    g.drawRoundedRectangle (fftBounds, 4, 1);
+#endif
 }
 
 void EqualizerAudioProcessorEditor::resized()
@@ -79,10 +89,26 @@ void EqualizerAudioProcessorEditor::resized()
 
     auto eqParamWidgetBounds = pluginBounds.removeFromBottom (EqParamContainer::sliderArea + EqParamContainer::buttonArea);
     eqParamContainer.setBounds (eqParamWidgetBounds);
+
+#ifdef PATH_PRODUCER_TEST
+    fftBounds = pluginBounds.toFloat();
+    pathProducer.setFFTRectBounds (fftBounds);
+#endif
 }
 
 void EqualizerAudioProcessorEditor::timerCallback()
 {
     updateMeterValues (audioProcessor.inMeterValuesFifo, inputMeter);
     updateMeterValues (audioProcessor.outMeterValuesFifo, outputMeter);
+
+#ifdef PATH_PRODUCER_TEST
+    if (pathProducer.getNumAvailableForReading() > 0)
+    {
+        while (pathProducer.getNumAvailableForReading() > 0)
+        {
+            pathProducer.pull (currentPath);
+        }
+        repaint();
+    }
+#endif
 }
