@@ -66,7 +66,7 @@ int AnalyzerPathGenerator::getNumPathsAvailable() const
     return pathFifo.getNumAvailableForReading();
 }
 
-bool AnalyzerPathGenerator::getPath (juce::Path&& path)
+bool AnalyzerPathGenerator::getPath (juce::Path& path)
 {
     return pathFifo.pull (path);
 }

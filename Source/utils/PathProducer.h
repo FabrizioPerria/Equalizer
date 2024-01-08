@@ -119,9 +119,9 @@ struct PathProducer : juce::Thread
         decayRateInDbPerSec = dr;
     }
 
-    bool pull (juce::Path&& path)
+    bool pull (juce::Path& path)
     {
-        return pathGenerator.getPath (std::move (path));
+        return pathGenerator.getPath (path);
     }
 
     int getNumAvailableForReading() const

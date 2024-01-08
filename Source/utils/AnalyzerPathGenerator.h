@@ -17,7 +17,7 @@ struct AnalyzerPathGenerator
                        float maxDb = MAX_DECIBELS);
 
     int getNumPathsAvailable() const;
-    bool getPath (juce::Path&& path);
+    bool getPath (juce::Path& path);
 
 private:
     Fifo<juce::Path, 50> pathFifo;

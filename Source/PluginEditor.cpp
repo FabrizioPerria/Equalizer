@@ -106,7 +106,7 @@ void EqualizerAudioProcessorEditor::timerCallback()
     {
         while (pathProducer.getNumAvailableForReading() > 0)
         {
-            pathProducer.pull (std::move(currentPath));
+            pathProducer.pull (currentPath);
         }
         repaint();
     }
