@@ -63,12 +63,12 @@ struct SpectrumAnalyzer : AnalyzerBase, juce::Timer
         {
             while (leftPathProducer.getNumAvailableForReading() > 0)
             {
-                leftPathProducer.pull (std::move (leftAnalyzerPath));
+                leftPathProducer.pull (leftAnalyzerPath);
             }
 
             while (rightPathProducer.getNumAvailableForReading() > 0)
             {
-                rightPathProducer.pull (std::move (rightAnalyzerPath));
+                rightPathProducer.pull (rightAnalyzerPath);
             }
         }
         repaint();
