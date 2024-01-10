@@ -109,9 +109,8 @@ void EqualizerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBl
     spec.numChannels = 2;
     inputGain.prepare (spec);
     outputGain.prepare (spec);
-
-    fftOrder = FFTOrder::order2048;
-
+    fftOrder = static_cast<FFTOrder>( getRawParameter(AnalyzerProperties::GetAnalyzerParams().at(AnalyzerProperties::ParamNames::AnalyzerPoints)) + 11);
+      
     auto fftSize = 1 << static_cast<int> (fftOrder);
 
     spectrumAnalyzerFifoLeft.prepare (fftSize);
@@ -181,7 +180,7 @@ void EqualizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     inputGain.process (juce::dsp::ProcessContextReplacing<float> (block));
 
 #ifdef USE_TEST_OSC
-    testGain.setGainDecibels (JUCE_LIVE_CONSTANT (0.0f));
+    testGain.setGainDecibels (JUCE_LIVE_CONSTANT (-12.0f));
 
     buffer.clear();
     for (auto samplePosition = 0; samplePosition < buffer.getNumSamples(); ++samplePosition)

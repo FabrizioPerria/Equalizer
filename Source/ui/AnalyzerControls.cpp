@@ -2,7 +2,7 @@
 #include "utils/AnalyzerProperties.h"
 #include <ratio>
 
-void AnalyzerControlsLookAndFeel::drawRotarySlider (Graphics& g,
+void AnalyzerControlsLookAndFeel::drawRotarySlider (juce::Graphics& g,
                                                     int x,
                                                     int y,
                                                     int width,
@@ -10,11 +10,11 @@ void AnalyzerControlsLookAndFeel::drawRotarySlider (Graphics& g,
                                                     float sliderPos,
                                                     const float rotaryStartAngle,
                                                     const float rotaryEndAngle,
-                                                    Slider& slider)
+                                                    juce::Slider& slider)
 {
     if (auto* rswl = dynamic_cast<KnobWithLabels*> (&slider))
     {
-        auto radius = jmin (width / 2, height / 2) - 4.0f;
+        auto radius = juce::jmin (width / 2, height / 2) - 4.0f;
         auto centreX = x + width * 0.5f;
         auto centreY = y + height * 0.5f;
         auto rx = centreX - radius;
@@ -23,7 +23,7 @@ void AnalyzerControlsLookAndFeel::drawRotarySlider (Graphics& g,
         auto angle = rotaryStartAngle + sliderPos * (rotaryEndAngle - rotaryStartAngle);
 
         // fill
-        ColourGradient gradient (light, centreX, centreY, dark, centreX + radius, centreY + radius, true);
+        juce::ColourGradient gradient (light, centreX, centreY, dark, centreX + radius, centreY + radius, true);
         g.setGradientFill (gradient);
         g.fillEllipse (rx, ry, rw, rw);
 
@@ -34,11 +34,11 @@ void AnalyzerControlsLookAndFeel::drawRotarySlider (Graphics& g,
         g.drawEllipse (rx + 2, ry + 2, rw - 4, rw - 4, 1.0f);
 
         // pointer
-        Path p;
+        juce::Path p;
         auto pointerLength = radius * 0.33f;
         auto pointerThickness = 2.0f;
         p.addRectangle (-pointerThickness * 0.5f, -radius, pointerThickness, pointerLength);
-        p.applyTransform (AffineTransform::rotation (angle).translated (centreX, centreY));
+        p.applyTransform (juce::AffineTransform::rotation (angle).translated (centreX, centreY));
 
         // pointer color
         g.setColour (light);
@@ -46,7 +46,7 @@ void AnalyzerControlsLookAndFeel::drawRotarySlider (Graphics& g,
     }
 }
 
-void AnalyzerControlsLookAndFeel::drawLinearSlider (Graphics& g,
+void AnalyzerControlsLookAndFeel::drawLinearSlider (juce::Graphics& g,
                                                     int x,
                                                     int y,
                                                     int width,
@@ -54,25 +54,25 @@ void AnalyzerControlsLookAndFeel::drawLinearSlider (Graphics& g,
                                                     float sliderPos,
                                                     float minSliderPos,
                                                     float maxSliderPos,
-                                                    const Slider::SliderStyle style,
-                                                    Slider& slider)
+                                                    const juce::Slider::SliderStyle style,
+                                                    juce::Slider& slider)
 {
-    auto trackWidth = jmin (8.0f, slider.isHorizontal() ? height * 0.25f : width * 0.25f);
+    auto trackWidth = juce::jmin (8.0f, slider.isHorizontal() ? height * 0.25f : width * 0.25f);
 
-    Point<float> startPoint (slider.isHorizontal() ? x : x + width * 0.5f, //
+    juce::Point<float> startPoint (slider.isHorizontal() ? x : x + width * 0.5f, //
                              slider.isHorizontal() ? y + height * 0.5f : height + y);
 
-    Point<float> endPoint (slider.isHorizontal() ? width + x : startPoint.x, //
+    juce::Point<float> endPoint (slider.isHorizontal() ? width + x : startPoint.x, //
                            slider.isHorizontal() ? startPoint.y : y);
 
-    Path backgroundTrack;
+    juce::Path backgroundTrack;
     backgroundTrack.startNewSubPath (startPoint);
     backgroundTrack.lineTo (endPoint);
     g.setColour (darkdark.withAlpha (0.8f));
-    g.strokePath (backgroundTrack, { trackWidth, PathStrokeType::curved, PathStrokeType::rounded });
+    g.strokePath (backgroundTrack, { trackWidth, juce::PathStrokeType::curved, juce::PathStrokeType::rounded });
 
     g.setColour (light);
-    auto pointer = Rectangle<float> (trackWidth, trackWidth);
+    auto pointer = juce::Rectangle<float> (trackWidth, trackWidth);
     pointer.setCentre ({ slider.isHorizontal() ? sliderPos : startPoint.x, slider.isHorizontal() ? startPoint.y : sliderPos });
 
     g.fillEllipse (pointer);
@@ -126,6 +126,13 @@ AnalyzerControls::AnalyzerControls (juce::AudioProcessorValueTreeState& apv)
 
     decaySlider.labels.add ("0");
     decaySlider.labels.add ("30");
+
+    inputSlider.labels.add ("Pre");
+    inputSlider.labels.add ("Post");
+
+    pointsSlider.labels.add ("2048");
+    pointsSlider.labels.add ("4096");
+    pointsSlider.labels.add ("8192");
 }
 
 AnalyzerControls::~AnalyzerControls()
