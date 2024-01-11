@@ -21,7 +21,7 @@ struct PathProducer : juce::Thread
 
     void run() override
     {
-        BlockType bufferToFill;
+        BlockType bufferToRead;
         while (! threadShouldExit())
         {
             if (! processingIsEnabled)
@@ -36,20 +36,20 @@ struct PathProducer : juce::Thread
             {
                 while (! threadShouldExit() && singleChannelSampleFifo->getNumCompleteBuffersAvailable() > 0)
                 {
-                    auto success = singleChannelSampleFifo->getAudioBuffer (bufferToFill);
+                    auto success = singleChannelSampleFifo->getAudioBuffer (bufferToRead);
                     jassert (success);
-                    auto bufferToFillSize = bufferToFill.getNumSamples();
-                    jassert (bufferToFillSize <= bufferForGeneratorSize && bufferForGeneratorSize % bufferToFillSize == 0);
+                    auto size = bufferToRead.getNumSamples();
+                    jassert (size <= bufferForGeneratorSize && bufferForGeneratorSize % size == 0);
 
-                    auto writePointer = bufferForGenerator.getWritePointer (0);
-                    if (bufferForGeneratorSize > bufferToFillSize)
+                    if (size < bufferForGeneratorSize)
                     {
+                        auto writePointer = bufferForGenerator.getWritePointer (0);
                         auto readPointer = bufferForGenerator.getReadPointer (0);
-                        std::copy (readPointer + bufferToFillSize, readPointer + bufferForGeneratorSize, writePointer);
+                        std::copy (readPointer + size, readPointer + bufferForGeneratorSize, writePointer);
                     }
 
-                    auto destination = writePointer + bufferForGeneratorSize - bufferToFillSize;
-                    juce::FloatVectorOperations::copy (destination, bufferToFill.getReadPointer (0), bufferToFillSize);
+                    auto destination = bufferForGenerator.getWritePointer (0, bufferForGeneratorSize - size);
+                    juce::FloatVectorOperations::copy (destination, bufferToRead.getReadPointer (0), size);
                 }
                 fftDataGenerator.produceFFTDataForRendering (bufferForGenerator);
             }

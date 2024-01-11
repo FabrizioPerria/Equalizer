@@ -110,19 +110,12 @@ void EqualizerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBl
     inputGain.prepare (spec);
     outputGain.prepare (spec);
 
-    auto fftSize = 1 << static_cast<int> (fftOrder);
-
-    spectrumAnalyzerFifoLeft.prepare (fftSize);
-    spectrumAnalyzerFifoRight.prepare (fftSize);
+    initializeOrder();
 
     initializeFilters();
 
 #ifdef USE_TEST_OSC
     testOscillator.prepare (spec);
-    auto centerIndex = std::round (1000.0f / sampleRate * fftSize);
-    auto centerFreq = static_cast<float> (centerIndex * sampleRate / fftSize);
-
-    testOscillator.setFrequency (centerFreq);
     testGain.prepare (spec);
 #endif
     sampleRateListeners.call ([sampleRate] (SampleRateListener& l) { l.sampleRateChanged (sampleRate); });
@@ -183,6 +176,12 @@ void EqualizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
 #ifdef USE_TEST_OSC
     /* testGain.setGainDecibels (JUCE_LIVE_CONSTANT (-12.0f)); */
     testGain.setGainDecibels (-12.0f);
+
+    auto fftSize = 1 << static_cast<int> (fftOrder);
+    auto sampleRate = getSampleRate();
+    auto centerIndex = std::round (1000.0f / sampleRate * fftSize);
+    auto centerFreq = centerIndex * sampleRate / fftSize;
+    testOscillator.setFrequency (centerFreq);
 
     buffer.clear();
     for (auto samplePosition = 0; samplePosition < buffer.getNumSamples(); ++samplePosition)
@@ -464,4 +463,16 @@ void EqualizerAudioProcessor::updateTrimGains()
 
     inputGain.setGainDecibels (inputGainRaw);
     outputGain.setGainDecibels (outputGainRaw);
+}
+
+void EqualizerAudioProcessor::initializeOrder()
+{
+    /*
+         the SingleChannelSampleFifos are now hard-coded to always hold 2048 samples
+         the reason is explained in the PathProducer::run() function.
+         */
+    fftOrder = FFTOrder::order2048;
+    auto fftOrderInt = static_cast<int> (fftOrder);
+    spectrumAnalyzerFifoLeft.prepare (1 << fftOrderInt);
+    spectrumAnalyzerFifoRight.prepare (1 << fftOrderInt);
 }
