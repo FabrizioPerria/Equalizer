@@ -120,7 +120,8 @@ void EqualizerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBl
 #ifdef USE_TEST_OSC
     testOscillator.prepare (spec);
     auto centerIndex = std::round (1000.0f / sampleRate * fftSize);
-    auto centerFreq = centerIndex * sampleRate / fftSize;
+    auto centerFreq = static_cast<float> (centerIndex * sampleRate / fftSize);
+    
     testOscillator.setFrequency (centerFreq);
     testGain.prepare (spec);
 #endif

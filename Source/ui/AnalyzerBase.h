@@ -11,7 +11,7 @@ struct AnalyzerBase : juce::Component
     juce::Rectangle<int> getBoundsForFFT()
     {
         auto boundsForRendering = getBoundsForRendering();
-        auto w = getTextWidth() * 1.5f;
+        auto w = static_cast<int>(getTextWidth() * 1.5f);
         return boundsForRendering.withTrimmedLeft (w).withTrimmedRight (w);
     }
 

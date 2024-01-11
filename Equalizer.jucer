@@ -8,6 +8,8 @@
     <GROUP id="{947A9606-09DB-5F3A-08CC-6B17C53CAE0F}" name="Source">
       <GROUP id="{7B339522-B1D5-D067-0094-2F67CA15145D}" name="ui">
         <FILE id="pj145g" name="AnalyzerBase.h" compile="0" resource="0" file="Source/ui/AnalyzerBase.h"/>
+        <FILE id="fEZuCR" name="AnalyzerControlLookAndFeel.h" compile="0" resource="0"
+              file="Source/ui/AnalyzerControlLookAndFeel.h"/>
         <FILE id="FYbdcF" name="AnalyzerControls.cpp" compile="1" resource="0"
               file="Source/ui/AnalyzerControls.cpp"/>
         <FILE id="ZbS1ml" name="AnalyzerControls.h" compile="0" resource="0"
@@ -40,6 +42,8 @@
               file="Source/ui/GlobalBypassButton.cpp"/>
         <FILE id="ZQl4Wo" name="GlobalBypassButton.h" compile="0" resource="0"
               file="Source/ui/GlobalBypassButton.h"/>
+        <FILE id="OATtzc" name="KnobWithLabels.h" compile="0" resource="0"
+              file="Source/ui/KnobWithLabels.h"/>
         <FILE id="izWLyB" name="MeterComponent.cpp" compile="1" resource="0"
               file="Source/ui/MeterComponent.cpp"/>
         <FILE id="L9RxGF" name="MeterComponent.h" compile="0" resource="0"
@@ -51,6 +55,8 @@
               file="Source/ui/StereoMeterComponent.cpp"/>
         <FILE id="rIEfKM" name="StereoMeterComponent.h" compile="0" resource="0"
               file="Source/ui/StereoMeterComponent.h"/>
+        <FILE id="Tap84w" name="VerticalSwitch.h" compile="0" resource="0"
+              file="Source/ui/VerticalSwitch.h"/>
       </GROUP>
       <GROUP id="{DF623B76-4BBC-978B-59BD-4C329A2F163D}" name="data">
         <FILE id="YUOwXx" name="Averager.h" compile="0" resource="0" file="Source/data/Averager.h"/>

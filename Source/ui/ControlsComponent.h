@@ -1,6 +1,8 @@
 #pragma once
 
 #include "ui/AnalyzerControls.h"
+#include "ui/KnobWithLabels.h"
+#include "ui/VerticalSwitch.h"
 #include <JuceHeader.h>
 
 struct ControlsComponent : juce::Component
@@ -61,14 +63,17 @@ struct ControlsComponent : juce::Component
 
     void paint (juce::Graphics& g) override
     {
+        auto width = static_cast<float> (getWidth());
+        auto height = static_cast<float> (getHeight());
+
         g.setColour (juce::Colours::aquamarine);
-        g.drawHorizontalLine (0, 0, getWidth());
+        g.drawHorizontalLine (0, 0, width);
 
-        g.drawVerticalLine (gainSize + 10 + eqModeSize + 5, 0, getHeight());
-        g.drawVerticalLine (gainSize + 10 + eqModeSize + 10 + analyzerControlsSize + 5, 0, getHeight());
+        g.drawVerticalLine (gainSize + 10 + eqModeSize + 5, 0, height);
+        g.drawVerticalLine (gainSize + 10 + eqModeSize + 10 + analyzerControlsSize + 5, 0, height);
 
-        g.drawVerticalLine (gainSize + 5, 0, getHeight());
-        g.drawVerticalLine (getWidth() - gainSize - 5, 0, getHeight());
+        g.drawVerticalLine (gainSize + 5, 0, height);
+        g.drawVerticalLine (getWidth() - gainSize - 5, 0, height);
     }
 
 private:
@@ -83,9 +88,9 @@ private:
     VerticalSwitch eqMode { "EQ Mode" };
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> eqModeAttachment;
 
-    float gainSize = 80.0f;
-    float eqModeSize = 80.0f;
-    float analyzerControlsSize = 400.0f;
+    int gainSize = 80;
+    int eqModeSize = 80;
+    int analyzerControlsSize = 400;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ControlsComponent)
 };

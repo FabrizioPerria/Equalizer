@@ -7,10 +7,10 @@ void AnalyzerPathGenerator::generatePath (const std::vector<float>& renderData,
                                           float negativeInfinity,
                                           float maxDb)
 {
-    auto numBins = fftSize / 2;
+    size_t numBins = static_cast<size_t>(fftSize / 2);
 
     auto startX = fftBounds.getX();
-    auto toXCoordinate = [&] (int binIndex)
+    auto toXCoordinate = [&] (size_t binIndex)
     {
         auto binFreq = binIndex * binWidth;
         int binX = static_cast<int> (std::floor (juce::mapFromLog10 (binFreq, 20.f, 20000.f) * fftBounds.getWidth()));
