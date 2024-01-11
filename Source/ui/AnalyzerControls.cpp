@@ -1,6 +1,5 @@
 #include "ui/AnalyzerControls.h"
 #include "utils/AnalyzerProperties.h"
-#include <ratio>
 
 void AnalyzerControlsLookAndFeel::drawRotarySlider (juce::Graphics& g,
                                                     int x,
@@ -14,9 +13,13 @@ void AnalyzerControlsLookAndFeel::drawRotarySlider (juce::Graphics& g,
 {
     if (auto* rswl = dynamic_cast<KnobWithLabels*> (&slider))
     {
-        auto radius = juce::jmin (width / 2, height / 2) - 4.0f;
-        auto centreX = x + width * 0.5f;
-        auto centreY = y + height * 0.5f;
+        auto widthF = static_cast<float> (width);
+        auto heightF = static_cast<float> (height);
+        auto xF = static_cast<float> (x);
+        auto yF = static_cast<float> (y);
+        auto radius = juce::jmin (widthF / 2, heightF / 2) - 4.0f;
+        auto centreX = xF + widthF * 0.5f;
+        auto centreY = yF + heightF * 0.5f;
         auto rx = centreX - radius;
         auto ry = centreY - radius;
         auto rw = radius * 2.0f;
@@ -57,25 +60,30 @@ void AnalyzerControlsLookAndFeel::drawLinearSlider (juce::Graphics& g,
                                                     const juce::Slider::SliderStyle style,
                                                     juce::Slider& slider)
 {
-    auto trackWidth = juce::jmin (8.0f, slider.isHorizontal() ? height * 0.25f : width * 0.25f);
+    if (auto* sw = dynamic_cast<VerticalSwitch*> (&slider))
+    {
+        auto widthF = static_cast<float> (width);
+        auto heightF = static_cast<float> (height);
+        auto xF = static_cast<float> (x);
+        auto yF = static_cast<float> (y);
+        auto trackWidth = juce::jmin (8.0f, widthF / 4.0f);
 
-    juce::Point<float> startPoint (slider.isHorizontal() ? x : x + width * 0.5f, //
-                             slider.isHorizontal() ? y + height * 0.5f : height + y);
+        juce::Point<float> startPoint (xF + JUCE_LIVE_CONSTANT (5), heightF + yF);
+        /* juce::Point<float> startPoint (xF + widthF * 0.5f, heightF + yF); */
+        juce::Point<float> endPoint (startPoint.x, yF);
 
-    juce::Point<float> endPoint (slider.isHorizontal() ? width + x : startPoint.x, //
-                           slider.isHorizontal() ? startPoint.y : y);
+        juce::Path backgroundTrack;
+        backgroundTrack.startNewSubPath (startPoint);
+        backgroundTrack.lineTo (endPoint);
+        g.setColour (darkdark.withAlpha (0.8f));
+        g.strokePath (backgroundTrack, { trackWidth, juce::PathStrokeType::curved, juce::PathStrokeType::rounded });
 
-    juce::Path backgroundTrack;
-    backgroundTrack.startNewSubPath (startPoint);
-    backgroundTrack.lineTo (endPoint);
-    g.setColour (darkdark.withAlpha (0.8f));
-    g.strokePath (backgroundTrack, { trackWidth, juce::PathStrokeType::curved, juce::PathStrokeType::rounded });
+        g.setColour (light);
+        auto pointer = juce::Rectangle<float> (trackWidth, trackWidth);
+        pointer.setCentre ({ startPoint.x, sliderPos });
 
-    g.setColour (light);
-    auto pointer = juce::Rectangle<float> (trackWidth, trackWidth);
-    pointer.setCentre ({ slider.isHorizontal() ? sliderPos : startPoint.x, slider.isHorizontal() ? startPoint.y : sliderPos });
-
-    g.fillEllipse (pointer);
+        g.fillEllipse (pointer);
+    }
 }
 
 AnalyzerControls::AnalyzerControls (juce::AudioProcessorValueTreeState& apv)
@@ -118,12 +126,6 @@ AnalyzerControls::AnalyzerControls (juce::AudioProcessorValueTreeState& apv)
     addAndMakeVisible (pointsSlider);
     addAndMakeVisible (decaySlider);
 
-    inputSlider.setSliderStyle (juce::Slider::SliderStyle::LinearVertical);
-    inputSlider.setTextBoxStyle (juce::Slider::NoTextBox, false, 50, 20);
-
-    pointsSlider.setSliderStyle (juce::Slider::SliderStyle::LinearVertical);
-    pointsSlider.setTextBoxStyle (juce::Slider::NoTextBox, false, 50, 20);
-
     decaySlider.labels.add ("0");
     decaySlider.labels.add ("30");
 
@@ -142,16 +144,18 @@ AnalyzerControls::~AnalyzerControls()
 
 void AnalyzerControls::resized()
 {
-    auto bounds = getLocalBounds().reduced (10);
+    auto bounds = getLocalBounds().reduced (10, 0);
 
     auto padding = 10;
     auto sliderWidth = bounds.getWidth() / 5 - padding;
-    auto sliderHeight = bounds.getHeight() - 20;
 
     enableButton.setBounds (bounds.removeFromLeft (50));
+    bounds.removeFromLeft (30);
+    decaySlider.setBounds (bounds.removeFromRight (80));
+    bounds.removeFromRight (30);
     inputSlider.setBounds (bounds.removeFromLeft (sliderWidth));
+    bounds.removeFromLeft (30);
     pointsSlider.setBounds (bounds.removeFromLeft (sliderWidth));
-    decaySlider.setBounds (bounds.removeFromLeft (sliderWidth));
 }
 
 void AnalyzerControls::toggleEnable()

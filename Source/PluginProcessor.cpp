@@ -109,8 +109,7 @@ void EqualizerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBl
     spec.numChannels = 2;
     inputGain.prepare (spec);
     outputGain.prepare (spec);
-    fftOrder = static_cast<FFTOrder>( getRawParameter(AnalyzerProperties::GetAnalyzerParams().at(AnalyzerProperties::ParamNames::AnalyzerPoints)) + 11);
-      
+
     auto fftSize = 1 << static_cast<int> (fftOrder);
 
     spectrumAnalyzerFifoLeft.prepare (fftSize);
@@ -180,7 +179,8 @@ void EqualizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     inputGain.process (juce::dsp::ProcessContextReplacing<float> (block));
 
 #ifdef USE_TEST_OSC
-    testGain.setGainDecibels (JUCE_LIVE_CONSTANT (-12.0f));
+    /* testGain.setGainDecibels (JUCE_LIVE_CONSTANT (-12.0f)); */
+    testGain.setGainDecibels (-12.0f);
 
     buffer.clear();
     for (auto samplePosition = 0; samplePosition < buffer.getNumSamples(); ++samplePosition)
@@ -196,6 +196,18 @@ void EqualizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
 #endif
 
     updateMeterFifos (inMeterValuesFifo, buffer);
+
+    auto processingModeName = AnalyzerProperties::GetAnalyzerParams().at (AnalyzerProperties::ParamNames::AnalyzerProcessingMode);
+    auto processingMode = static_cast<AnalyzerProperties::ProcessingModes> (getRawParameter (processingModeName));
+
+    auto enabledName = AnalyzerProperties::GetAnalyzerParams().at (AnalyzerProperties::ParamNames::EnableAnalyzer);
+    auto analyzerEnabled = getRawParameter (enabledName) > 0.5;
+
+    if (analyzerEnabled && processingMode == AnalyzerProperties::ProcessingModes::Pre)
+    {
+        spectrumAnalyzerFifoLeft.update (buffer);
+        spectrumAnalyzerFifoRight.update (buffer);
+    }
 
     if (mode == EqMode::MID_SIDE)
     {
@@ -225,8 +237,11 @@ void EqualizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
         midSideProcessor.process (juce::dsp::ProcessContextReplacing<float> (block));
     }
 
-    spectrumAnalyzerFifoLeft.update (buffer);
-    spectrumAnalyzerFifoRight.update (buffer);
+    if (analyzerEnabled && processingMode == AnalyzerProperties::ProcessingModes::Post)
+    {
+        spectrumAnalyzerFifoLeft.update (buffer);
+        spectrumAnalyzerFifoRight.update (buffer);
+    }
 
     outputGain.process (juce::dsp::ProcessContextReplacing<float> (block));
 

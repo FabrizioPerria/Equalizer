@@ -19,6 +19,8 @@
               file="Source/ui/BypassButtonContainer.cpp"/>
         <FILE id="fYqZP0" name="BypassButtonContainer.h" compile="0" resource="0"
               file="Source/ui/BypassButtonContainer.h"/>
+        <FILE id="gWE61M" name="ControlsComponent.h" compile="0" resource="0"
+              file="Source/ui/ControlsComponent.h"/>
         <FILE id="jioKe9" name="DbScaleComponent.cpp" compile="1" resource="0"
               file="Source/ui/DbScaleComponent.cpp"/>
         <FILE id="C8P3QR" name="DbScaleComponent.h" compile="0" resource="0"

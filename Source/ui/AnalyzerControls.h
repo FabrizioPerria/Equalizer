@@ -26,14 +26,18 @@ struct AnalyzerControlsLookAndFeel : juce::LookAndFeel_V4
                            juce::Slider& slider) override;
 
 private:
-    juce::Colour darkdark = juce::Colour::fromString (JUCE_LIVE_CONSTANT ("ff0d0e16"));
-    juce::Colour dark = juce::Colour::fromString (JUCE_LIVE_CONSTANT ("ff14141f"));
-    juce::Colour light = juce::Colour::fromString (JUCE_LIVE_CONSTANT ("88367e3b3"));
+    /* juce::Colour darkdark = juce::Colour::fromString (JUCE_LIVE_CONSTANT ("ff0d0e16")); */
+    /* juce::Colour dark = juce::Colour::fromString (JUCE_LIVE_CONSTANT ("ff14141f")); */
+    /* juce::Colour light = juce::Colour::fromString (JUCE_LIVE_CONSTANT ("88367e3b3")); */
+    juce::Colour darkdark = juce::Colour::fromString (("ff0d0e16"));
+    juce::Colour dark = juce::Colour::fromString (("ff14141f"));
+    juce::Colour light = juce::Colour::fromString (("88367e3b3"));
 };
 
 struct VerticalSwitch : juce::Slider
 {
-    VerticalSwitch() : Slider (juce::Slider::SliderStyle::LinearVertical, juce::Slider::TextEntryBoxPosition::NoTextBox)
+    VerticalSwitch (juce::String newTitle)
+        : Slider (juce::Slider::SliderStyle::LinearVertical, juce::Slider::TextEntryBoxPosition::NoTextBox), title (newTitle)
     {
         setLookAndFeel (&laf);
     }
@@ -46,23 +50,40 @@ struct VerticalSwitch : juce::Slider
     void paint (juce::Graphics& g) override
     {
         auto range = getRange();
+        auto bounds = getLocalBounds().toDouble();
+        bounds.removeFromLeft (5);
+        auto titleArea = bounds.removeFromTop (12);
 
-        auto v = getValue();
-        auto b = getSliderBounds().toDouble();
-        auto normalized = juce::jmap (getValue(), range.getStart(), range.getEnd(), b.getBottom(), b.getY());
+        g.setColour (juce::Colours::aquamarine);
+        g.setFont (12);
+        g.drawFittedText (title, titleArea.toNearestInt(), juce::Justification::left, 1);
 
-        getLookAndFeel().drawLinearSlider (g, b.getX(), b.getY(), b.getWidth(), b.getHeight(), normalized, 0, 1, getSliderStyle(), *this);
+        bounds.removeFromTop (12);
+        bounds.removeFromBottom (12);
+        auto normalized = juce::jmap (getValue(), range.getStart(), range.getEnd(), bounds.getBottom(), bounds.getY());
 
-        auto labelArea = b;
-        labelArea.removeFromLeft (labelArea.getWidth() / 2 + 8);
+        getLookAndFeel().drawLinearSlider (g,
+                                           bounds.getX(),
+                                           bounds.getY(),
+                                           bounds.getWidth(),
+                                           bounds.getHeight(),
+                                           normalized,
+                                           0,
+                                           1,
+                                           getSliderStyle(),
+                                           *this);
+
+        auto labelArea = bounds;
+
+        labelArea.removeFromLeft (JUCE_LIVE_CONSTANT (12));
         labelArea.setHeight (10);
-        g.setColour (juce::Colours::white);
+        g.setColour (juce::Colours::aquamarine);
         g.setFont (10);
         auto numChoices = labels.size();
 
         for (int i = 0; i < numChoices; ++i)
         {
-            auto ypos = b.getBottom() - 5 - i * (b.getHeight() / (numChoices - 1));
+            auto ypos = bounds.getBottom() - 5 - i * (bounds.getHeight() / (numChoices - 1));
             g.setColour (juce::Colours::green);
             g.drawFittedText (labels[i], labelArea.withY (ypos).toNearestInt(), juce::Justification::left, 1);
         }
@@ -73,11 +94,11 @@ struct VerticalSwitch : juce::Slider
 private:
     AnalyzerControlsLookAndFeel laf;
 
+    juce::String title;
+
     juce::Rectangle<int> getSliderBounds() const
     {
         juce::Rectangle<int> r = getLocalBounds();
-        r.setHeight (56);
-        r.setY (12);
 
         return r;
     }
@@ -85,7 +106,8 @@ private:
 
 struct KnobWithLabels : juce::Slider
 {
-    KnobWithLabels() : Slider (juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag, juce::Slider::TextEntryBoxPosition::NoTextBox)
+    KnobWithLabels (juce::String newTitle)
+        : Slider (juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag, juce::Slider::TextEntryBoxPosition::NoTextBox), title (newTitle)
     {
         setLookAndFeel (&lnf);
     }
@@ -101,7 +123,14 @@ struct KnobWithLabels : juce::Slider
 
         auto range = getRange();
 
-        auto sliderBounds = getSliderBounds();
+        auto bounds = getLocalBounds();
+        auto titleArea = bounds.removeFromTop (getTextHeight());
+        auto sliderBounds = bounds;
+        g.setColour (juce::Colours::aquamarine);
+        g.setFont (getTextHeight());
+        g.drawFittedText (title, titleArea, juce::Justification::centred, 1);
+        sliderBounds.removeFromTop (12);
+        sliderBounds.removeFromBottom (12);
 
         getLookAndFeel().drawRotarySlider (g,
                                            sliderBounds.getX(),
@@ -114,7 +143,6 @@ struct KnobWithLabels : juce::Slider
                                            *this);
 
         auto center = sliderBounds.toFloat().getCentre();
-        auto radius = sliderBounds.getWidth() * 0.5f;
 
         g.setColour (juce::Colour (0u, 172u, 1u));
         g.setFont (getTextHeight());
@@ -128,13 +156,13 @@ struct KnobWithLabels : juce::Slider
 
             auto ang = juce::jmap (pos, 0.f, 1.f, startAng, endAng);
 
-            auto c = center.getPointOnCircumference (radius + JUCE_LIVE_CONSTANT (7), ang);
+            auto c = center.getPointOnCircumference (35, ang);
 
             juce::Rectangle<float> r;
             auto str = labels[i];
             r.setSize (g.getCurrentFont().getStringWidth (str), getTextHeight());
             r.setCentre (c);
-            r.setY (r.getY() + JUCE_LIVE_CONSTANT (4));
+            r.setY (r.getY());
 
             g.drawFittedText (str, r.toNearestInt(), juce::Justification::centred, 1);
         }
@@ -159,11 +187,12 @@ struct KnobWithLabels : juce::Slider
 
     int getTextHeight() const
     {
-        return 14;
+        return 12;
     }
 
 private:
     AnalyzerControlsLookAndFeel lnf;
+    juce::String title;
 };
 
 struct AnalyzerControls : juce::Component
@@ -183,10 +212,10 @@ private:
 
     juce::TextButton enableButton { "On" };
     std::unique_ptr<ButtonAttachment> enableButtonAttachment;
-    VerticalSwitch inputSlider;
+    VerticalSwitch inputSlider { "Input" };
     std::unique_ptr<SliderAttachment> inputSliderAttachment;
-    VerticalSwitch pointsSlider;
+    VerticalSwitch pointsSlider { "Points" };
     std::unique_ptr<SliderAttachment> pointsSliderAttachment;
-    KnobWithLabels decaySlider;
+    KnobWithLabels decaySlider { "Decay Rate" };
     std::unique_ptr<SliderAttachment> decaySliderAttachment;
 };

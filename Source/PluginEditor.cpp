@@ -33,13 +33,13 @@ EqualizerAudioProcessorEditor::EqualizerAudioProcessorEditor (EqualizerAudioProc
 
     addAndMakeVisible (globalBypassButton);
     addAndMakeVisible (bypassButtonContainer);
-    addAndMakeVisible (analyzerControls);
+    addAndMakeVisible (controls);
 
 #ifdef PATH_PRODUCER_TEST
     pathProducer.setDecayRate (120.f);
     pathProducer.changeOrder (audioProcessor.fftOrder);
 #else
-    addAndMakeVisible(spectrumAnalyzer);
+    addAndMakeVisible (spectrumAnalyzer);
 #endif
 
     startTimerHz (FRAMES_PER_SECOND);
@@ -71,11 +71,14 @@ void EqualizerAudioProcessorEditor::paint (juce::Graphics& g)
 
 void EqualizerAudioProcessorEditor::resized()
 {
-    auto pluginBounds = getLocalBounds().reduced (2 * pluginMargin, pluginMargin);
-    pluginBounds.removeFromTop (2 * pluginMargin);
-
+    auto pluginBounds = getLocalBounds().reduced (pluginMargin);
     auto analyzerControlsBounds = pluginBounds.removeFromBottom (100);
-    analyzerControls.setBounds (analyzerControlsBounds);
+    controls.setBounds (analyzerControlsBounds);
+
+    pluginBounds.removeFromLeft (pluginMargin);
+    pluginBounds.removeFromRight (pluginMargin);
+    pluginBounds.removeFromTop (2 * pluginMargin);
+    pluginBounds.removeFromBottom (pluginMargin);
 
     auto stereoMeterWidth = MONO_METER_WIDTH + METER_SCALE_WIDTH + MONO_METER_WIDTH;
     inputMeter.setBounds (pluginBounds.removeFromLeft (stereoMeterWidth));

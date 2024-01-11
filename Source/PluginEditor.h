@@ -11,6 +11,7 @@
 #include "PluginProcessor.h"
 #include "ui/AnalyzerControls.h"
 #include "ui/BypassButtonContainer.h"
+#include "ui/ControlsComponent.h"
 #include "ui/EqParamContainer.h"
 #include "ui/GlobalBypassButton.h"
 #include "ui/SpectrumAnalyzer.h"
@@ -64,7 +65,7 @@ private:
 
     GlobalBypassButton globalBypassButton { audioProcessor };
     BypassButtonContainer bypassButtonContainer { audioProcessor.apvts };
-    AnalyzerControls analyzerControls { audioProcessor.apvts };
+    ControlsComponent controls { audioProcessor.apvts };
 
 #ifdef TEST_EQ_MODE
     juce::ComboBox eqModeComboBox;
