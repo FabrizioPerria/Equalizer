@@ -16,15 +16,6 @@ EqualizerAudioProcessorEditor::EqualizerAudioProcessorEditor (EqualizerAudioProc
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
     setSize (800, 600);
-#ifdef TEST_EQ_MODE
-    auto* modeParam = dynamic_cast<juce::AudioParameterChoice*> (p.apvts.getParameter ("eq_mode"));
-    eqModeComboBox.addItemList (modeParam->choices, 1);
-    eqModeComboBoxAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment> (audioProcessor.apvts,
-                                                                                                         "eq_mode",
-                                                                                                         eqModeComboBox);
-
-    addAndMakeVisible (eqModeComboBox);
-#endif
 
     addAndMakeVisible (inputMeter);
     addAndMakeVisible (outputMeter);
@@ -88,9 +79,6 @@ void EqualizerAudioProcessorEditor::resized()
 
     auto buttonHeight = 20;
     auto globalBypassButtonBounds = pluginBounds.removeFromTop (buttonHeight).reduced (2 * pluginMargin, 0);
-#ifdef TEST_EQ_MODE
-    eqModeComboBox.setBounds (globalBypassButtonBounds.removeFromLeft (getWidth() / 2));
-#endif
     globalBypassButton.setBounds (globalBypassButtonBounds.removeFromRight (3 * buttonHeight));
 
     pluginBounds.removeFromTop (2 * pluginMargin);

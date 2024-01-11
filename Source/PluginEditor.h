@@ -19,7 +19,6 @@
 #include "utils/PathProducer.h"
 #include <JuceHeader.h>
 
-#define TEST_EQ_MODE true
 /* #define PATH_PRODUCER_TEST true */
 
 //==============================================================================
@@ -67,10 +66,6 @@ private:
     BypassButtonContainer bypassButtonContainer { audioProcessor.apvts };
     ControlsComponent controls { audioProcessor.apvts };
 
-#ifdef TEST_EQ_MODE
-    juce::ComboBox eqModeComboBox;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> eqModeComboBoxAttachment;
-#endif
     const int pluginMargin { 5 };
 
 #ifdef PATH_PRODUCER_TEST
