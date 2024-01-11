@@ -185,6 +185,12 @@ void EqualizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     auto freq = GetTestSignalFrequency (currentBinNum, getCurrentFFTOrder(), getSampleRate());
     testOscillator.setFrequency (freq);
 
+    auto fftSize = 1 << static_cast<int> (fftOrder);
+    auto sampleRate = getSampleRate();
+    auto centerIndex = std::round (1000.0f / sampleRate * fftSize);
+    auto centerFreq = centerIndex * sampleRate / fftSize;
+    testOscillator.setFrequency (centerFreq);
+
     buffer.clear();
     for (auto samplePosition = 0; samplePosition < buffer.getNumSamples(); ++samplePosition)
     {
