@@ -36,6 +36,10 @@ AnalyzerControls::AnalyzerControls (juce::AudioProcessorValueTreeState& apv)
             comp->toggleEnable();
     };
 
+    enableTitle.setText ("Analyzer", juce::dontSendNotification);
+    enableTitle.setFont (12);
+    enableTitle.setColour (juce::Label::textColourId, juce::Colours::aquamarine);
+    addAndMakeVisible (enableTitle);
     addAndMakeVisible (enableButton);
     addAndMakeVisible (inputSlider);
     addAndMakeVisible (pointsSlider);
@@ -64,8 +68,11 @@ void AnalyzerControls::resized()
     auto padding = 10;
     auto sliderWidth = bounds.getWidth() / 5 - padding;
 
-    enableButton.setBounds (bounds.removeFromLeft (50));
-    bounds.removeFromLeft (30);
+    auto enableButtonArea = bounds.removeFromLeft (50);
+    enableTitle.setBounds (enableButtonArea.removeFromTop (12));
+    enableButtonArea.reduce (0, 8);
+    enableButton.setBounds (enableButtonArea);
+    bounds.removeFromLeft (40);
     decaySlider.setBounds (bounds.removeFromRight (80));
     bounds.removeFromRight (30);
     inputSlider.setBounds (bounds.removeFromLeft (sliderWidth));

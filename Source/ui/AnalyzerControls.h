@@ -19,6 +19,7 @@ private:
     using SliderAttachment = juce::AudioProcessorValueTreeState::SliderAttachment;
     using ButtonAttachment = juce::AudioProcessorValueTreeState::ButtonAttachment;
 
+    juce::Label enableTitle;
     juce::TextButton enableButton { "On" };
     std::unique_ptr<ButtonAttachment> enableButtonAttachment;
     VerticalSwitch inputSlider { "Input" };
