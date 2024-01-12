@@ -44,8 +44,8 @@ struct PathProducer : juce::Thread
                     auto writePointer = bufferForGenerator.getWritePointer (0);
                     if (bufferForGeneratorSize > bufferToFillSize)
                     {
-                        auto readPointerEOB = bufferForGenerator.getReadPointer (0) + bufferForGeneratorSize;
-                        std::copy (readPointerEOB - bufferToFillSize, readPointerEOB, writePointer);
+                        auto readPointer = bufferForGenerator.getReadPointer (0);
+                        std::copy (readPointer + bufferToFillSize, readPointer + bufferForGeneratorSize, writePointer);
                     }
 
                     auto destination = writePointer + bufferForGeneratorSize - bufferToFillSize;
@@ -59,7 +59,12 @@ struct PathProducer : juce::Thread
                 auto success = fftDataGenerator.getFFTData (std::move (fftData));
                 jassert (success);
                 updateRenderData (renderData, fftData, fftSize / 2, static_cast<float> (LOOP_DELAY) * decayRateInDbPerSec.load() / 1000.f);
-                pathGenerator.generatePath (renderData, fftBounds, fftSize, static_cast<float>(getBinWidth()), negativeInfinity.load(), maxDecibels.load());
+                pathGenerator.generatePath (renderData,
+                                            fftBounds,
+                                            fftSize,
+                                            static_cast<float> (getBinWidth()),
+                                            negativeInfinity.load(),
+                                            maxDecibels.load());
             }
             wait (LOOP_DELAY);
         }
@@ -71,7 +76,7 @@ struct PathProducer : juce::Thread
         fftDataGenerator.changeOrder (o);
         renderData.clear();
         auto fftSize = getFFTSize();
-        renderData.resize (static_cast<size_t>(fftSize / 2 + 1), negativeInfinity.load());
+        renderData.resize (static_cast<size_t> (fftSize / 2 + 1), negativeInfinity.load());
 
         bufferForGenerator.setSize (1, fftSize, false, false, true);
         bufferForGenerator.clear();
