@@ -23,8 +23,8 @@ void KnobWithLabels::paint (juce::Graphics& g)
     g.setColour (juce::Colours::aquamarine);
     g.setFont (textHeight);
     g.drawFittedText (title, titleArea, juce::Justification::centred, 1);
-    sliderBounds.removeFromTop (12);
-    sliderBounds.removeFromBottom (12);
+    sliderBounds.removeFromTop (textHeight);
+    sliderBounds.removeFromBottom (textHeight);
 
     auto value = static_cast<float> (getValue());
     auto rangeStart = static_cast<float> (range.getStart());
@@ -42,7 +42,7 @@ void KnobWithLabels::paint (juce::Graphics& g)
     auto center = sliderBounds.toFloat().getCentre();
 
     g.setColour (juce::Colour (0u, 172u, 1u));
-    g.setFont (textHeight);
+    g.setFont (10);
 
     auto numChoices = labels.size();
     for (int i = 0; i < numChoices; ++i)
@@ -57,7 +57,7 @@ void KnobWithLabels::paint (juce::Graphics& g)
 
         juce::Rectangle<float> r;
         auto str = labels[i];
-        r.setSize (g.getCurrentFont().getStringWidth (str), textHeight);
+        r.setSize (g.getCurrentFont().getStringWidth (str), 10);
         r.setCentre (c);
         r.setY (r.getY());
 

@@ -16,14 +16,14 @@ void VerticalSwitch::paint (juce::Graphics& g)
     auto range = getRange();
     auto bounds = getLocalBounds();
     bounds.removeFromLeft (5);
-    auto titleArea = bounds.removeFromTop (12);
+    auto titleArea = bounds.removeFromTop (textHeight);
 
     g.setColour (juce::Colours::aquamarine);
-    g.setFont (12);
+    g.setFont (textHeight);
     g.drawFittedText (title, titleArea.toNearestInt(), juce::Justification::left, 1);
 
-    bounds.removeFromTop (12);
-    bounds.removeFromBottom (12);
+    bounds.removeFromTop (textHeight);
+    bounds.removeFromBottom (textHeight);
     auto value = static_cast<float> (getValue());
     auto rangeStart = static_cast<float> (range.getStart());
     auto rangeEnd = static_cast<float> (range.getEnd());
@@ -44,7 +44,7 @@ void VerticalSwitch::paint (juce::Graphics& g)
 
     auto labelArea = bounds;
 
-    labelArea.removeFromLeft (JUCE_LIVE_CONSTANT (12));
+    labelArea.removeFromLeft (textHeight);
     labelArea.setHeight (10);
     g.setColour (juce::Colours::aquamarine);
     g.setFont (10);

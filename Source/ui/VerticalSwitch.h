@@ -15,5 +15,7 @@ struct VerticalSwitch : juce::Slider
 private:
     EqControlsLookAndFeel laf;
 
+    const int textHeight { 12 };
+
     juce::String title;
 };
