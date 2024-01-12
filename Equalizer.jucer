@@ -44,6 +44,8 @@
               file="Source/ui/GlobalBypassButton.cpp"/>
         <FILE id="ZQl4Wo" name="GlobalBypassButton.h" compile="0" resource="0"
               file="Source/ui/GlobalBypassButton.h"/>
+        <FILE id="WMnL9Y" name="KnobWithLabels.cpp" compile="1" resource="0"
+              file="Source/ui/KnobWithLabels.cpp"/>
         <FILE id="OATtzc" name="KnobWithLabels.h" compile="0" resource="0"
               file="Source/ui/KnobWithLabels.h"/>
         <FILE id="izWLyB" name="MeterComponent.cpp" compile="1" resource="0"
@@ -56,6 +58,8 @@
               file="Source/ui/StereoMeterComponent.cpp"/>
         <FILE id="rIEfKM" name="StereoMeterComponent.h" compile="0" resource="0"
               file="Source/ui/StereoMeterComponent.h"/>
+        <FILE id="MJPrPn" name="VerticalSwitch.cpp" compile="1" resource="0"
+              file="Source/ui/VerticalSwitch.cpp"/>
         <FILE id="Tap84w" name="VerticalSwitch.h" compile="0" resource="0"
               file="Source/ui/VerticalSwitch.h"/>
       </GROUP>
