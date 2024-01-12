@@ -9,7 +9,7 @@
 #pragma once
 
 #include "utils/FFTDataGenerator.h"
-#define USE_TEST_OSC true
+/* #define USE_TEST_OSC true */
 
 #include "data/FilterLink.h"
 #include "data/FilterParameters.h"
@@ -108,7 +108,30 @@ public:
                                                 SingleFilterLink, //HighShelf
                                                 CutFilterLink>;   //HighCut
 
+    struct Listener
+    {
+        virtual ~Listener() = default;
+        virtual void sampleRateChanged (double sr) = 0;
+    };
+
+    void addSRListener (EqualizerAudioProcessor::Listener* l)
+    {
+        if (l != nullptr)
+        {
+            listeners.add (l);
+        }
+    }
+
+    void removeSRListener (EqualizerAudioProcessor::Listener* l)
+    {
+        if (l != nullptr)
+        {
+            listeners.remove (l);
+        }
+    }
+
 private:
+    juce::ListenerList<EqualizerAudioProcessor::Listener> listeners;
     const float RAMP_TIME_IN_SECONDS = 0.05f;
 
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();

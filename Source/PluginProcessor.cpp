@@ -121,10 +121,11 @@ void EqualizerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBl
     testOscillator.prepare (spec);
     auto centerIndex = std::round (1000.0f / sampleRate * fftSize);
     auto centerFreq = static_cast<float> (centerIndex * sampleRate / fftSize);
-    
+
     testOscillator.setFrequency (centerFreq);
     testGain.prepare (spec);
 #endif
+    listeners.call ([sampleRate] (Listener& l) { l.sampleRateChanged (sampleRate); });
 }
 
 void EqualizerAudioProcessor::releaseResources()

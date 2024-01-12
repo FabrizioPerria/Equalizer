@@ -33,11 +33,13 @@ EqualizerAudioProcessorEditor::EqualizerAudioProcessorEditor (EqualizerAudioProc
     addAndMakeVisible (spectrumAnalyzer);
 #endif
 
+    audioProcessor.addSRListener (this);
     startTimerHz (FRAMES_PER_SECOND);
 }
 
 EqualizerAudioProcessorEditor::~EqualizerAudioProcessorEditor()
 {
+    audioProcessor.removeSRListener (this);
 }
 
 //==============================================================================
@@ -113,4 +115,9 @@ void EqualizerAudioProcessorEditor::timerCallback()
         repaint();
     }
 #endif
+}
+
+void EqualizerAudioProcessorEditor::sampleRateChanged (double newSampleRate)
+{
+    spectrumAnalyzer.changeSampleRate (newSampleRate);
 }

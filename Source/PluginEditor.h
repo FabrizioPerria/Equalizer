@@ -24,7 +24,7 @@
 //==============================================================================
 /**
 */
-class EqualizerAudioProcessorEditor : public juce::AudioProcessorEditor, public juce::Timer
+class EqualizerAudioProcessorEditor : public juce::AudioProcessorEditor, public juce::Timer, public EqualizerAudioProcessor::Listener
 {
 public:
     EqualizerAudioProcessorEditor (EqualizerAudioProcessor&);
@@ -35,6 +35,8 @@ public:
     void resized() override;
 
     void timerCallback() override;
+
+    void sampleRateChanged (double newSampleRate) override;
 
 private:
     // This reference is provided as a quick way for your editor to
