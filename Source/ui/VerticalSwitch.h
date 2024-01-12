@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ui/AnalyzerControlLookAndFeel.h"
+#include "ui/EqControlLookAndFeel.h"
 #include <JuceHeader.h>
 
 struct VerticalSwitch : juce::Slider
@@ -29,11 +29,11 @@ struct VerticalSwitch : juce::Slider
 
         bounds.removeFromTop (12);
         bounds.removeFromBottom (12);
-        auto value = static_cast<float>(getValue());
-        auto rangeStart = static_cast<float>(range.getStart());
-        auto rangeEnd = static_cast<float>(range.getEnd());
-        auto bottomBounds = static_cast<float>(bounds.getBottom());
-        auto yBounds = static_cast<float>(bounds.getY());
+        auto value = static_cast<float> (getValue());
+        auto rangeStart = static_cast<float> (range.getStart());
+        auto rangeEnd = static_cast<float> (range.getEnd());
+        auto bottomBounds = static_cast<float> (bounds.getBottom());
+        auto yBounds = static_cast<float> (bounds.getY());
         auto normalized = juce::jmap (value, rangeStart, rangeEnd, bottomBounds, yBounds);
 
         getLookAndFeel().drawLinearSlider (g,
@@ -66,7 +66,7 @@ struct VerticalSwitch : juce::Slider
     juce::StringArray labels;
 
 private:
-    AnalyzerControlsLookAndFeel laf;
+    EqControlsLookAndFeel laf;
 
     juce::String title;
 

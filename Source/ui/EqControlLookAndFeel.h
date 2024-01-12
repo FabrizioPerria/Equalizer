@@ -2,7 +2,7 @@
 
 #include <JuceHeader.h>
 
-struct AnalyzerControlsLookAndFeel : juce::LookAndFeel_V4
+struct EqControlsLookAndFeel : juce::LookAndFeel_V4
 {
     void drawRotarySlider (juce::Graphics& g,
                            int x,
@@ -24,6 +24,12 @@ struct AnalyzerControlsLookAndFeel : juce::LookAndFeel_V4
                            float maxSliderPos,
                            const juce::Slider::SliderStyle style,
                            juce::Slider& slider) override;
+
+    void drawButtonBackground (juce::Graphics& g,
+                               juce::Button& button,
+                               const juce::Colour& backgroundColour,
+                               bool shouldDrawButtonAsHighlighted,
+                               bool shouldDrawButtonAsDown) override;
 
 private:
     juce::Colour darkdark = juce::Colour::fromString (("ff0d0e16"));

@@ -14,7 +14,7 @@ struct AnalyzerControls : juce::Component
 private:
     void toggleEnable();
 
-    AnalyzerControlsLookAndFeel laf;
+    EqControlsLookAndFeel laf;
 
     using SliderAttachment = juce::AudioProcessorValueTreeState::SliderAttachment;
     using ButtonAttachment = juce::AudioProcessorValueTreeState::ButtonAttachment;

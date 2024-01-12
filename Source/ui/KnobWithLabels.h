@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ui/AnalyzerControlLookAndFeel.h"
+#include "ui/EqControlLookAndFeel.h"
 #include <JuceHeader.h>
 
 struct KnobWithLabels : juce::Slider
@@ -31,9 +31,9 @@ struct KnobWithLabels : juce::Slider
         sliderBounds.removeFromTop (12);
         sliderBounds.removeFromBottom (12);
 
-        auto value = static_cast<float>(getValue());
-        auto rangeStart = static_cast<float>(range.getStart());
-        auto rangeEnd = static_cast<float>(range.getEnd());
+        auto value = static_cast<float> (getValue());
+        auto rangeStart = static_cast<float> (range.getStart());
+        auto rangeEnd = static_cast<float> (range.getEnd());
         getLookAndFeel().drawRotarySlider (g,
                                            sliderBounds.getX(),
                                            sliderBounds.getY(),
@@ -93,6 +93,6 @@ struct KnobWithLabels : juce::Slider
     }
 
 private:
-    AnalyzerControlsLookAndFeel lnf;
+    EqControlsLookAndFeel lnf;
     juce::String title;
 };

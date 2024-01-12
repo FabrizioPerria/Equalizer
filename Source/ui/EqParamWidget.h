@@ -1,6 +1,7 @@
 #pragma once
 
 #include "data/ParamListener.h"
+#include "ui/EqControlLookAndFeel.h"
 #include "utils/EqParam.h"
 #include <JuceHeader.h>
 
@@ -9,26 +10,6 @@ struct TextOnlyHorizontalSlider : juce::Slider
     TextOnlyHorizontalSlider();
     virtual ~TextOnlyHorizontalSlider() = default;
     virtual juce::String getDisplayString() = 0;
-};
-
-struct CustomLookAndFeel : juce::LookAndFeel_V4
-{
-    void drawLinearSlider (juce::Graphics& g,
-                           int x,
-                           int y,
-                           int width,
-                           int height,
-                           float sliderPos,
-                           float minSliderPos,
-                           float maxSliderPos,
-                           juce::Slider::SliderStyle style,
-                           juce::Slider& slider) override;
-
-    void drawButtonBackground (juce::Graphics& g,
-                               juce::Button& button,
-                               const juce::Colour& backgroundColour,
-                               bool shouldDrawButtonAsHighlighted,
-                               bool shouldDrawButtonAsDown) override;
 };
 
 struct HertzSlider : TextOnlyHorizontalSlider
@@ -85,7 +66,7 @@ private:
     juce::TextButton leftMidButton;
     juce::TextButton rightSideButton;
 
-    CustomLookAndFeel customLookAndFeel;
+    EqControlsLookAndFeel customLookAndFeel;
 
     juce::Image widgetGridImage;
 

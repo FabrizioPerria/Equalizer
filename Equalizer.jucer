@@ -8,8 +8,6 @@
     <GROUP id="{947A9606-09DB-5F3A-08CC-6B17C53CAE0F}" name="Source">
       <GROUP id="{7B339522-B1D5-D067-0094-2F67CA15145D}" name="ui">
         <FILE id="pj145g" name="AnalyzerBase.h" compile="0" resource="0" file="Source/ui/AnalyzerBase.h"/>
-        <FILE id="fEZuCR" name="AnalyzerControlLookAndFeel.h" compile="0" resource="0"
-              file="Source/ui/AnalyzerControlLookAndFeel.h"/>
         <FILE id="FYbdcF" name="AnalyzerControls.cpp" compile="1" resource="0"
               file="Source/ui/AnalyzerControls.cpp"/>
         <FILE id="ZbS1ml" name="AnalyzerControls.h" compile="0" resource="0"
@@ -31,6 +29,10 @@
               file="Source/ui/DualBypassButton.cpp"/>
         <FILE id="PPNTAs" name="DualBypassButton.h" compile="0" resource="0"
               file="Source/ui/DualBypassButton.h"/>
+        <FILE id="BLMLDp" name="EqControlLookAndFeel.cpp" compile="1" resource="0"
+              file="Source/ui/EqControlLookAndFeel.cpp"/>
+        <FILE id="ZunYIv" name="EqControlLookAndFeel.h" compile="0" resource="0"
+              file="Source/ui/EqControlLookAndFeel.h"/>
         <FILE id="w48MCR" name="EqParamContainer.cpp" compile="1" resource="0"
               file="Source/ui/EqParamContainer.cpp"/>
         <FILE id="E8DFlx" name="EqParamContainer.h" compile="0" resource="0"
@@ -48,7 +50,6 @@
               file="Source/ui/MeterComponent.cpp"/>
         <FILE id="L9RxGF" name="MeterComponent.h" compile="0" resource="0"
               file="Source/ui/MeterComponent.h"/>
-        <FILE id="JheIff" name="PathFactory.h" compile="0" resource="0" file="Source/utils/PathFactory.h"/>
         <FILE id="A3VK9O" name="SpectrumAnalyzer.h" compile="0" resource="0"
               file="Source/ui/SpectrumAnalyzer.h"/>
         <FILE id="xRuEXk" name="StereoMeterComponent.cpp" compile="1" resource="0"

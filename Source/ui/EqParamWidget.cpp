@@ -12,54 +12,6 @@ TextOnlyHorizontalSlider::TextOnlyHorizontalSlider()
     setSliderSnapsToMousePosition (false);
 }
 
-void CustomLookAndFeel::drawLinearSlider (juce::Graphics& g,
-                                          int x,
-                                          int y,
-                                          int width,
-                                          int height,
-                                          float sliderPos,
-                                          float minSliderPos,
-                                          float maxSliderPos,
-                                          juce::Slider::SliderStyle style,
-                                          juce::Slider& slider)
-{
-    if (TextOnlyHorizontalSlider* textSlider = dynamic_cast<TextOnlyHorizontalSlider*> (&slider))
-    {
-        auto text = textSlider->getDisplayString();
-        auto bounds = slider.getLocalBounds().toFloat();
-
-        auto relativeSliderPos = juce::jmap (sliderPos,
-                                             static_cast<float> (x),
-                                             static_cast<float> (x + width),
-                                             bounds.getX(),
-                                             bounds.getWidth());
-        g.setColour (juce::Colour { 0x33, 0x33, 0x33 });
-        g.fillRect (bounds.withWidth (relativeSliderPos));
-
-        g.setColour (juce::Colours::white);
-        g.setFont (12.0f);
-        g.drawFittedText (text, bounds.toNearestInt(), juce::Justification::centred, true);
-    }
-    else
-    {
-        juce::LookAndFeel_V4::drawLinearSlider (g, x, y, width, height, sliderPos, minSliderPos, maxSliderPos, style, slider);
-    }
-}
-
-void CustomLookAndFeel::drawButtonBackground (juce::Graphics& g,
-                                              juce::Button& button,
-                                              const juce::Colour& backgroundColour,
-                                              bool shouldDrawButtonAsHighlighted,
-                                              bool shouldDrawButtonAsDown)
-{
-    g.setColour (button.getToggleState() ? juce::Colours::green : juce::Colours::black);
-
-    auto bounds = button.getLocalBounds();
-    g.fillRect (bounds);
-    g.setColour (juce::Colours::white);
-    g.drawRect (bounds, 1);
-}
-
 juce::String HertzSlider::getDisplayString()
 {
     auto frequency = getValue();
