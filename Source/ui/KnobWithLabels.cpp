@@ -69,5 +69,5 @@ void KnobWithLabels::paint (juce::Graphics& g)
 
 void KnobWithLabels::updateTooltip()
 {
-    setTooltip (std::to_string (getValue()));
+    setTooltip (std::to_string (static_cast<int>(getValue())));
 }

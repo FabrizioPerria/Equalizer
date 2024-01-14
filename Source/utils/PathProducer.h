@@ -22,6 +22,7 @@ struct PathProducer : juce::Thread
     void run() override
     {
         BlockType bufferToFill;
+        auto previousTime = juce::Time::currentTimeMillis();
         while (! threadShouldExit())
         {
             if (! processingIsEnabled)
@@ -58,10 +59,13 @@ struct PathProducer : juce::Thread
                 std::vector<float> fftData;
                 auto success = fftDataGenerator.getFFTData (std::move (fftData));
                 jassert (success);
+
+                auto elapsed = juce::Time::currentTimeMillis() - previousTime;
+                previousTime += elapsed;
                 updateRenderData (renderData,
                                   fftData,
                                   fftSize / 2,
-                                  static_cast<float> (JUCE_LIVE_CONSTANT (LOOP_DELAY)) * decayRateInDbPerSec.load() / 1000.f);
+                                  static_cast<float> (elapsed) * decayRateInDbPerSec.load() / 1000.f);
                 pathGenerator.generatePath (renderData,
                                             fftBounds,
                                             fftSize,
