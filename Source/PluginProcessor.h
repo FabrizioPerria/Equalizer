@@ -9,7 +9,6 @@
 #pragma once
 
 #include "utils/FFTDataGenerator.h"
-/* #define USE_TEST_OSC true */
 
 #include "data/FilterLink.h"
 #include "data/FilterParameters.h"
@@ -18,6 +17,7 @@
 #include "utils/EqParam.h"
 #include "utils/FilterParam.h"
 #include "utils/FilterType.h"
+#include "utils/GlobalDefinitions.h"
 #include "utils/MidSideProcessor.h"
 #include "utils/SingleChannelSampleFifo.h"
 #include <JuceHeader.h>
@@ -123,6 +123,10 @@ public:
     {
         sampleRateListeners.remove (l);
     }
+
+#if USE_TEST_SIGNAL
+    std::atomic<size_t> binNum;
+#endif
 
 private:
     juce::ListenerList<SampleRateListener> sampleRateListeners;
@@ -306,7 +310,7 @@ private:
 
     MidSideProcessor midSideProcessor;
 
-#ifdef USE_TEST_OSC
+#if USE_TEST_SIGNAL
     juce::dsp::Gain<float> testGain;
     juce::dsp::Oscillator<float> testOscillator { [] (float x) { return std::sin (x); } };
 #endif

@@ -13,6 +13,7 @@
 #include "utils/FFTDataGenerator.h"
 #include "utils/FilterParam.h"
 #include "utils/FilterType.h"
+#include "utils/GlobalDefinitions.h"
 
 //==============================================================================
 EqualizerAudioProcessor::EqualizerAudioProcessor()
@@ -114,7 +115,7 @@ void EqualizerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBl
 
     initializeFilters();
 
-#ifdef USE_TEST_OSC
+#ifdef USE_TEST_SIGNAL
     testOscillator.prepare (spec);
     testGain.prepare (spec);
 #endif
@@ -173,15 +174,9 @@ void EqualizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     auto block = juce::dsp::AudioBlock<float> (buffer);
     inputGain.process (juce::dsp::ProcessContextReplacing<float> (block));
 
-#ifdef USE_TEST_OSC
-    /* testGain.setGainDecibels (JUCE_LIVE_CONSTANT (-12.0f)); */
-    testGain.setGainDecibels (-12.0f);
+#if USE_TEST_SIGNAL
 
-    auto fftSize = 1 << static_cast<int> (fftOrder);
-    auto sampleRate = getSampleRate();
-    auto centerIndex = std::round (1000.0f / sampleRate * fftSize);
-    auto centerFreq = centerIndex * sampleRate / fftSize;
-    testOscillator.setFrequency (centerFreq);
+    testOscillator.setFrequency (GetTestSignalFrequency (binNum, fftOrder, getSampleRate()));
 
     buffer.clear();
     for (auto samplePosition = 0; samplePosition < buffer.getNumSamples(); ++samplePosition)
@@ -248,7 +243,7 @@ void EqualizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
 
     updateMeterFifos (outMeterValuesFifo, buffer);
 
-#ifdef USE_TEST_OSC
+#ifdef USE_TEST_SIGNAL
     buffer.clear();
 #endif
 }
