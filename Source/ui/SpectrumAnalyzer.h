@@ -8,7 +8,7 @@
 #include "utils/SingleChannelSampleFifo.h"
 #include <JuceHeader.h>
 
-#define RESPONSE_CURVE_MIN_DB -66.f
+#define RESPONSE_CURVE_MIN_DB -30.f
 #define RESPONSE_CURVE_MAX_DB 30.f
 
 template <typename BlockType>
@@ -81,7 +81,7 @@ struct SpectrumAnalyzer : AnalyzerBase, juce::Timer
         rightPathProducer.setFFTRectBounds (fftBoundingBox.toFloat());
 
         auto bounds = getLocalBounds();
-        auto amountToCut = static_cast<int>(getTextWidth() * 1.5f);
+        auto amountToCut = static_cast<int> (getTextWidth() * 1.5f);
         auto analyzerScaleBounds = bounds.removeFromLeft (amountToCut);
         analyzerScale.setBounds (analyzerScaleBounds);
         auto eqScaleBounds = bounds.removeFromRight (amountToCut);
@@ -145,7 +145,11 @@ private:
         auto scale = leftScaleMax;
         while (scale >= leftScaleMin)
         {
-            auto y = static_cast<int>(juce::jmap (scale, leftScaleMin, leftScaleMax, fftBoundingBox.toFloat().getBottom(), fftBoundingBox.toFloat().getY()));
+            auto y = static_cast<int> (juce::jmap (scale,
+                                                   leftScaleMin,
+                                                   leftScaleMax,
+                                                   fftBoundingBox.toFloat().getBottom(),
+                                                   fftBoundingBox.toFloat().getY()));
 
             g.drawHorizontalLine (y, fftBoundingBox.getX(), fftBoundingBox.getRight());
 
@@ -160,7 +164,7 @@ private:
         auto textBound = fftBoundingBox.withWidth (2 * getTextWidth()).withHeight (getTextHeight()).translated (0, 2);
         for (auto freq : freqs)
         {
-            auto x = static_cast<int>(juce::mapFromLog10 (freq, 20.f, 20000.f) * fftBoundingBox.getWidth() + fftBoundingBox.getX());
+            auto x = static_cast<int> (juce::mapFromLog10 (freq, 20.f, 20000.f) * fftBoundingBox.getWidth() + fftBoundingBox.getX());
             auto freqStr = freq >= 1000.0f ? juce::String (freq / 1000.f, 0) + "k" : juce::String (freq);
             if (freq == 20000.0f)
             {

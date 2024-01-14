@@ -7,9 +7,9 @@ void AnalyzerPathGenerator::generatePath (const std::vector<float>& renderData,
                                           float negativeInfinity,
                                           float maxDb)
 {
-    size_t numBins = static_cast<size_t>(fftSize / 2);
+    size_t numBins = static_cast<size_t> (fftSize / 2);
 
-    auto startX = fftBounds.getX();
+    auto startX = fftBounds.toNearestInt().getX();
     auto toXCoordinate = [&] (size_t binIndex)
     {
         auto binFreq = binIndex * binWidth;
@@ -41,16 +41,29 @@ void AnalyzerPathGenerator::generatePath (const std::vector<float>& renderData,
 
     p.startNewSubPath (x, y);
     auto prevX = x;
+    auto minY = y;
+    auto findMin = false;
 
     for (size_t i = 2; i <= numBins; ++i)
     {
         x = toXCoordinate (i);
         y = toYCoordinate (renderData[i]);
 
+        if (findMin && y < minY)
+        {
+            minY = y;
+        }
+
         if (x > prevX)
         {
-            p.lineTo (x, y);
+            p.lineTo (x, findMin ? minY : y);
             prevX = x;
+            findMin = false;
+        }
+        else if (! findMin)
+        {
+            findMin = true;
+            minY = y;
         }
 
         if (x > fftBounds.getRight())

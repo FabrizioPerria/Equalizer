@@ -87,8 +87,6 @@ public:
     SingleChannelSampleFifo<juce::AudioBuffer<float>> spectrumAnalyzerFifoLeft { Channel::LEFT };
     SingleChannelSampleFifo<juce::AudioBuffer<float>> spectrumAnalyzerFifoRight { Channel::RIGHT };
 
-    FFTOrder fftOrder { FFTOrder::order2048 };
-
     using GainTrim = juce::dsp::Gain<float>;
     using Filter = juce::dsp::IIR::Filter<float>;
     using Coefficients = juce::dsp::IIR::Coefficients<float>;
@@ -125,6 +123,7 @@ public:
     }
 
 #if USE_TEST_SIGNAL
+    FFTOrder getCurrentFFTOrder();
     std::atomic<size_t> binNum;
 #endif
 

@@ -118,6 +118,7 @@ void EqualizerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBl
 #ifdef USE_TEST_SIGNAL
     testOscillator.prepare (spec);
     testGain.prepare (spec);
+    testGain.setGainDecibels (0.0f);
 #endif
     sampleRateListeners.call ([sampleRate] (SampleRateListener& l) { l.sampleRateChanged (sampleRate); });
 }
@@ -175,8 +176,14 @@ void EqualizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     inputGain.process (juce::dsp::ProcessContextReplacing<float> (block));
 
 #if USE_TEST_SIGNAL
+    auto fftOrder = getCurrentFFTOrder();
+    auto fftSize = 1 << static_cast<int> (fftOrder);
+    size_t numBins = fftSize / 2 + 1;
 
-    testOscillator.setFrequency (GetTestSignalFrequency (binNum, fftOrder, getSampleRate()));
+    auto currentBinNum = std::min (binNum.load(), numBins);
+
+    auto freq = GetTestSignalFrequency (currentBinNum, getCurrentFFTOrder(), getSampleRate());
+    testOscillator.setFrequency (freq);
 
     buffer.clear();
     for (auto samplePosition = 0; samplePosition < buffer.getNumSamples(); ++samplePosition)
@@ -466,8 +473,17 @@ void EqualizerAudioProcessor::initializeOrder()
          the SingleChannelSampleFifos are now hard-coded to always hold 2048 samples
          the reason is explained in the PathProducer::run() function.
          */
-    fftOrder = FFTOrder::order2048;
-    auto fftOrderInt = static_cast<int> (fftOrder);
-    spectrumAnalyzerFifoLeft.prepare (1 << fftOrderInt);
-    spectrumAnalyzerFifoRight.prepare (1 << fftOrderInt);
+    spectrumAnalyzerFifoLeft.prepare (2048);
+    spectrumAnalyzerFifoRight.prepare (2048);
 }
+
+#if USE_TEST_SIGNAL
+FFTOrder EqualizerAudioProcessor::getCurrentFFTOrder()
+{
+    auto params = AnalyzerProperties::GetAnalyzerParams();
+    auto fftOrderName = params.at (AnalyzerProperties::ParamNames::AnalyzerPoints);
+    auto fftOrder = apvts.getRawParameterValue (fftOrderName)->load();
+    auto lowestFFTOrder = static_cast<int> (FFTOrder::order2048);
+    return static_cast<FFTOrder> (fftOrder + lowestFFTOrder);
+}
+#endif

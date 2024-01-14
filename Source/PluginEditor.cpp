@@ -8,6 +8,7 @@
 
 #include "PluginEditor.h"
 #include "PluginProcessor.h"
+#include "utils/AnalyzerProperties.h"
 #include "utils/MeterConstants.h"
 
 //==============================================================================
@@ -26,12 +27,7 @@ EqualizerAudioProcessorEditor::EqualizerAudioProcessorEditor (EqualizerAudioProc
     addAndMakeVisible (bypassButtonContainer);
     addAndMakeVisible (controls);
 
-#ifdef PATH_PRODUCER_TEST
-    pathProducer.setDecayRate (30.f);
-    pathProducer.changeOrder (audioProcessor.fftOrder);
-#else
     addAndMakeVisible (spectrumAnalyzer);
-#endif
 
     audioProcessor.addSampleRateListener (this);
 
@@ -54,13 +50,6 @@ void EqualizerAudioProcessorEditor::paint (juce::Graphics& g)
 
     g.setColour (juce::Colour { 0x1A, 0x1B, 0x29 });
     g.fillRoundedRectangle (pluginBounds.toFloat(), 10);
-
-#ifdef PATH_PRODUCER_TEST
-    g.setColour (juce::Colours::red);
-
-    g.strokePath (currentPath, juce::PathStrokeType (1));
-    g.drawRoundedRectangle (fftBounds, 4, 1);
-#endif
 }
 
 void EqualizerAudioProcessorEditor::resized()
@@ -93,12 +82,7 @@ void EqualizerAudioProcessorEditor::resized()
     eqParamContainer.setBounds (eqParamWidgetBounds);
 
     pluginBounds.reduce (0, pluginMargin);
-#ifdef PATH_PRODUCER_TEST
-    fftBounds = pluginBounds.toFloat();
-    pathProducer.setFFTRectBounds (fftBounds);
-#else
     spectrumAnalyzer.setBounds (pluginBounds);
-#endif
 }
 
 void EqualizerAudioProcessorEditor::timerCallback()
@@ -106,14 +90,40 @@ void EqualizerAudioProcessorEditor::timerCallback()
     updateMeterValues (audioProcessor.inMeterValuesFifo, inputMeter);
     updateMeterValues (audioProcessor.outMeterValuesFifo, outputMeter);
 
-#ifdef PATH_PRODUCER_TEST
-    if (pathProducer.getNumAvailableForReading() > 0)
+#if USE_TEST_SIGNAL
+    int step_time = JUCE_LIVE_CONSTANT (60); // 60Hz * 60 = 1s
+    if (counter < step_time)
     {
-        while (pathProducer.getNumAvailableForReading() > 0)
+        counter++;
+    }
+    else
+    {
+        counter = 0;
+
+        auto sampleRate = audioProcessor.getSampleRate();
+        auto fftSize = 1 << static_cast<int> (audioProcessor.getCurrentFFTOrder());
+        auto minBinNum = static_cast<size_t> (juce::roundToInt (20.f / sampleRate * fftSize));
+        auto maxBinNum = static_cast<size_t> (juce::roundToInt (20000.f / sampleRate * fftSize));
+        auto bin = audioProcessor.binNum.load();
+#if MOVE_FORWARD_AND_WRAP
+        if (++bin >= maxBinNum)
         {
-            pathProducer.pull (currentPath);
+            bin = minBinNum;
         }
-        repaint();
+#else
+        if (bin >= maxBinNum)
+        {
+            step = -1;
+        }
+
+        if (bin <= minBinNum)
+        {
+            step = 1;
+        }
+
+        bin += step;
+#endif
+        audioProcessor.binNum.store (bin);
     }
 #endif
 }
