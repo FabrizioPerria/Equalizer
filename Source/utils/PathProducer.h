@@ -58,7 +58,10 @@ struct PathProducer : juce::Thread
                 std::vector<float> fftData;
                 auto success = fftDataGenerator.getFFTData (std::move (fftData));
                 jassert (success);
-                updateRenderData (renderData, fftData, fftSize / 2, static_cast<float> (LOOP_DELAY) * decayRateInDbPerSec.load() / 1000.f);
+                updateRenderData (renderData,
+                                  fftData,
+                                  fftSize / 2,
+                                  static_cast<float> (JUCE_LIVE_CONSTANT (LOOP_DELAY)) * decayRateInDbPerSec.load() / 1000.f);
                 pathGenerator.generatePath (renderData,
                                             fftBounds,
                                             fftSize,

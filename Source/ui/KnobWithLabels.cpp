@@ -4,7 +4,9 @@ KnobWithLabels::KnobWithLabels (juce::String newTitle)
     : Slider (juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag, juce::Slider::TextEntryBoxPosition::NoTextBox), title (newTitle)
 {
     setLookAndFeel (&lnf);
+    onValueChange = [this] { updateTooltip(); };
 }
+
 KnobWithLabels::~KnobWithLabels()
 {
     setLookAndFeel (nullptr);
@@ -63,4 +65,9 @@ void KnobWithLabels::paint (juce::Graphics& g)
 
         g.drawFittedText (str, r.toNearestInt(), juce::Justification::centred, 1);
     }
+}
+
+void KnobWithLabels::updateTooltip()
+{
+    setTooltip (std::to_string (getValue()));
 }

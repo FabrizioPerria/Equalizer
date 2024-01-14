@@ -27,13 +27,15 @@ EqualizerAudioProcessorEditor::EqualizerAudioProcessorEditor (EqualizerAudioProc
     addAndMakeVisible (controls);
 
 #ifdef PATH_PRODUCER_TEST
-    pathProducer.setDecayRate (120.f);
+    pathProducer.setDecayRate (30.f);
     pathProducer.changeOrder (audioProcessor.fftOrder);
 #else
     addAndMakeVisible (spectrumAnalyzer);
 #endif
 
     audioProcessor.addSRListener (this);
+    tooltipWindow = std::make_unique<juce::TooltipWindow> (this);
+
     startTimerHz (FRAMES_PER_SECOND);
 }
 

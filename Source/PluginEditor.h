@@ -81,5 +81,7 @@ private:
                                                                   audioProcessor.apvts };
 #endif
 
+    std::unique_ptr<juce::TooltipWindow> tooltipWindow;
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (EqualizerAudioProcessorEditor)
 };
