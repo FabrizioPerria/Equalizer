@@ -125,7 +125,7 @@ void EqualizerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBl
     testOscillator.setFrequency (centerFreq);
     testGain.prepare (spec);
 #endif
-    listeners.call ([sampleRate] (Listener& l) { l.sampleRateChanged (sampleRate); });
+    sampleRateListeners.call ([sampleRate] (SampleRateListener& l) { l.sampleRateChanged (sampleRate); });
 }
 
 void EqualizerAudioProcessor::releaseResources()

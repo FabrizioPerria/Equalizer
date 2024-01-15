@@ -9,14 +9,12 @@
 #pragma once
 
 #include "PluginProcessor.h"
-#include "ui/AnalyzerControls.h"
 #include "ui/BypassButtonContainer.h"
 #include "ui/ControlsComponent.h"
 #include "ui/EqParamContainer.h"
 #include "ui/GlobalBypassButton.h"
 #include "ui/SpectrumAnalyzer.h"
 #include "ui/StereoMeterComponent.h"
-#include "utils/PathProducer.h"
 #include <JuceHeader.h>
 
 /* #define PATH_PRODUCER_TEST true */
@@ -24,7 +22,9 @@
 //==============================================================================
 /**
 */
-class EqualizerAudioProcessorEditor : public juce::AudioProcessorEditor, public juce::Timer, public EqualizerAudioProcessor::Listener
+class EqualizerAudioProcessorEditor : public juce::AudioProcessorEditor,
+                                      public juce::Timer,
+                                      public EqualizerAudioProcessor::SampleRateListener
 {
 public:
     EqualizerAudioProcessorEditor (EqualizerAudioProcessor&);
@@ -81,7 +81,5 @@ private:
                                                                   audioProcessor.apvts };
 #endif
 
-    std::unique_ptr<juce::TooltipWindow> tooltipWindow;
-
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (EqualizerAudioProcessorEditor)
-};
+    };

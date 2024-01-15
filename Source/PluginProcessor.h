@@ -108,30 +108,25 @@ public:
                                                 SingleFilterLink, //HighShelf
                                                 CutFilterLink>;   //HighCut
 
-    struct Listener
+    struct SampleRateListener
     {
-        virtual ~Listener() = default;
+        virtual ~SampleRateListener() = default;
         virtual void sampleRateChanged (double sr) = 0;
     };
 
-    void addSRListener (EqualizerAudioProcessor::Listener* l)
+    void addSampleRateListener (SampleRateListener* l)
     {
-        if (l != nullptr)
-        {
-            listeners.add (l);
-        }
+        sampleRateListeners.add (l);
     }
 
-    void removeSRListener (EqualizerAudioProcessor::Listener* l)
+    void removeSampleRateListener (SampleRateListener* l)
     {
-        if (l != nullptr)
-        {
-            listeners.remove (l);
-        }
+        sampleRateListeners.remove (l);
     }
 
 private:
-    juce::ListenerList<EqualizerAudioProcessor::Listener> listeners;
+    juce::ListenerList<SampleRateListener> sampleRateListeners;
+
     const float RAMP_TIME_IN_SECONDS = 0.05f;
 
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();

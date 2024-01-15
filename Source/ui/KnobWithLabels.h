@@ -15,8 +15,6 @@ struct KnobWithLabels : juce::Slider
 private:
     const int textHeight { 12 };
 
-    void updateTooltip();
-
     EqControlsLookAndFeel lnf;
     juce::String title;
 };

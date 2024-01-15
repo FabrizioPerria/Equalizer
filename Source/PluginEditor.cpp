@@ -33,15 +33,14 @@ EqualizerAudioProcessorEditor::EqualizerAudioProcessorEditor (EqualizerAudioProc
     addAndMakeVisible (spectrumAnalyzer);
 #endif
 
-    audioProcessor.addSRListener (this);
-    tooltipWindow = std::make_unique<juce::TooltipWindow> (this);
+    audioProcessor.addSampleRateListener (this);
 
     startTimerHz (FRAMES_PER_SECOND);
 }
 
 EqualizerAudioProcessorEditor::~EqualizerAudioProcessorEditor()
 {
-    audioProcessor.removeSRListener (this);
+    audioProcessor.removeSampleRateListener (this);
 }
 
 //==============================================================================
