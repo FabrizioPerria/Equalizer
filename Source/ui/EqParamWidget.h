@@ -43,6 +43,8 @@ struct EqParamWidget : juce::Component
     static const int buttonMargin { 4 };
     static const int sliderHeight { 20 };
 
+    void setEnabled (bool shouldBeEnabled);
+
 private:
     void refreshButtons (EqMode dspMode);
     void refreshSliders (Channel channel);
@@ -62,6 +64,9 @@ private:
     std::unique_ptr<ParamListener<float>> dspModeListener;
     std::unique_ptr<ParamListener<float>> leftMidBypassListener;
     std::unique_ptr<ParamListener<float>> rightSideBypassListener;
+    std::unique_ptr<ParamListener<float>> leftBypassListener;
+    std::unique_ptr<ParamListener<float>> rightBypassListener;
+    Channel currentChannelSelected;
 
     juce::TextButton leftMidButton;
     juce::TextButton rightSideButton;

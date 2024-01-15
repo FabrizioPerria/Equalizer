@@ -58,7 +58,8 @@ EqParamWidget::EqParamWidget (juce::AudioProcessorValueTreeState& apvtsToUse, in
     }
     addAndMakeVisible (*slopeOrGainSlider);
 
-    refreshSliders (Channel::LEFT);
+    currentChannelSelected = Channel::LEFT;
+    refreshSliders (currentChannelSelected);
 
     setupBypassButton (leftMidButton);
     setupBypassButton (rightSideButton);
@@ -69,6 +70,7 @@ EqParamWidget::EqParamWidget (juce::AudioProcessorValueTreeState& apvtsToUse, in
     {
         if (auto* comp = safePtr.getComponent())
         {
+            comp->currentChannelSelected = Channel::LEFT;
             comp->refreshSliders (Channel::LEFT);
         }
     };
@@ -77,6 +79,7 @@ EqParamWidget::EqParamWidget (juce::AudioProcessorValueTreeState& apvtsToUse, in
     {
         if (auto* comp = safePtr.getComponent())
         {
+            comp->currentChannelSelected = Channel::RIGHT;
             comp->refreshSliders (Channel::RIGHT);
         }
     };
@@ -91,6 +94,29 @@ EqParamWidget::EqParamWidget (juce::AudioProcessorValueTreeState& apvtsToUse, in
         refreshButtons (dspMode);
     };
     dspModeListener = std::make_unique<ParamListener<float>> (eqModeParam, dspModeCallback);
+
+    auto widgetSafePtr = juce::Component::SafePointer<EqParamWidget> (this);
+    auto leftBypassName = FilterInfo::getParameterName (filterIndexInChain, Channel::LEFT, FilterInfo::FilterParam::BYPASS);
+    auto leftBypassParam = apvts.getParameter (leftBypassName);
+    leftBypassListener = std::make_unique<ParamListener<float>> (leftBypassParam,
+                                                                 [widgetSafePtr] (bool v)
+                                                                 {
+                                                                     if (auto* comp = widgetSafePtr.getComponent())
+                                                                     {
+                                                                         comp->refreshSliders (Channel::LEFT);
+                                                                     }
+                                                                 });
+
+    auto rightBypassName = FilterInfo::getParameterName (filterIndexInChain, Channel::RIGHT, FilterInfo::FilterParam::BYPASS);
+    auto rightBypassParam = apvts.getParameter (rightBypassName);
+    rightBypassListener = std::make_unique<ParamListener<float>> (rightBypassParam,
+                                                                  [widgetSafePtr] (bool v)
+                                                                  {
+                                                                      if (auto* comp = widgetSafePtr.getComponent())
+                                                                      {
+                                                                          comp->refreshSliders (Channel::RIGHT);
+                                                                      }
+                                                                  });
 }
 
 EqParamWidget::~EqParamWidget()
@@ -156,6 +182,13 @@ void EqParamWidget::refreshSliders (Channel channel)
                                                          channel,
                                                          isCutFilter ? FilterInfo::FilterParam::SLOPE : FilterInfo::FilterParam::GAIN);
     slopeOrGainAttachment = std::make_unique<SliderAttachment> (apvts, slopeOrGainName, *slopeOrGainSlider);
+
+    if (channel == currentChannelSelected)
+    {
+        auto bypassName = FilterInfo::getParameterName (filterIndexInChain, channel, FilterInfo::FilterParam::BYPASS);
+        auto bypassValue = apvts.getRawParameterValue (bypassName)->load() > 0.5f;
+        setEnabled (! bypassValue);
+    }
 }
 
 void EqParamWidget::setupBypassButton (juce::TextButton& button)
@@ -163,4 +196,11 @@ void EqParamWidget::setupBypassButton (juce::TextButton& button)
     addChildComponent (button);
     button.setRadioGroupId (1);
     button.setClickingTogglesState (true);
+}
+
+void EqParamWidget::setEnabled (bool shouldBeEnabled)
+{
+    frequencySlider.setEnabled (shouldBeEnabled);
+    qualitySlider.setEnabled (shouldBeEnabled);
+    slopeOrGainSlider->setEnabled (shouldBeEnabled);
 }
