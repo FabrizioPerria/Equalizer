@@ -52,6 +52,10 @@
               file="Source/ui/MeterComponent.cpp"/>
         <FILE id="L9RxGF" name="MeterComponent.h" compile="0" resource="0"
               file="Source/ui/MeterComponent.h"/>
+        <FILE id="iNFQTe" name="ResponseCurveComponent.cpp" compile="1" resource="0"
+              file="Source/ui/ResponseCurveComponent.cpp"/>
+        <FILE id="QiIiaE" name="ResponseCurveComponent.h" compile="0" resource="0"
+              file="Source/ui/ResponseCurveComponent.h"/>
         <FILE id="A3VK9O" name="SpectrumAnalyzer.h" compile="0" resource="0"
               file="Source/ui/SpectrumAnalyzer.h"/>
         <FILE id="xRuEXk" name="StereoMeterComponent.cpp" compile="1" resource="0"
