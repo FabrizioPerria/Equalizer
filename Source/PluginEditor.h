@@ -17,8 +17,6 @@
 #include "ui/StereoMeterComponent.h"
 #include <JuceHeader.h>
 
-/* #define PATH_PRODUCER_TEST true */
-
 //==============================================================================
 /**
 */
@@ -70,16 +68,15 @@ private:
 
     const int pluginMargin { 5 };
 
-#ifdef PATH_PRODUCER_TEST
-    PathProducer<juce::AudioBuffer<float>> pathProducer { audioProcessor.getSampleRate(), audioProcessor.spectrumAnalyzerFifoLeft };
-    juce::Rectangle<float> fftBounds;
-    juce::Path currentPath;
-#else
     SpectrumAnalyzer<juce::AudioBuffer<float>> spectrumAnalyzer { audioProcessor.getSampleRate(),
                                                                   audioProcessor.spectrumAnalyzerFifoLeft,
                                                                   audioProcessor.spectrumAnalyzerFifoRight,
                                                                   audioProcessor.apvts };
+
+#if USE_TEST_SIGNAL
+    int counter { 0 };
+    int step { 1 };
 #endif
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (EqualizerAudioProcessorEditor)
-    };
+};

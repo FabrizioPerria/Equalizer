@@ -13,6 +13,7 @@
 #include "utils/FFTDataGenerator.h"
 #include "utils/FilterParam.h"
 #include "utils/FilterType.h"
+#include "utils/GlobalDefinitions.h"
 
 //==============================================================================
 EqualizerAudioProcessor::EqualizerAudioProcessor()
@@ -114,9 +115,10 @@ void EqualizerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBl
 
     initializeFilters();
 
-#ifdef USE_TEST_OSC
+#ifdef USE_TEST_SIGNAL
     testOscillator.prepare (spec);
     testGain.prepare (spec);
+    testGain.setGainDecibels (0.0f);
 #endif
     sampleRateListeners.call ([sampleRate] (SampleRateListener& l) { l.sampleRateChanged (sampleRate); });
 }
@@ -173,15 +175,15 @@ void EqualizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     auto block = juce::dsp::AudioBlock<float> (buffer);
     inputGain.process (juce::dsp::ProcessContextReplacing<float> (block));
 
-#ifdef USE_TEST_OSC
-    /* testGain.setGainDecibels (JUCE_LIVE_CONSTANT (-12.0f)); */
-    testGain.setGainDecibels (-12.0f);
-
+#if USE_TEST_SIGNAL
+    auto fftOrder = getCurrentFFTOrder();
     auto fftSize = 1 << static_cast<int> (fftOrder);
-    auto sampleRate = getSampleRate();
-    auto centerIndex = std::round (1000.0f / sampleRate * fftSize);
-    auto centerFreq = centerIndex * sampleRate / fftSize;
-    testOscillator.setFrequency (centerFreq);
+    size_t numBins = fftSize / 2 + 1;
+
+    auto currentBinNum = std::min (binNum.load(), numBins);
+
+    auto freq = GetTestSignalFrequency (currentBinNum, getCurrentFFTOrder(), getSampleRate());
+    testOscillator.setFrequency (freq);
 
     buffer.clear();
     for (auto samplePosition = 0; samplePosition < buffer.getNumSamples(); ++samplePosition)
@@ -248,7 +250,7 @@ void EqualizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
 
     updateMeterFifos (outMeterValuesFifo, buffer);
 
-#ifdef USE_TEST_OSC
+#ifdef USE_TEST_SIGNAL
     buffer.clear();
 #endif
 }
@@ -471,8 +473,17 @@ void EqualizerAudioProcessor::initializeOrder()
          the SingleChannelSampleFifos are now hard-coded to always hold 2048 samples
          the reason is explained in the PathProducer::run() function.
          */
-    fftOrder = FFTOrder::order2048;
-    auto fftOrderInt = static_cast<int> (fftOrder);
-    spectrumAnalyzerFifoLeft.prepare (1 << fftOrderInt);
-    spectrumAnalyzerFifoRight.prepare (1 << fftOrderInt);
+    spectrumAnalyzerFifoLeft.prepare (2048);
+    spectrumAnalyzerFifoRight.prepare (2048);
 }
+
+#if USE_TEST_SIGNAL
+FFTOrder EqualizerAudioProcessor::getCurrentFFTOrder()
+{
+    auto params = AnalyzerProperties::GetAnalyzerParams();
+    auto fftOrderName = params.at (AnalyzerProperties::ParamNames::AnalyzerPoints);
+    auto fftOrder = apvts.getRawParameterValue (fftOrderName)->load();
+    auto lowestFFTOrder = static_cast<int> (FFTOrder::order2048);
+    return static_cast<FFTOrder> (fftOrder + lowestFFTOrder);
+}
+#endif
