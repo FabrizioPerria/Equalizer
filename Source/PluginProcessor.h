@@ -129,6 +129,8 @@ private:
 
     const float RAMP_TIME_IN_SECONDS = 0.05f;
 
+    void initializeOrder();
+
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
 
     template <ChainPositions FilterPosition>
