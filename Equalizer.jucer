@@ -7,6 +7,11 @@
   <MAINGROUP id="Do3AsA" name="Equalizer">
     <GROUP id="{947A9606-09DB-5F3A-08CC-6B17C53CAE0F}" name="Source">
       <GROUP id="{7B339522-B1D5-D067-0094-2F67CA15145D}" name="ui">
+        <FILE id="pj145g" name="AnalyzerBase.h" compile="0" resource="0" file="Source/ui/AnalyzerBase.h"/>
+        <FILE id="FYbdcF" name="AnalyzerControls.cpp" compile="1" resource="0"
+              file="Source/ui/AnalyzerControls.cpp"/>
+        <FILE id="ZbS1ml" name="AnalyzerControls.h" compile="0" resource="0"
+              file="Source/ui/AnalyzerControls.h"/>
         <FILE id="Kla09h" name="BypassButton.cpp" compile="1" resource="0"
               file="Source/ui/BypassButton.cpp"/>
         <FILE id="bRhoQy" name="BypassButton.h" compile="0" resource="0" file="Source/ui/BypassButton.h"/>
@@ -14,6 +19,8 @@
               file="Source/ui/BypassButtonContainer.cpp"/>
         <FILE id="fYqZP0" name="BypassButtonContainer.h" compile="0" resource="0"
               file="Source/ui/BypassButtonContainer.h"/>
+        <FILE id="gWE61M" name="ControlsComponent.h" compile="0" resource="0"
+              file="Source/ui/ControlsComponent.h"/>
         <FILE id="jioKe9" name="DbScaleComponent.cpp" compile="1" resource="0"
               file="Source/ui/DbScaleComponent.cpp"/>
         <FILE id="C8P3QR" name="DbScaleComponent.h" compile="0" resource="0"
@@ -22,6 +29,10 @@
               file="Source/ui/DualBypassButton.cpp"/>
         <FILE id="PPNTAs" name="DualBypassButton.h" compile="0" resource="0"
               file="Source/ui/DualBypassButton.h"/>
+        <FILE id="BLMLDp" name="EqControlLookAndFeel.cpp" compile="1" resource="0"
+              file="Source/ui/EqControlLookAndFeel.cpp"/>
+        <FILE id="ZunYIv" name="EqControlLookAndFeel.h" compile="0" resource="0"
+              file="Source/ui/EqControlLookAndFeel.h"/>
         <FILE id="w48MCR" name="EqParamContainer.cpp" compile="1" resource="0"
               file="Source/ui/EqParamContainer.cpp"/>
         <FILE id="E8DFlx" name="EqParamContainer.h" compile="0" resource="0"
@@ -33,15 +44,24 @@
               file="Source/ui/GlobalBypassButton.cpp"/>
         <FILE id="ZQl4Wo" name="GlobalBypassButton.h" compile="0" resource="0"
               file="Source/ui/GlobalBypassButton.h"/>
+        <FILE id="WMnL9Y" name="KnobWithLabels.cpp" compile="1" resource="0"
+              file="Source/ui/KnobWithLabels.cpp"/>
+        <FILE id="OATtzc" name="KnobWithLabels.h" compile="0" resource="0"
+              file="Source/ui/KnobWithLabels.h"/>
         <FILE id="izWLyB" name="MeterComponent.cpp" compile="1" resource="0"
               file="Source/ui/MeterComponent.cpp"/>
         <FILE id="L9RxGF" name="MeterComponent.h" compile="0" resource="0"
               file="Source/ui/MeterComponent.h"/>
-        <FILE id="JheIff" name="PathFactory.h" compile="0" resource="0" file="Source/utils/PathFactory.h"/>
+        <FILE id="A3VK9O" name="SpectrumAnalyzer.h" compile="0" resource="0"
+              file="Source/ui/SpectrumAnalyzer.h"/>
         <FILE id="xRuEXk" name="StereoMeterComponent.cpp" compile="1" resource="0"
               file="Source/ui/StereoMeterComponent.cpp"/>
         <FILE id="rIEfKM" name="StereoMeterComponent.h" compile="0" resource="0"
               file="Source/ui/StereoMeterComponent.h"/>
+        <FILE id="MJPrPn" name="VerticalSwitch.cpp" compile="1" resource="0"
+              file="Source/ui/VerticalSwitch.cpp"/>
+        <FILE id="Tap84w" name="VerticalSwitch.h" compile="0" resource="0"
+              file="Source/ui/VerticalSwitch.h"/>
       </GROUP>
       <GROUP id="{DF623B76-4BBC-978B-59BD-4C329A2F163D}" name="data">
         <FILE id="YUOwXx" name="Averager.h" compile="0" resource="0" file="Source/data/Averager.h"/>
@@ -62,6 +82,8 @@
               file="Source/utils/AnalyzerPathGenerator.cpp"/>
         <FILE id="xtP2Xg" name="AnalyzerPathGenerator.h" compile="0" resource="0"
               file="Source/utils/AnalyzerPathGenerator.h"/>
+        <FILE id="ZgmZWJ" name="AnalyzerProperties.h" compile="0" resource="0"
+              file="Source/utils/AnalyzerProperties.h"/>
         <FILE id="OjzSog" name="CoefficientsMaker.h" compile="0" resource="0"
               file="Source/utils/CoefficientsMaker.h"/>
         <FILE id="Kc5spL" name="Decibel.h" compile="0" resource="0" file="Source/utils/Decibel.h"/>

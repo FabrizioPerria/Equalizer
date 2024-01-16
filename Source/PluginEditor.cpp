@@ -16,15 +16,6 @@ EqualizerAudioProcessorEditor::EqualizerAudioProcessorEditor (EqualizerAudioProc
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
     setSize (800, 600);
-#ifdef TEST_EQ_MODE
-    auto* modeParam = dynamic_cast<juce::AudioParameterChoice*> (p.apvts.getParameter ("eq_mode"));
-    eqModeComboBox.addItemList (modeParam->choices, 1);
-    eqModeComboBoxAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment> (audioProcessor.apvts,
-                                                                                                         "eq_mode",
-                                                                                                         eqModeComboBox);
-
-    addAndMakeVisible (eqModeComboBox);
-#endif
 
     addAndMakeVisible (inputMeter);
     addAndMakeVisible (outputMeter);
@@ -33,15 +24,23 @@ EqualizerAudioProcessorEditor::EqualizerAudioProcessorEditor (EqualizerAudioProc
 
     addAndMakeVisible (globalBypassButton);
     addAndMakeVisible (bypassButtonContainer);
+    addAndMakeVisible (controls);
 
-    pathProducer.setDecayRate (120.f);
+#ifdef PATH_PRODUCER_TEST
+    pathProducer.setDecayRate (30.f);
     pathProducer.changeOrder (audioProcessor.fftOrder);
+#else
+    addAndMakeVisible (spectrumAnalyzer);
+#endif
+
+    audioProcessor.addSampleRateListener (this);
 
     startTimerHz (FRAMES_PER_SECOND);
 }
 
 EqualizerAudioProcessorEditor::~EqualizerAudioProcessorEditor()
 {
+    audioProcessor.removeSampleRateListener (this);
 }
 
 //==============================================================================
@@ -66,8 +65,14 @@ void EqualizerAudioProcessorEditor::paint (juce::Graphics& g)
 
 void EqualizerAudioProcessorEditor::resized()
 {
-    auto pluginBounds = getLocalBounds().reduced (2 * pluginMargin, pluginMargin);
+    auto pluginBounds = getLocalBounds().reduced (pluginMargin);
+    auto analyzerControlsBounds = pluginBounds.removeFromBottom (100);
+    controls.setBounds (analyzerControlsBounds);
+
+    pluginBounds.removeFromLeft (pluginMargin);
+    pluginBounds.removeFromRight (pluginMargin);
     pluginBounds.removeFromTop (2 * pluginMargin);
+    pluginBounds.removeFromBottom (pluginMargin);
 
     auto stereoMeterWidth = MONO_METER_WIDTH + METER_SCALE_WIDTH + MONO_METER_WIDTH;
     inputMeter.setBounds (pluginBounds.removeFromLeft (stereoMeterWidth));
@@ -77,9 +82,6 @@ void EqualizerAudioProcessorEditor::resized()
 
     auto buttonHeight = 20;
     auto globalBypassButtonBounds = pluginBounds.removeFromTop (buttonHeight).reduced (2 * pluginMargin, 0);
-#ifdef TEST_EQ_MODE
-    eqModeComboBox.setBounds (globalBypassButtonBounds.removeFromLeft (getWidth() / 2));
-#endif
     globalBypassButton.setBounds (globalBypassButtonBounds.removeFromRight (3 * buttonHeight));
 
     pluginBounds.removeFromTop (2 * pluginMargin);
@@ -90,9 +92,12 @@ void EqualizerAudioProcessorEditor::resized()
     auto eqParamWidgetBounds = pluginBounds.removeFromBottom (EqParamContainer::sliderArea + EqParamContainer::buttonArea);
     eqParamContainer.setBounds (eqParamWidgetBounds);
 
+    pluginBounds.reduce (0, pluginMargin);
 #ifdef PATH_PRODUCER_TEST
     fftBounds = pluginBounds.toFloat();
     pathProducer.setFFTRectBounds (fftBounds);
+#else
+    spectrumAnalyzer.setBounds (pluginBounds);
 #endif
 }
 
@@ -111,4 +116,9 @@ void EqualizerAudioProcessorEditor::timerCallback()
         repaint();
     }
 #endif
+}
+
+void EqualizerAudioProcessorEditor::sampleRateChanged (double newSampleRate)
+{
+    spectrumAnalyzer.changeSampleRate (newSampleRate);
 }

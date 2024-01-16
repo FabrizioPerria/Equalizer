@@ -10,19 +10,21 @@
 
 #include "PluginProcessor.h"
 #include "ui/BypassButtonContainer.h"
+#include "ui/ControlsComponent.h"
 #include "ui/EqParamContainer.h"
 #include "ui/GlobalBypassButton.h"
+#include "ui/SpectrumAnalyzer.h"
 #include "ui/StereoMeterComponent.h"
-#include "utils/PathProducer.h"
 #include <JuceHeader.h>
 
-#define TEST_EQ_MODE true
-#define PATH_PRODUCER_TEST true
+/* #define PATH_PRODUCER_TEST true */
 
 //==============================================================================
 /**
 */
-class EqualizerAudioProcessorEditor : public juce::AudioProcessorEditor, public juce::Timer
+class EqualizerAudioProcessorEditor : public juce::AudioProcessorEditor,
+                                      public juce::Timer,
+                                      public EqualizerAudioProcessor::SampleRateListener
 {
 public:
     EqualizerAudioProcessorEditor (EqualizerAudioProcessor&);
@@ -33,6 +35,8 @@ public:
     void resized() override;
 
     void timerCallback() override;
+
+    void sampleRateChanged (double newSampleRate) override;
 
 private:
     // This reference is provided as a quick way for your editor to
@@ -62,18 +66,20 @@ private:
 
     GlobalBypassButton globalBypassButton { audioProcessor };
     BypassButtonContainer bypassButtonContainer { audioProcessor.apvts };
+    ControlsComponent controls { audioProcessor.apvts };
 
-#ifdef TEST_EQ_MODE
-    juce::ComboBox eqModeComboBox;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> eqModeComboBoxAttachment;
-#endif
     const int pluginMargin { 5 };
 
 #ifdef PATH_PRODUCER_TEST
     PathProducer<juce::AudioBuffer<float>> pathProducer { audioProcessor.getSampleRate(), audioProcessor.spectrumAnalyzerFifoLeft };
     juce::Rectangle<float> fftBounds;
     juce::Path currentPath;
+#else
+    SpectrumAnalyzer<juce::AudioBuffer<float>> spectrumAnalyzer { audioProcessor.getSampleRate(),
+                                                                  audioProcessor.spectrumAnalyzerFifoLeft,
+                                                                  audioProcessor.spectrumAnalyzerFifoRight,
+                                                                  audioProcessor.apvts };
 #endif
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (EqualizerAudioProcessorEditor)
-};
+    };

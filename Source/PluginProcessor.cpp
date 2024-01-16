@@ -8,6 +8,7 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "utils/AnalyzerProperties.h"
 #include "utils/EqParam.h"
 #include "utils/FFTDataGenerator.h"
 #include "utils/FilterParam.h"
@@ -109,20 +110,22 @@ void EqualizerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBl
     inputGain.prepare (spec);
     outputGain.prepare (spec);
 
-    fftOrder = FFTOrder::order2048;
-
     auto fftSize = 1 << static_cast<int> (fftOrder);
+
     spectrumAnalyzerFifoLeft.prepare (fftSize);
+    spectrumAnalyzerFifoRight.prepare (fftSize);
 
     initializeFilters();
 
 #ifdef USE_TEST_OSC
     testOscillator.prepare (spec);
     auto centerIndex = std::round (1000.0f / sampleRate * fftSize);
-    auto centerFreq = centerIndex * sampleRate / fftSize;
+    auto centerFreq = static_cast<float> (centerIndex * sampleRate / fftSize);
+
     testOscillator.setFrequency (centerFreq);
     testGain.prepare (spec);
 #endif
+    sampleRateListeners.call ([sampleRate] (SampleRateListener& l) { l.sampleRateChanged (sampleRate); });
 }
 
 void EqualizerAudioProcessor::releaseResources()
@@ -178,7 +181,8 @@ void EqualizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     inputGain.process (juce::dsp::ProcessContextReplacing<float> (block));
 
 #ifdef USE_TEST_OSC
-    testGain.setGainDecibels (JUCE_LIVE_CONSTANT (0.0f));
+    /* testGain.setGainDecibels (JUCE_LIVE_CONSTANT (-12.0f)); */
+    testGain.setGainDecibels (-12.0f);
 
     buffer.clear();
     for (auto samplePosition = 0; samplePosition < buffer.getNumSamples(); ++samplePosition)
@@ -194,6 +198,18 @@ void EqualizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
 #endif
 
     updateMeterFifos (inMeterValuesFifo, buffer);
+
+    auto processingModeName = AnalyzerProperties::GetAnalyzerParams().at (AnalyzerProperties::ParamNames::AnalyzerProcessingMode);
+    auto processingMode = static_cast<AnalyzerProperties::ProcessingModes> (getRawParameter (processingModeName));
+
+    auto enabledName = AnalyzerProperties::GetAnalyzerParams().at (AnalyzerProperties::ParamNames::EnableAnalyzer);
+    auto analyzerEnabled = getRawParameter (enabledName) > 0.5;
+
+    if (analyzerEnabled && processingMode == AnalyzerProperties::ProcessingModes::Pre)
+    {
+        spectrumAnalyzerFifoLeft.update (buffer);
+        spectrumAnalyzerFifoRight.update (buffer);
+    }
 
     if (mode == EqMode::MID_SIDE)
     {
@@ -223,7 +239,11 @@ void EqualizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
         midSideProcessor.process (juce::dsp::ProcessContextReplacing<float> (block));
     }
 
-    spectrumAnalyzerFifoLeft.update (buffer);
+    if (analyzerEnabled && processingMode == AnalyzerProperties::ProcessingModes::Post)
+    {
+        spectrumAnalyzerFifoLeft.update (buffer);
+        spectrumAnalyzerFifoRight.update (buffer);
+    }
 
     outputGain.process (juce::dsp::ProcessContextReplacing<float> (block));
 
@@ -314,6 +334,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout EqualizerAudioProcessor::cre
     addFilterParameterToLayout<ChainPositions::HIGHSHELF> (layout, false);
     addFilterParameterToLayout<ChainPositions::HIGHCUT> (layout, true);
     addGainTrimParameterToLayout (layout, "output_gain");
+    AnalyzerProperties::AddAnalyzerParams (layout);
 
     return layout;
 }

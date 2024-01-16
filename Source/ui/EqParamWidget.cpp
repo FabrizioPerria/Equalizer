@@ -12,54 +12,6 @@ TextOnlyHorizontalSlider::TextOnlyHorizontalSlider()
     setSliderSnapsToMousePosition (false);
 }
 
-void CustomLookAndFeel::drawLinearSlider (juce::Graphics& g,
-                                          int x,
-                                          int y,
-                                          int width,
-                                          int height,
-                                          float sliderPos,
-                                          float minSliderPos,
-                                          float maxSliderPos,
-                                          juce::Slider::SliderStyle style,
-                                          juce::Slider& slider)
-{
-    if (TextOnlyHorizontalSlider* textSlider = dynamic_cast<TextOnlyHorizontalSlider*> (&slider))
-    {
-        auto text = textSlider->getDisplayString();
-        auto bounds = slider.getLocalBounds().toFloat();
-
-        auto relativeSliderPos = juce::jmap (sliderPos,
-                                             static_cast<float> (x),
-                                             static_cast<float> (x + width),
-                                             bounds.getX(),
-                                             bounds.getWidth());
-        g.setColour (juce::Colour { 0x33, 0x33, 0x33 });
-        g.fillRect (bounds.withWidth (relativeSliderPos));
-
-        g.setColour (juce::Colours::white);
-        g.setFont (12.0f);
-        g.drawFittedText (text, bounds.toNearestInt(), juce::Justification::centred, true);
-    }
-    else
-    {
-        juce::LookAndFeel_V4::drawLinearSlider (g, x, y, width, height, sliderPos, minSliderPos, maxSliderPos, style, slider);
-    }
-}
-
-void CustomLookAndFeel::drawButtonBackground (juce::Graphics& g,
-                                              juce::Button& button,
-                                              const juce::Colour& backgroundColour,
-                                              bool shouldDrawButtonAsHighlighted,
-                                              bool shouldDrawButtonAsDown)
-{
-    g.setColour (button.getToggleState() ? juce::Colours::green : juce::Colours::black);
-
-    auto bounds = button.getLocalBounds();
-    g.fillRect (bounds);
-    g.setColour (juce::Colours::white);
-    g.drawRect (bounds, 1);
-}
-
 juce::String HertzSlider::getDisplayString()
 {
     auto frequency = getValue();
@@ -106,7 +58,8 @@ EqParamWidget::EqParamWidget (juce::AudioProcessorValueTreeState& apvtsToUse, in
     }
     addAndMakeVisible (*slopeOrGainSlider);
 
-    refreshSliders (Channel::LEFT);
+    currentChannelSelected = Channel::LEFT;
+    refreshSliders (currentChannelSelected);
 
     setupBypassButton (leftMidButton);
     setupBypassButton (rightSideButton);
@@ -117,6 +70,7 @@ EqParamWidget::EqParamWidget (juce::AudioProcessorValueTreeState& apvtsToUse, in
     {
         if (auto* comp = safePtr.getComponent())
         {
+            comp->currentChannelSelected = Channel::LEFT;
             comp->refreshSliders (Channel::LEFT);
         }
     };
@@ -125,6 +79,7 @@ EqParamWidget::EqParamWidget (juce::AudioProcessorValueTreeState& apvtsToUse, in
     {
         if (auto* comp = safePtr.getComponent())
         {
+            comp->currentChannelSelected = Channel::RIGHT;
             comp->refreshSliders (Channel::RIGHT);
         }
     };
@@ -139,6 +94,29 @@ EqParamWidget::EqParamWidget (juce::AudioProcessorValueTreeState& apvtsToUse, in
         refreshButtons (dspMode);
     };
     dspModeListener = std::make_unique<ParamListener<float>> (eqModeParam, dspModeCallback);
+
+    auto widgetSafePtr = juce::Component::SafePointer<EqParamWidget> (this);
+    auto leftBypassName = FilterInfo::getParameterName (filterIndexInChain, Channel::LEFT, FilterInfo::FilterParam::BYPASS);
+    auto leftBypassParam = apvts.getParameter (leftBypassName);
+    leftBypassListener = std::make_unique<ParamListener<float>> (leftBypassParam,
+                                                                 [widgetSafePtr] (bool v)
+                                                                 {
+                                                                     if (auto* comp = widgetSafePtr.getComponent())
+                                                                     {
+                                                                         comp->refreshSliders (Channel::LEFT);
+                                                                     }
+                                                                 });
+
+    auto rightBypassName = FilterInfo::getParameterName (filterIndexInChain, Channel::RIGHT, FilterInfo::FilterParam::BYPASS);
+    auto rightBypassParam = apvts.getParameter (rightBypassName);
+    rightBypassListener = std::make_unique<ParamListener<float>> (rightBypassParam,
+                                                                  [widgetSafePtr] (bool v)
+                                                                  {
+                                                                      if (auto* comp = widgetSafePtr.getComponent())
+                                                                      {
+                                                                          comp->refreshSliders (Channel::RIGHT);
+                                                                      }
+                                                                  });
 }
 
 EqParamWidget::~EqParamWidget()
@@ -204,6 +182,13 @@ void EqParamWidget::refreshSliders (Channel channel)
                                                          channel,
                                                          isCutFilter ? FilterInfo::FilterParam::SLOPE : FilterInfo::FilterParam::GAIN);
     slopeOrGainAttachment = std::make_unique<SliderAttachment> (apvts, slopeOrGainName, *slopeOrGainSlider);
+
+    if (channel == currentChannelSelected)
+    {
+        auto bypassName = FilterInfo::getParameterName (filterIndexInChain, channel, FilterInfo::FilterParam::BYPASS);
+        auto bypassValue = apvts.getRawParameterValue (bypassName)->load() > 0.5f;
+        setEnabled (! bypassValue);
+    }
 }
 
 void EqParamWidget::setupBypassButton (juce::TextButton& button)
@@ -211,4 +196,11 @@ void EqParamWidget::setupBypassButton (juce::TextButton& button)
     addChildComponent (button);
     button.setRadioGroupId (1);
     button.setClickingTogglesState (true);
+}
+
+void EqParamWidget::setEnabled (bool shouldBeEnabled)
+{
+    frequencySlider.setEnabled (shouldBeEnabled);
+    qualitySlider.setEnabled (shouldBeEnabled);
+    slopeOrGainSlider->setEnabled (shouldBeEnabled);
 }

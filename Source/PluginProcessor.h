@@ -9,7 +9,7 @@
 #pragma once
 
 #include "utils/FFTDataGenerator.h"
-#define USE_TEST_OSC true
+/* #define USE_TEST_OSC true */
 
 #include "data/FilterLink.h"
 #include "data/FilterParameters.h"
@@ -85,6 +85,7 @@ public:
     Fifo<MeterValues, 20> outMeterValuesFifo;
 
     SingleChannelSampleFifo<juce::AudioBuffer<float>> spectrumAnalyzerFifoLeft { Channel::LEFT };
+    SingleChannelSampleFifo<juce::AudioBuffer<float>> spectrumAnalyzerFifoRight { Channel::RIGHT };
 
     FFTOrder fftOrder { FFTOrder::order2048 };
 
@@ -107,7 +108,25 @@ public:
                                                 SingleFilterLink, //HighShelf
                                                 CutFilterLink>;   //HighCut
 
+    struct SampleRateListener
+    {
+        virtual ~SampleRateListener() = default;
+        virtual void sampleRateChanged (double sr) = 0;
+    };
+
+    void addSampleRateListener (SampleRateListener* l)
+    {
+        sampleRateListeners.add (l);
+    }
+
+    void removeSampleRateListener (SampleRateListener* l)
+    {
+        sampleRateListeners.remove (l);
+    }
+
 private:
+    juce::ListenerList<SampleRateListener> sampleRateListeners;
+
     const float RAMP_TIME_IN_SECONDS = 0.05f;
 
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();

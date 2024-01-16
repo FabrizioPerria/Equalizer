@@ -1,6 +1,7 @@
 #pragma once
 
 #include "data/ParamListener.h"
+#include "ui/EqControlLookAndFeel.h"
 #include "utils/EqParam.h"
 #include <JuceHeader.h>
 
@@ -9,26 +10,6 @@ struct TextOnlyHorizontalSlider : juce::Slider
     TextOnlyHorizontalSlider();
     virtual ~TextOnlyHorizontalSlider() = default;
     virtual juce::String getDisplayString() = 0;
-};
-
-struct CustomLookAndFeel : juce::LookAndFeel_V4
-{
-    void drawLinearSlider (juce::Graphics& g,
-                           int x,
-                           int y,
-                           int width,
-                           int height,
-                           float sliderPos,
-                           float minSliderPos,
-                           float maxSliderPos,
-                           juce::Slider::SliderStyle style,
-                           juce::Slider& slider) override;
-
-    void drawButtonBackground (juce::Graphics& g,
-                               juce::Button& button,
-                               const juce::Colour& backgroundColour,
-                               bool shouldDrawButtonAsHighlighted,
-                               bool shouldDrawButtonAsDown) override;
 };
 
 struct HertzSlider : TextOnlyHorizontalSlider
@@ -62,6 +43,8 @@ struct EqParamWidget : juce::Component
     static const int buttonMargin { 4 };
     static const int sliderHeight { 20 };
 
+    void setEnabled (bool shouldBeEnabled);
+
 private:
     void refreshButtons (EqMode dspMode);
     void refreshSliders (Channel channel);
@@ -81,11 +64,14 @@ private:
     std::unique_ptr<ParamListener<float>> dspModeListener;
     std::unique_ptr<ParamListener<float>> leftMidBypassListener;
     std::unique_ptr<ParamListener<float>> rightSideBypassListener;
+    std::unique_ptr<ParamListener<float>> leftBypassListener;
+    std::unique_ptr<ParamListener<float>> rightBypassListener;
+    Channel currentChannelSelected;
 
     juce::TextButton leftMidButton;
     juce::TextButton rightSideButton;
 
-    CustomLookAndFeel customLookAndFeel;
+    EqControlsLookAndFeel customLookAndFeel;
 
     juce::Image widgetGridImage;
 
