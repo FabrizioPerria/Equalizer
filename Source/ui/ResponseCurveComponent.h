@@ -3,6 +3,8 @@
 #include "PluginEditor.h"
 #include "PluginProcessor.h"
 #include "ui/AnalyzerBase.h"
+#include "utils/AllParamsListener.h"
+#include "utils/ChainHelpers.h"
 #include <JuceHeader.h>
 
 struct ResponseCurveComponent : AnalyzerBase
@@ -14,9 +16,9 @@ struct ResponseCurveComponent : AnalyzerBase
 private:
     juce::AudioProcessorValueTreeState* apvts;
     double sampleRate;
-    /* std::unique_ptr<AllParamsListener> allParamsListener; */
+    std::unique_ptr<AllParamsListener> allParamsListener;
 
-    EqualizerAudioProcessor::MonoChain leftChain, rightChain;
+    ChainHelpers::MonoChain leftChain, rightChain;
     juce::Path leftResponseCurve, rightResponseCurve;
 
     void refreshParams();

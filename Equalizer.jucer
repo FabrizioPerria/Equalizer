@@ -82,12 +82,17 @@
         <FILE id="MpQYGz" name="ParamListener.h" compile="0" resource="0" file="Source/data/ParamListener.h"/>
       </GROUP>
       <GROUP id="{CE98CBDF-8DE1-DA86-8C69-BF52E9C7297A}" name="utils">
+        <FILE id="aGoPY2" name="AllParamsListener.cpp" compile="1" resource="0"
+              file="Source/utils/AllParamsListener.cpp"/>
+        <FILE id="SQUv8Z" name="AllParamsListener.h" compile="0" resource="0"
+              file="Source/utils/AllParamsListener.h"/>
         <FILE id="kHx8Sk" name="AnalyzerPathGenerator.cpp" compile="1" resource="0"
               file="Source/utils/AnalyzerPathGenerator.cpp"/>
         <FILE id="xtP2Xg" name="AnalyzerPathGenerator.h" compile="0" resource="0"
               file="Source/utils/AnalyzerPathGenerator.h"/>
         <FILE id="ZgmZWJ" name="AnalyzerProperties.h" compile="0" resource="0"
               file="Source/utils/AnalyzerProperties.h"/>
+        <FILE id="fVF1st" name="ChainHelpers.h" compile="0" resource="0" file="Source/utils/ChainHelpers.h"/>
         <FILE id="OjzSog" name="CoefficientsMaker.h" compile="0" resource="0"
               file="Source/utils/CoefficientsMaker.h"/>
         <FILE id="Kc5spL" name="Decibel.h" compile="0" resource="0" file="Source/utils/Decibel.h"/>

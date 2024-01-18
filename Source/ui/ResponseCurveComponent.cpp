@@ -1,13 +1,13 @@
 #include "ui/ResponseCurveComponent.h"
 #include "PluginProcessor.h"
+#include "utils/ChainHelpers.h"
 #include "utils/EqParam.h"
 #include "utils/MeterConstants.h"
 
 ResponseCurveComponent::ResponseCurveComponent (double sr, juce::AudioProcessorValueTreeState& apvts) : apvts (&apvts), sampleRate (sr)
 {
-    // TODO: ??
-    /* allParamsListener = std::make_unique<AllParamsListener> (apvts, refreshParams); */
-    // TODO: initialize response curves path ??
+    auto bindFunc = [this] { refreshParams(); };
+    allParamsListener = std::make_unique<AllParamsListener> (&apvts, bindFunc);
     juce::dsp::ProcessSpec spec;
     spec.sampleRate = sampleRate;
     spec.maximumBlockSize = 1024;
@@ -66,6 +66,7 @@ void ResponseCurveComponent::buildNewResponseCurves()
 }
 void ResponseCurveComponent::updateChainParameters()
 {
+    ChainHelpers::initializeChains (leftChain, rightChain, sampleRate, *apvts);
 }
 
 void ResponseCurveComponent::buildNewResponseCurve (std::vector<float>& path, EqualizerAudioProcessor::MonoChain& chain)
@@ -93,8 +94,27 @@ void ResponseCurveComponent::buildNewResponseCurve (std::vector<float>& path, Eq
 void ResponseCurveComponent::createResponseCurve (juce::Path& path, const std::vector<float>& data)
 {
     path.clear();
-    if (data.size() < 2) // early exit if data empty or contains only DC
+    if (data.empty())
     {
         return;
+    }
+
+    auto startX = fftBoundingBox.getX();
+
+    auto toYCoordinate = [this] (float gain)
+    {
+        auto bBox = fftBoundingBox.toFloat();
+        return juce::jmap (gain,
+                           static_cast<float> (RESPONSE_CURVE_MIN_DB),
+                           static_cast<float> (RESPONSE_CURVE_MAX_DB),
+                           bBox.getBottom(),
+                           bBox.getY());
+    };
+
+    path.startNewSubPath (startX, toYCoordinate (data[0]));
+
+    for (size_t i = 1; i < data.size(); ++i)
+    {
+        path.lineTo (i + startX, toYCoordinate (data[i]));
     }
 }
