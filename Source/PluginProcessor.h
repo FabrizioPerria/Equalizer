@@ -8,20 +8,16 @@
 
 #pragma once
 
-#include "utils/FFTDataGenerator.h"
-#include "utils/ChainHelpers.h"
-#include "data/FilterLink.h"
-#include "data/FilterParameters.h"
 #include "data/MeterValues.h"
-#include "utils/CoefficientsMaker.h"
+#include "utils/ChainHelpers.h"
 #include "utils/EqParam.h"
+#include "utils/FFTDataGenerator.h"
 #include "utils/FilterParam.h"
 #include "utils/FilterType.h"
 #include "utils/GlobalDefinitions.h"
 #include "utils/MidSideProcessor.h"
 #include "utils/SingleChannelSampleFifo.h"
 #include <JuceHeader.h>
-
 
 // ====================================================================================================
 class EqualizerAudioProcessor : public juce::AudioProcessor
@@ -153,38 +149,8 @@ private:
     static juce::StringArray getSlopeNames();
 
     float getRawParameter (const juce::String& name);
-    float getRawFilterParameter (int filterIndex, Channel audioChannel, FilterInfo::FilterParam filterParameter);
-    FilterParametersBase getBaseParameters (int filterIndex, Channel audioChannel);
-    FilterParameters getParametricParameters (int filterIndex, Channel audioChannel, FilterInfo::FilterType filterType);
-    HighCutLowCutParameters getCutParameters (int filterIndex, Channel audioChannel, FilterInfo::FilterType filterType);
 
     EqMode getEqMode();
-
-    void initializeFilters();
-
-    template <ChainPositions FilterPosition>
-    void initializeCutFilter (FilterInfo::FilterType filterType, EqMode mode, bool onRealTimeThread)
-    {
-        const int filterIndex = static_cast<int> (FilterPosition);
-        auto leftCutParams = getCutParameters (filterIndex, Channel::LEFT, filterType);
-        leftChain.get<filterIndex>().initialize (leftCutParams, RAMP_TIME_IN_SECONDS, onRealTimeThread, getSampleRate());
-
-        auto rightCutParams = mode == EqMode::STEREO ? leftCutParams //
-                                                     : getCutParameters (filterIndex, Channel::RIGHT, filterType);
-        rightChain.get<filterIndex>().initialize (rightCutParams, RAMP_TIME_IN_SECONDS, onRealTimeThread, getSampleRate());
-    }
-
-    template <ChainPositions FilterPosition>
-    void initializeParametricFilter (FilterInfo::FilterType filterType, EqMode mode, bool onRealTimeThread)
-    {
-        const int filterIndex = static_cast<int> (FilterPosition);
-        auto leftParametricParams = getParametricParameters (filterIndex, Channel::LEFT, filterType);
-        leftChain.get<filterIndex>().initialize (leftParametricParams, RAMP_TIME_IN_SECONDS, onRealTimeThread, getSampleRate());
-
-        auto rightParametricParams = mode == EqMode::STEREO ? leftParametricParams
-                                                            : getParametricParameters (filterIndex, Channel::RIGHT, filterType);
-        rightChain.get<filterIndex>().initialize (rightParametricParams, RAMP_TIME_IN_SECONDS, onRealTimeThread, getSampleRate());
-    }
 
     void updateParameters (EqMode mode);
 
@@ -192,11 +158,12 @@ private:
     void updateCutParameters (FilterInfo::FilterType filterType, EqMode mode)
     {
         const int filterIndex = static_cast<int> (FilterPosition);
-        auto leftCutParams = getCutParameters (filterIndex, Channel::LEFT, filterType);
+        auto leftCutParams = ChainHelpers::getCutParameters<filterIndex> (Channel::LEFT, filterType, getSampleRate(), apvts);
         leftChain.get<filterIndex>().performPreloopUpdate (leftCutParams);
 
-        auto rightCutParams = mode == EqMode::STEREO ? leftCutParams //
-                                                     : getCutParameters (filterIndex, Channel::RIGHT, filterType);
+        auto rightCutParams = mode == EqMode::STEREO
+                                  ? leftCutParams //
+                                  : ChainHelpers::getCutParameters<filterIndex> (Channel::RIGHT, filterType, getSampleRate(), apvts);
         rightChain.get<filterIndex>().performPreloopUpdate (rightCutParams);
     }
 
@@ -204,11 +171,14 @@ private:
     void updateParametricParameters (FilterInfo::FilterType filterType, EqMode mode)
     {
         const int filterIndex = static_cast<int> (FilterPosition);
-        auto leftParametricParams = getParametricParameters (filterIndex, Channel::LEFT, filterType);
+        auto leftParametricParams = ChainHelpers::getParametricParameters<filterIndex> (Channel::LEFT, filterType, getSampleRate(), apvts);
         leftChain.get<filterIndex>().performPreloopUpdate (leftParametricParams);
 
         auto rightParametricParams = mode == EqMode::STEREO ? leftParametricParams //
-                                                            : getParametricParameters (filterIndex, Channel::RIGHT, filterType);
+                                                            : ChainHelpers::getParametricParameters<filterIndex> (Channel::RIGHT,
+                                                                                                                  filterType,
+                                                                                                                  getSampleRate(),
+                                                                                                                  apvts);
         rightChain.get<filterIndex>().performPreloopUpdate (rightParametricParams);
     }
 

@@ -4,7 +4,7 @@
 #include "utils/EqParam.h"
 #include "utils/MeterConstants.h"
 
-ResponseCurveComponent::ResponseCurveComponent (EqualizerAudioProcessor& p) : audioProcessor {p}
+ResponseCurveComponent::ResponseCurveComponent (EqualizerAudioProcessor& p) : audioProcessor { p }
 {
     auto bindFunc = [this] { refreshParams(); };
     allParamsListener = std::make_unique<AllParamsListener> (apvts, bindFunc);
@@ -55,7 +55,7 @@ void ResponseCurveComponent::buildNewResponseCurves()
     std::vector<float> pathData;
     pathData.resize (w, NEGATIVE_INFINITY);
 
-    if(audioProcessor.isAnyFilterActive())
+    if (audioProcessor.isAnyFilterActive())
     {
         buildNewResponseCurve (pathData, leftChain);
         createResponseCurve (leftResponseCurve, pathData);
