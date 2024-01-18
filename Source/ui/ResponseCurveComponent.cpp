@@ -4,7 +4,7 @@
 #include "utils/EqParam.h"
 #include "utils/MeterConstants.h"
 
-ResponseCurveComponent::ResponseCurveComponent (double sr, juce::AudioProcessorValueTreeState& apv) : apvts (&apv), sampleRate (sr)
+ResponseCurveComponent::ResponseCurveComponent (EqualizerAudioProcessor& p) : audioProcessor {p}
 {
     auto bindFunc = [this] { refreshParams(); };
     allParamsListener = std::make_unique<AllParamsListener> (apvts, bindFunc);
@@ -55,13 +55,21 @@ void ResponseCurveComponent::buildNewResponseCurves()
     std::vector<float> pathData;
     pathData.resize (w, NEGATIVE_INFINITY);
 
-    buildNewResponseCurve (pathData, leftChain);
-    createResponseCurve (leftResponseCurve, pathData);
-    auto getProcessingMode = static_cast<EqMode> (apvts->getRawParameterValue ("eq_mode")->load());
-    if (getProcessingMode != EqMode::STEREO)
+    if(audioProcessor.isAnyFilterActive())
     {
-        buildNewResponseCurve (pathData, rightChain);
-        createResponseCurve (rightResponseCurve, pathData);
+        buildNewResponseCurve (pathData, leftChain);
+        createResponseCurve (leftResponseCurve, pathData);
+        auto getProcessingMode = static_cast<EqMode> (apvts->getRawParameterValue ("eq_mode")->load());
+        if (getProcessingMode != EqMode::STEREO)
+        {
+            buildNewResponseCurve (pathData, rightChain);
+            createResponseCurve (rightResponseCurve, pathData);
+        }
+    }
+    else
+    {
+        leftResponseCurve.clear();
+        rightResponseCurve.clear();
     }
 }
 void ResponseCurveComponent::updateChainParameters()

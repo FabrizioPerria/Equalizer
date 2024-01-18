@@ -93,9 +93,9 @@ struct SpectrumAnalyzer : AnalyzerBase, juce::Timer
 
         juce::PathStrokeType strokeType (1.0f, juce::PathStrokeType::JointStyle::curved);
         g.reduceClipRegion (fftBoundingBox);
-        g.setColour (juce::Colours::yellow);
+        g.setColour (juce::Colours::green);
         g.strokePath (leftAnalyzerPath, strokeType);
-        g.setColour (juce::Colours::fuchsia);
+        g.setColour (juce::Colours::aquamarine);
         g.strokePath (rightAnalyzerPath, strokeType);
     }
 

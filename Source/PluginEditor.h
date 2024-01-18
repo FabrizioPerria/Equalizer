@@ -74,7 +74,7 @@ private:
                                                                   audioProcessor.spectrumAnalyzerFifoRight,
                                                                   audioProcessor.apvts };
 
-    ResponseCurveComponent responseCurve { audioProcessor.getSampleRate(), audioProcessor.apvts };
+    ResponseCurveComponent responseCurve { audioProcessor };
 
 #if USE_TEST_SIGNAL
     int counter { 0 };

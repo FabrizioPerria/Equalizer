@@ -1,19 +1,22 @@
 #pragma once
 
 #include "ui/AnalyzerBase.h"
+#include "PluginProcessor.h"
 #include "utils/AllParamsListener.h"
 #include "utils/ChainHelpers.h"
 #include <JuceHeader.h>
 
 struct ResponseCurveComponent : AnalyzerBase
 {
-    ResponseCurveComponent (double sr, juce::AudioProcessorValueTreeState& apvts);
+    ResponseCurveComponent (EqualizerAudioProcessor& p);
     void paint (juce::Graphics& g) override;
     void resized() override;
 
 private:
-    juce::AudioProcessorValueTreeState* apvts;
-    double sampleRate;
+    EqualizerAudioProcessor& audioProcessor;
+
+    juce::AudioProcessorValueTreeState* apvts = {&audioProcessor.apvts};
+    double sampleRate {audioProcessor.getSampleRate()};
     std::unique_ptr<AllParamsListener> allParamsListener;
 
     ChainHelpers::MonoChain leftChain, rightChain;
