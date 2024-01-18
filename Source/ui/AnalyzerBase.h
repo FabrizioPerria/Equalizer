@@ -1,6 +1,9 @@
 #pragma once
 #include <JuceHeader.h>
 
+#define RESPONSE_CURVE_MIN_DB -30.f
+#define RESPONSE_CURVE_MAX_DB 30.f
+
 struct AnalyzerBase : juce::Component
 {
     juce::Rectangle<int> getBoundsForRendering() const
@@ -11,7 +14,7 @@ struct AnalyzerBase : juce::Component
     juce::Rectangle<int> getBoundsForFFT()
     {
         auto boundsForRendering = getBoundsForRendering();
-        auto w = static_cast<int>(getTextWidth() * 1.5f);
+        auto w = static_cast<int> (getTextWidth() * 1.5f);
         return boundsForRendering.withTrimmedLeft (w).withTrimmedRight (w);
     }
 

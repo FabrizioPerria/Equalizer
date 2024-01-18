@@ -9,7 +9,7 @@
 #pragma once
 
 #include "utils/FFTDataGenerator.h"
-
+#include "utils/ChainHelpers.h"
 #include "data/FilterLink.h"
 #include "data/FilterParameters.h"
 #include "data/MeterValues.h"
@@ -22,18 +22,6 @@
 #include "utils/SingleChannelSampleFifo.h"
 #include <JuceHeader.h>
 
-//==============================================================================
-enum class ChainPositions
-{
-    LOWCUT,
-    LOWSHELF,
-    PEAK1,
-    PEAK2,
-    PEAK3,
-    PEAK4,
-    HIGHSHELF,
-    HIGHCUT
-};
 
 // ====================================================================================================
 class EqualizerAudioProcessor : public juce::AudioProcessor
@@ -88,23 +76,6 @@ public:
     SingleChannelSampleFifo<juce::AudioBuffer<float>> spectrumAnalyzerFifoRight { Channel::RIGHT };
 
     using GainTrim = juce::dsp::Gain<float>;
-    using Filter = juce::dsp::IIR::Filter<float>;
-    using Coefficients = juce::dsp::IIR::Coefficients<float>;
-    using CoefficientsPtr = Coefficients::Ptr;
-    using CutCoefficients = juce::ReferenceCountedArray<Coefficients>;
-    using CutFilter = juce::dsp::ProcessorChain<Filter, Filter, Filter, Filter>;
-
-    using CutFilterLink = FilterLink<CutFilter, CutCoefficients, HighCutLowCutParameters, CoefficientsMaker<float>>;
-    using SingleFilterLink = FilterLink<Filter, CoefficientsPtr, FilterParameters, CoefficientsMaker<float>>;
-
-    using MonoChain = juce::dsp::ProcessorChain<CutFilterLink,    //lowCut
-                                                SingleFilterLink, //lowShelf
-                                                SingleFilterLink, //Peak1
-                                                SingleFilterLink, //Peak2
-                                                SingleFilterLink, //Peak3
-                                                SingleFilterLink, //Peak4
-                                                SingleFilterLink, //HighShelf
-                                                CutFilterLink>;   //HighCut
 
     struct SampleRateListener
     {
@@ -129,8 +100,6 @@ public:
 
 private:
     juce::ListenerList<SampleRateListener> sampleRateListeners;
-
-    const float RAMP_TIME_IN_SECONDS = 0.05f;
 
     void initializeOrder();
 
@@ -304,7 +273,7 @@ private:
 
     void updateTrimGains();
 
-    MonoChain leftChain, rightChain;
+    ChainHelpers::MonoChain leftChain, rightChain;
     GainTrim inputGain, outputGain;
 
     MidSideProcessor midSideProcessor;

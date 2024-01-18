@@ -8,9 +8,6 @@
 #include "utils/SingleChannelSampleFifo.h"
 #include <JuceHeader.h>
 
-#define RESPONSE_CURVE_MIN_DB -30.f
-#define RESPONSE_CURVE_MAX_DB 30.f
-
 template <typename BlockType>
 struct SpectrumAnalyzer : AnalyzerBase, juce::Timer
 {

@@ -7,8 +7,7 @@
 #include "utils/FilterParam.h"
 #include "utils/FilterType.h"
 #include <JuceHeader.h>
-namespace ChainHelpers
-{
+
 #define RAMP_TIME_IN_SECONDS 0.05f
 
 enum class ChainPositions
@@ -23,6 +22,8 @@ enum class ChainPositions
     HIGHCUT
 };
 
+namespace ChainHelpers
+{
 using Filter = juce::dsp::IIR::Filter<float>;
 using Coefficients = juce::dsp::IIR::Coefficients<float>;
 using CoefficientsPtr = Coefficients::Ptr;
@@ -119,7 +120,7 @@ void initializeParametricFilter (MonoChain& leftChain,
     rightChain.get<FilterIndex>().initialize (rightParametricParams, RAMP_TIME_IN_SECONDS, onRealTimeThread, sampleRate);
 }
 
-void initializeChains (MonoChain& leftChain, MonoChain& rightChain, double sampleRate, juce::AudioProcessorValueTreeState& apvts)
+inline void initializeChains (MonoChain& leftChain, MonoChain& rightChain, double sampleRate, juce::AudioProcessorValueTreeState& apvts)
 {
     bool onRealTimeThread = ! juce::MessageManager::getInstanceWithoutCreating()->isThisTheMessageThread();
     auto mode = static_cast<EqMode> (apvts.getRawParameterValue ("eq_mode")->load());

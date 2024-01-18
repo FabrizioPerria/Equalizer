@@ -1,7 +1,5 @@
 #pragma once
 
-#include "PluginEditor.h"
-#include "PluginProcessor.h"
 #include "ui/AnalyzerBase.h"
 #include "utils/AllParamsListener.h"
 #include "utils/ChainHelpers.h"
@@ -24,6 +22,6 @@ private:
     void refreshParams();
     void buildNewResponseCurves();
     void updateChainParameters();
-    void buildNewResponseCurve (std::vector<float>& path, EqualizerAudioProcessor::MonoChain& chain);
+    void buildNewResponseCurve (std::vector<float>& path, ChainHelpers::MonoChain& chain);
     void createResponseCurve (juce::Path& path, const std::vector<float>& data);
 };

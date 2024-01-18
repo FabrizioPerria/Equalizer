@@ -4,10 +4,10 @@
 #include "utils/EqParam.h"
 #include "utils/MeterConstants.h"
 
-ResponseCurveComponent::ResponseCurveComponent (double sr, juce::AudioProcessorValueTreeState& apvts) : apvts (&apvts), sampleRate (sr)
+ResponseCurveComponent::ResponseCurveComponent (double sr, juce::AudioProcessorValueTreeState& apv) : apvts (&apv), sampleRate (sr)
 {
     auto bindFunc = [this] { refreshParams(); };
-    allParamsListener = std::make_unique<AllParamsListener> (&apvts, bindFunc);
+    allParamsListener = std::make_unique<AllParamsListener> (apvts, bindFunc);
     juce::dsp::ProcessSpec spec;
     spec.sampleRate = sampleRate;
     spec.maximumBlockSize = 1024;
@@ -69,7 +69,7 @@ void ResponseCurveComponent::updateChainParameters()
     ChainHelpers::initializeChains (leftChain, rightChain, sampleRate, *apvts);
 }
 
-void ResponseCurveComponent::buildNewResponseCurve (std::vector<float>& path, EqualizerAudioProcessor::MonoChain& chain)
+void ResponseCurveComponent::buildNewResponseCurve (std::vector<float>& path, ChainHelpers::MonoChain& chain)
 {
     path.assign (path.size(), NEGATIVE_INFINITY);
 
