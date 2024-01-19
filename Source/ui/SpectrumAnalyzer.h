@@ -8,9 +8,6 @@
 #include "utils/SingleChannelSampleFifo.h"
 #include <JuceHeader.h>
 
-#define RESPONSE_CURVE_MIN_DB -30.f
-#define RESPONSE_CURVE_MAX_DB 30.f
-
 template <typename BlockType>
 struct SpectrumAnalyzer : AnalyzerBase, juce::Timer
 {
@@ -96,9 +93,9 @@ struct SpectrumAnalyzer : AnalyzerBase, juce::Timer
 
         juce::PathStrokeType strokeType (1.0f, juce::PathStrokeType::JointStyle::curved);
         g.reduceClipRegion (fftBoundingBox);
-        g.setColour (juce::Colours::yellow);
+        g.setColour (juce::Colour::fromRGB (0x63, 0x82, 0xDA));
         g.strokePath (leftAnalyzerPath, strokeType);
-        g.setColour (juce::Colours::fuchsia);
+        g.setColour (juce::Colour::fromRGB (0x3D, 0xAF, 0x98));
         g.strokePath (rightAnalyzerPath, strokeType);
     }
 

@@ -219,6 +219,30 @@ struct FilterLink
         loadCoefficients (onRealTimeThread);
     }
 
+    double getCutFilterMagnitudeForFrequency (double frequency)
+    {
+        double mag { 1 };
+        mag *= filter.template isBypassed<0>() ? 1.0
+                                               : filter.template get<0>().coefficients->getMagnitudeForFrequency (frequency, sampleRate);
+        mag *= filter.template isBypassed<1>() ? 1.0
+                                               : filter.template get<1>().coefficients->getMagnitudeForFrequency (frequency, sampleRate);
+        mag *= filter.template isBypassed<2>() ? 1.0
+                                               : filter.template get<2>().coefficients->getMagnitudeForFrequency (frequency, sampleRate);
+        mag *= filter.template isBypassed<3>() ? 1.0
+                                               : filter.template get<3>().coefficients->getMagnitudeForFrequency (frequency, sampleRate);
+        return mag;
+    }
+
+    double getParametricFilterMagnitudeForFrequency (double frequency)
+    {
+        return filter.coefficients->getMagnitudeForFrequency (frequency, sampleRate);
+    }
+
+    bool isBypassed() const
+    {
+        return currentParams.bypassed;
+    }
+
 private:
     static const size_t FIFO_SIZE = 2000;
 

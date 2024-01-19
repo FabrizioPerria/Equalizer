@@ -9,6 +9,7 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 #include "utils/AnalyzerProperties.h"
+#include "utils/ChainHelpers.h"
 #include "utils/EqParam.h"
 #include "utils/FFTDataGenerator.h"
 #include "utils/FilterParam.h"
@@ -113,7 +114,7 @@ void EqualizerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBl
 
     initializeOrder();
 
-    initializeFilters();
+    ChainHelpers::initializeChains (leftChain, rightChain, sampleRate, apvts);
 
 #ifdef USE_TEST_SIGNAL
     testOscillator.prepare (spec);
@@ -281,7 +282,7 @@ void EqualizerAudioProcessor::setStateInformation (const void* data, int sizeInB
     if (tree.isValid())
     {
         apvts.replaceState (tree);
-        initializeFilters();
+        ChainHelpers::initializeChains (leftChain, rightChain, getSampleRate(), apvts);
     }
 }
 
@@ -376,60 +377,9 @@ float EqualizerAudioProcessor::getRawParameter (const juce::String& name)
     return apvts.getRawParameterValue (name)->load();
 }
 
-float EqualizerAudioProcessor::getRawFilterParameter (int filterIndex, Channel audioChannel, FilterInfo::FilterParam filterParameter)
-{
-    auto name = FilterInfo::getParameterName (filterIndex, audioChannel, filterParameter);
-    return getRawParameter (name);
-}
-
-FilterParametersBase EqualizerAudioProcessor::getBaseParameters (int filterIndex, Channel audioChannel)
-{
-    auto frequencyParam = getRawFilterParameter (filterIndex, audioChannel, FilterInfo::FilterParam::FREQUENCY);
-    auto bypassParamRaw = getRawFilterParameter (filterIndex, audioChannel, FilterInfo::FilterParam::BYPASS);
-    auto bypassParam = bypassParamRaw > 0.5f;
-    auto qParam = getRawFilterParameter (filterIndex, audioChannel, FilterInfo::FilterParam::Q);
-
-    return FilterParametersBase { frequencyParam, bypassParam, qParam, getSampleRate() };
-}
-
-FilterParameters EqualizerAudioProcessor::getParametricParameters (int filterIndex, Channel audioChannel, FilterInfo::FilterType filterType)
-{
-    auto baseParams = getBaseParameters (filterIndex, audioChannel);
-    auto gainParam = Decibel<float> (getRawFilterParameter (filterIndex, audioChannel, FilterInfo::FilterParam::GAIN));
-
-    return FilterParameters { baseParams, filterType, gainParam };
-}
-
-HighCutLowCutParameters EqualizerAudioProcessor::getCutParameters (int filterIndex, Channel audioChannel, FilterInfo::FilterType filterType)
-{
-    auto baseParams = getBaseParameters (filterIndex, audioChannel);
-    auto isLowCutParam = filterType == FilterInfo::FilterType::HIGHPASS;
-    auto slopeParam = static_cast<int> (getRawFilterParameter (filterIndex, audioChannel, FilterInfo::FilterParam::SLOPE));
-
-    return HighCutLowCutParameters { baseParams, slopeParam, isLowCutParam };
-}
-
 EqMode EqualizerAudioProcessor::getEqMode()
 {
     return static_cast<EqMode> (getRawParameter ("eq_mode"));
-}
-
-void EqualizerAudioProcessor::initializeFilters()
-{
-    bool onRealTimeThread = ! juce::MessageManager::getInstanceWithoutCreating()->isThisTheMessageThread();
-
-    auto mode = getEqMode();
-    initializeCutFilter<ChainPositions::LOWCUT> (FilterInfo::FilterType::HIGHPASS, mode, onRealTimeThread);
-    initializeParametricFilter<ChainPositions::LOWSHELF> (FilterInfo::FilterType::LOWSHELF, mode, onRealTimeThread);
-    initializeParametricFilter<ChainPositions::PEAK1> (FilterInfo::FilterType::PEAKFILTER, mode, onRealTimeThread);
-    initializeParametricFilter<ChainPositions::PEAK2> (FilterInfo::FilterType::PEAKFILTER, mode, onRealTimeThread);
-    initializeParametricFilter<ChainPositions::PEAK3> (FilterInfo::FilterType::PEAKFILTER, mode, onRealTimeThread);
-    initializeParametricFilter<ChainPositions::PEAK4> (FilterInfo::FilterType::PEAKFILTER, mode, onRealTimeThread);
-    initializeParametricFilter<ChainPositions::HIGHSHELF> (FilterInfo::FilterType::HIGHSHELF, mode, onRealTimeThread);
-    initializeCutFilter<ChainPositions::HIGHCUT> (FilterInfo::FilterType::LOWPASS, mode, onRealTimeThread);
-
-    leftChain.reset();
-    rightChain.reset();
 }
 
 void EqualizerAudioProcessor::updateParameters (EqMode mode)
