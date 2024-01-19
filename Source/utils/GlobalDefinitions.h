@@ -1,6 +1,6 @@
 #pragma once
 
-#define USE_TEST_SIGNAL true
+/* #define USE_TEST_SIGNAL true */
 
 #if USE_TEST_SIGNAL
 #include "utils/FFTDataGenerator.h"

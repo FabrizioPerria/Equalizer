@@ -12,6 +12,8 @@
               file="Source/ui/AnalyzerControls.cpp"/>
         <FILE id="ZbS1ml" name="AnalyzerControls.h" compile="0" resource="0"
               file="Source/ui/AnalyzerControls.h"/>
+        <FILE id="B3toSn" name="AnalyzerWidgetBase.h" compile="0" resource="0"
+              file="Source/ui/AnalyzerWidgetBase.h"/>
         <FILE id="Kla09h" name="BypassButton.cpp" compile="1" resource="0"
               file="Source/ui/BypassButton.cpp"/>
         <FILE id="bRhoQy" name="BypassButton.h" compile="0" resource="0" file="Source/ui/BypassButton.h"/>
