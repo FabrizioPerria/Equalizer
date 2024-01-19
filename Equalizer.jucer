@@ -7,17 +7,13 @@
   <MAINGROUP id="Do3AsA" name="Equalizer">
     <GROUP id="{947A9606-09DB-5F3A-08CC-6B17C53CAE0F}" name="Source">
       <GROUP id="{7B339522-B1D5-D067-0094-2F67CA15145D}" name="ui">
-        <FILE id="NpMwT9" name="AnalyzerBand.h" compile="0" resource="0" file="Source/ui/AnalyzerBand.h"/>
         <FILE id="pj145g" name="AnalyzerBase.h" compile="0" resource="0" file="Source/ui/AnalyzerBase.h"/>
         <FILE id="FYbdcF" name="AnalyzerControls.cpp" compile="1" resource="0"
               file="Source/ui/AnalyzerControls.cpp"/>
         <FILE id="ZbS1ml" name="AnalyzerControls.h" compile="0" resource="0"
               file="Source/ui/AnalyzerControls.h"/>
-        <FILE id="ziNet5" name="AnalyzerNode.h" compile="0" resource="0" file="Source/ui/AnalyzerNode.h"/>
-        <FILE id="SvZbso" name="AnalyzerQControl.h" compile="0" resource="0"
-              file="Source/ui/AnalyzerQControl.h"/>
-        <FILE id="B3toSn" name="AnalyzerWidgetBase.h" compile="0" resource="0"
-              file="Source/ui/AnalyzerWidgetBase.h"/>
+        <FILE id="IYUXTn" name="AnalyzerWidgets.h" compile="0" resource="0"
+              file="Source/ui/AnalyzerWidgets.h"/>
         <FILE id="Kla09h" name="BypassButton.cpp" compile="1" resource="0"
               file="Source/ui/BypassButton.cpp"/>
         <FILE id="bRhoQy" name="BypassButton.h" compile="0" resource="0" file="Source/ui/BypassButton.h"/>
