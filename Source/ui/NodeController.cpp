@@ -1,8 +1,9 @@
 #include "ui/NodeController.h"
 #include "data/ParameterAttachment.h"
+#include "ui/AnalyzerBase.h"
 #include <JuceHeader.h>
 
-bool shouldGetSlope (ChainPositions chainPosition)
+inline bool isCutFilter (ChainPositions chainPosition)
 {
     return chainPosition == ChainPositions::LOWCUT || chainPosition == ChainPositions::HIGHCUT;
 }
@@ -33,9 +34,8 @@ NodeController::NodeController (APVTS& apv) : apvts (apv)
             qualityAttachment = std::make_unique<ParametersAttachment> (*apvts.getParameter (qualityName), nullptr);
 
             auto& gainOrSlope = gainSlopeAttachments[i];
-            auto gainOrSlopeName = shouldGetSlope (chainPosition)
-                                       ? FilterInfo::getParameterName (i, channel, FilterInfo::FilterParam::SLOPE)
-                                       : FilterInfo::getParameterName (i, channel, FilterInfo::FilterParam::GAIN);
+            auto gainOrSlopeName = isCutFilter (chainPosition) ? FilterInfo::getParameterName (i, channel, FilterInfo::FilterParam::SLOPE)
+                                                               : FilterInfo::getParameterName (i, channel, FilterInfo::FilterParam::GAIN);
             gainOrSlope = std::make_unique<ParametersAttachment> (*apvts.getParameter (gainOrSlopeName), nullptr);
 
             ++i;
@@ -57,111 +57,423 @@ NodeController::NodeController (APVTS& apv) : apvts (apv)
                                                              });
 }
 
-void NodeController::refreshWidgets()
-{
-}
-
 void NodeController::mouseDown (const juce::MouseEvent& e)
 {
-    /*
-node: start drag, start gesture, notify listeners [DONE]
-band: start drag, start gesture, notify listeners [DONE]
-Q: start drag, start gesture, notify listeners [DONE]
-controller: do nothing, notify listeners [DONE]
-*/
+    auto widgetType = getComponentForMouseEvent (e);
+
+    switch (widgetType.type)
+    {
+        case ComponentType::NODE:
+        {
+            auto* node = std::get<WidgetType::NODE> (widgetType.component);
+            // TODO: implement
+            /* node: start drag, start gesture, notify listeners [DONE] */
+
+            /* constrainer.setLimits (analyzerNodeArea); */
+            /**/
+            /* dragger.startDraggingComponent (node, e); */
+            /* getFreqAttachment (*node)->beginGesture(); */
+            /* getGainSlopeAttachment (*node)->beginGesture(); */
+            /**/
+            /* notifyOnBandSelection (node); */
+
+            break;
+        }
+        case ComponentType::BAND:
+        {
+            auto* band = std::get<WidgetType::BAND> (widgetType.component);
+            //TODO: implement
+            /* band: start drag, start gesture, notify listeners [DONE] */
+            break;
+        }
+        case ComponentType::Q:
+        {
+            auto* q = std::get<WidgetType::Q> (widgetType.component);
+            //TODO: implement
+            /* Q: start drag, start gesture, notify listeners [DONE] */
+            break;
+        }
+        case ComponentType::CONTROLLER:
+        {
+            auto* controller = std::get<WidgetType::CONTROLLER> (widgetType.component);
+            //TODO: implement
+            /* controller: do nothing, notify listeners [DONE] */
+            break;
+        }
+        default:
+            jassertfalse;
+    }
 }
 
 void NodeController::mouseMove (const juce::MouseEvent& e)
 {
-    /*
-       inactive Q controls:
-node: highlight node, highlight band, notify listeners [DONE]
-band: highlight node, highlight band, notify listeners [DONE]
-controller: display band under cursor, notify listeners [DONE]
-active Q controls:
-node: highlight node, highlight band, notify listeners.  same a Q ? do nothing : hide Q controls [DONE]
-band: highlight node, highlight band, notify listeners. same a Q ? do nothing : hide Q controls [DONE]
-Q: highlight node, highlight band, highlight Q, notify listeners. [DONE]
-controller: hide Q controls, highlight band/node inside mouseOverbounds, notify listeners [ DONE]
-*/
+    auto widgetType = getComponentForMouseEvent (e);
+
+    switch (widgetType.type)
+    {
+        case ComponentType::NODE:
+        {
+            auto* node = std::get<WidgetType::NODE> (widgetType.component);
+            // TODO: implement
+            /* inactive Q controls: */
+            /* node: highlight node, highlight band, notify listeners [DONE] */
+            /* active Q controls: */
+            /* node: highlight node, highlight band, notify listeners.  same a Q ? do nothing : hide Q controls [DONE] */
+            break;
+        }
+        case ComponentType::BAND:
+        {
+            auto* band = std::get<WidgetType::BAND> (widgetType.component);
+            //TODO: implement
+            /* inactive Q controls: */
+            /* band: highlight node, highlight band, notify listeners [DONE] */
+            /* active Q controls: */
+            /* band: highlight node, highlight band, notify listeners. same a Q ? do nothing : hide Q controls [DONE] */
+            break;
+        }
+        case ComponentType::Q:
+        {
+            auto* q = std::get<WidgetType::Q> (widgetType.component);
+            //TODO: implement
+            /* active Q controls: */
+            /* Q: highlight node, highlight band, highlight Q, notify listeners. [DONE] */
+            break;
+        }
+        case ComponentType::CONTROLLER:
+        {
+            auto* controller = std::get<WidgetType::CONTROLLER> (widgetType.component);
+            //TODO: implement
+            /* inactive Q controls: */
+            /* controller: display band under cursor, notify listeners [DONE] */
+            /* active Q controls: */
+            /* controller: hide Q controls, highlight band/node inside mouseOverbounds, notify listeners [ DONE] */
+            break;
+        }
+        case ComponentType::INVALID:
+        case ComponentType::NUM_TYPES:
+        default:
+            jassertfalse;
+            break;
+    }
 }
 
 void NodeController::mouseUp (const juce::MouseEvent& e)
 {
-    /*
-       inactive Q controls:
-node: highlight node, highlight band, end gesture, display Q controls, notify listeners [DONE]
-band: highlight band, end gesture, notify listeners [DONE]
-controller: do nothing, notify listeners [DONE]
-active Q controls:
-node: highlight node, highlight band, end gesture, notify listeners [DONE]
-band: highlight band, end gesture, notify listeners [DONE]
-Q: highlight Q, end gesture, notify listeners [DONE]
-controller: notify listeners [DONE]
-*/
+    auto widgetType = getComponentForMouseEvent (e);
+    switch (widgetType.type)
+    {
+        case ComponentType::NODE:
+        {
+            auto* node = std::get<WidgetType::NODE> (widgetType.component);
+            // TODO: implement
+            /* inactive Q controls: */
+            /* node: highlight node, highlight band, end gesture, display Q controls, notify listeners [DONE] */
+            /* active Q controls: */
+            /* node: highlight node, highlight band, end gesture, notify listeners [DONE] */
+            break;
+        }
+        case ComponentType::BAND:
+        {
+            auto* band = std::get<WidgetType::BAND> (widgetType.component);
+            //TODO: implement
+            /* inactive Q controls: */
+            /* band: highlight band, end gesture, notify listeners [DONE] */
+            /* active Q controls: */
+            /* band: highlight band, end gesture, notify listeners [DONE] */
+            break;
+        }
+        case ComponentType::Q:
+        {
+            auto* q = std::get<WidgetType::Q> (widgetType.component);
+            //TODO: implement
+            /* active Q controls: */
+            /* Q: highlight Q, end gesture, notify listeners [DONE] */
+            break;
+        }
+        case ComponentType::CONTROLLER:
+        {
+            auto* controller = std::get<WidgetType::CONTROLLER> (widgetType.component);
+            //TODO: implement
+            /* inactive Q controls: */
+            /* controller: do nothing, notify listeners [DONE] */
+            /* active Q controls: */
+            /* controller: notify listeners [DONE] */
+            break;
+        }
+        case ComponentType::INVALID:
+        case ComponentType::NUM_TYPES:
+        default:
+            jassertfalse;
+            break;
+    }
 }
 
 void NodeController::mouseDrag (const juce::MouseEvent& e)
 {
-    /*
-       inactive Q controls:
-node: drag node, update parameter, notify listeners [DONE]
-band: drag band, update parameter, notify listeners [DONE]
-controller: do nothing, notify listeners [DONE]
-active Q controls:
-node: drag node, update parameter, notify listeners [DONE]
-band: drag band, update parameter, notify listeners [DONE]
-Q: drag Q, update parameter, notify listeners [DONE]
-controller: do nothing, notify listeners [DONE]
-*/
+    auto widgetType = getComponentForMouseEvent (e);
+    switch (widgetType.type)
+    {
+        case ComponentType::NODE:
+        {
+            auto* node = std::get<WidgetType::Indices::NODE> (widgetType.component);
+            dragger.dragComponent (node, e, &constrainer);
+
+            double normalizedX = static_cast<double> ((node->getBounds().getCentreX() - fftBoundingBox.getX()) / fftBoundingBox.getWidth());
+            auto frequency = juce::mapToLog10 (normalizedX, 20.0, 20000.0);
+            getFreqAttachment (*node)->setValueAsPartOfGesture (frequency);
+
+            if (isCutFilter (node->getChainPosition()))
+            {
+                const int numSlopes = 8;
+                int y = node->getBounds().getCentreY() - fftBoundingBox.getY();
+                int division = fftBoundingBox.getHeight() / (numSlopes + 1);
+
+                int index = y / division;
+                getGainSlopeAttachment (*node)->setValueAsPartOfGesture (static_cast<float> (numSlopes - index));
+            }
+            else
+            {
+                auto gain = juce::jmap (static_cast<float> (node->getBounds().getCentreY()),
+                                        static_cast<float> (fftBoundingBox.getBottom()),
+                                        static_cast<float> (fftBoundingBox.getY()),
+                                        RESPONSE_CURVE_MIN_DB,
+                                        RESPONSE_CURVE_MAX_DB);
+
+                gain = juce::jlimit (RESPONSE_CURVE_MIN_DB, RESPONSE_CURVE_MAX_DB, gain); // TODO: are these right??
+                getGainSlopeAttachment (*node)->setValueAsPartOfGesture (gain);
+            }
+
+            notifyOnBandSelection (node);
+
+            break;
+        }
+        case ComponentType::BAND:
+        {
+            auto* band = std::get<WidgetType::BAND> (widgetType.component);
+            dragger.dragComponent (band, e, &constrainer);
+            //TODO: implement
+            /* inactive Q controls: */
+            /* band: drag band, update parameter, notify listeners [DONE] */
+            /* active Q controls: */
+            /* band: drag band, update parameter, notify listeners [DONE] */
+            break;
+        }
+        case ComponentType::Q:
+        {
+            auto* q = std::get<WidgetType::Q> (widgetType.component);
+            dragger.dragComponent (q, e, &constrainer);
+            //TODO: implement
+            /* active Q controls: */
+            /* Q: drag Q, update parameter, notify listeners [DONE] */
+            break;
+        }
+        case ComponentType::CONTROLLER:
+        {
+            auto* controller = std::get<WidgetType::CONTROLLER> (widgetType.component);
+            //TODO: implement
+            /* inactive Q controls: */
+            /* controller: do nothing, notify listeners [DONE] */
+            /* active Q controls: */
+            /* controller: do nothing, notify listeners [DONE] */
+            break;
+        }
+    }
 }
 
 void NodeController::mouseEnter (const juce::MouseEvent& e)
 {
-    /*
-       inactive Q controls:
-node: highlight node, highlight band, notify listeners [DONE]
-band: highlight node, highlight band, notify listeners [DONE]
-controller: un-highlight everything, notify listeners [DONE]
-active Q controls:
-node: highlight node, highlight band, notify listeners [DONE]
-band: highlight node, highlight band, notify listeners [DONE]
-Q: change cursor, highlight node, highlight band, notify listeners [DONE]
-controller: un-highlight everything, notify listeners [DONE]
-*/
+    auto widgetType = getComponentForMouseEvent (e);
+    switch (widgetType.type)
+    {
+        case ComponentType::NODE:
+        {
+            auto* node = std::get<WidgetType::Indices::NODE> (widgetType.component);
+            //TODO: implement
+            /* inactive Q controls: */
+            /* node: highlight node, highlight band, notify listeners [DONE] */
+            /* active Q controls: */
+            /* node: highlight node, highlight band, notify listeners [DONE] */
+
+            break;
+        }
+        case ComponentType::BAND:
+        {
+            auto* band = std::get<WidgetType::BAND> (widgetType.component);
+            //TODO: implement
+            /* inactive Q controls: */
+            /* band: highlight node, highlight band, notify listeners [DONE] */
+            /* active Q controls: */
+            /* band: highlight node, highlight band, notify listeners [DONE] */
+            break;
+        }
+        case ComponentType::Q:
+        {
+            auto* q = std::get<WidgetType::Q> (widgetType.component);
+            //TODO: implement
+            /* active Q controls: */
+            /* Q: change cursor, highlight node, highlight band, notify listeners [DONE] */
+            break;
+        }
+        case ComponentType::CONTROLLER:
+        {
+            auto* controller = std::get<WidgetType::CONTROLLER> (widgetType.component);
+            //TODO: implement
+            /* inactive Q controls: */
+            /* controller: un-highlight everything, notify listeners [DONE] */
+            /* active Q controls: */
+            /* controller: un-highlight everything, notify listeners [DONE] */
+            break;
+        }
+    }
 }
 
 void NodeController::mouseExit (const juce::MouseEvent& e)
 {
-    /*
-       inactive Q controls:
-node: un-highlight node, notify listeners
-band: un-highlight band, notify listeners
-controller: un-highlight everything, notify listeners [DONE]
-active Q controls:
-node: un-highlight node, notify listeners
-band: un-highlight band, notify listeners
-Q: reset cursor, un-highlight Q, notify listeners
-controller: un-highlight everything, notify listeners [DONE]
-*/
+    auto widgetType = getComponentForMouseEvent (e);
+    switch (widgetType.type)
+    {
+        case ComponentType::NODE:
+        {
+            auto* node = std::get<WidgetType::Indices::NODE> (widgetType.component);
+            //TODO: implement
+            /* inactive Q controls: */
+            /* node: un-highlight node, notify listeners */
+            /* active Q controls: */
+            /* node: un-highlight node, notify listeners */
+
+            break;
+        }
+        case ComponentType::BAND:
+        {
+            auto* band = std::get<WidgetType::BAND> (widgetType.component);
+            //TODO: implement
+            /* inactive Q controls: */
+            /* band: un-highlight band, notify listeners */
+            /* active Q controls: */
+            /* band: un-highlight band, notify listeners */
+            break;
+        }
+        case ComponentType::Q:
+        {
+            auto* q = std::get<WidgetType::Q> (widgetType.component);
+            //TODO: implement
+            /* active Q controls: */
+            /* Q: reset cursor, un-highlight Q, notify listeners */
+            break;
+        }
+        case ComponentType::CONTROLLER:
+        {
+            auto* controller = std::get<WidgetType::CONTROLLER> (widgetType.component);
+            //TODO: implement
+            /* inactive Q controls: */
+            /* controller: un-highlight everything, notify listeners [DONE] */
+            /* active Q controls: */
+            /* controller: un-highlight everything, notify listeners [DONE] */
+            break;
+        }
+    }
 }
 
 void NodeController::mouseDoubleClick (const juce::MouseEvent& e)
 {
-    /*
-       inactive Q controls:
-node: reset freq/gain/slope
-band: do nothing
-controller: do nothing
-active Q controls:
-node: reset freq/gain
-band: do nothing
-Q: reset Q
-controller: do nothing
-*/
+    auto widgetType = getComponentForMouseEvent (e);
+    switch (widgetType.type)
+    {
+        case ComponentType::NODE:
+        {
+            auto* node = std::get<WidgetType::Indices::NODE> (widgetType.component);
+            //TODO: implement
+            /* inactive Q controls: */
+            /* node: reset freq/gain/slope */
+            /* active Q controls: */
+            /* node: reset freq/gain/slope */
+
+            break;
+        }
+        case ComponentType::BAND:
+        {
+            auto* band = std::get<WidgetType::BAND> (widgetType.component);
+            //TODO: implement
+            /* inactive Q controls: */
+            /* band: do nothing */
+            /* active Q controls: */
+            /* band: do nothing */
+            break;
+        }
+        case ComponentType::Q:
+        {
+            auto* q = std::get<WidgetType::Q> (widgetType.component);
+            //TODO: implement
+            /* active Q controls: */
+            /* Q: reset Q */
+            break;
+        }
+        case ComponentType::CONTROLLER:
+        {
+            auto* controller = std::get<WidgetType::CONTROLLER> (widgetType.component);
+            //TODO: implement
+            /* inactive Q controls: */
+            /* controller: do nothing */
+            /* active Q controls: */
+            /* controller: do nothing */
+            break;
+        }
+    }
 }
 
-AnalyzerWidgetBase NodeController::getComponentForMouseEvent (const juce::MouseEvent& e)
+void NodeController::addListener (NodeListener* listener)
+{
+    listeners.add (listener);
+}
+
+void NodeController::removeListener (NodeListener* listener)
+{
+    listeners.remove (listener);
+}
+
+void NodeController::resized()
+{
+}
+
+NodeController::WidgetType NodeController::getComponentForMouseEvent (const juce::MouseEvent& e)
+{
+    if (auto* node = dynamic_cast<AnalyzerNode*> (e.eventComponent))
+        return { ComponentType::NODE, { node, nullptr, nullptr, nullptr } };
+
+    if (auto* band = dynamic_cast<AnalyzerBand*> (e.eventComponent))
+        return { ComponentType::BAND, { nullptr, band, nullptr, nullptr } };
+
+    if (auto* q = dynamic_cast<AnalyzerQControl*> (e.eventComponent))
+        return { ComponentType::Q, { nullptr, nullptr, q, nullptr } };
+
+    if (auto* controller = dynamic_cast<NodeController*> (e.eventComponent))
+        return { ComponentType::CONTROLLER, { nullptr, nullptr, nullptr, controller } };
+
+    jassertfalse;
+    return { ComponentType::INVALID, { nullptr, nullptr, nullptr, nullptr } };
+}
+
+size_t NodeController::getNodeIndex (AnalyzerWidgetBase& node)
+{
+}
+
+ParametersAttachment* NodeController::getFreqAttachment (AnalyzerWidgetBase& node)
+{
+}
+
+ParametersAttachment* NodeController::getQualityAttachment (AnalyzerWidgetBase& node)
+{
+}
+
+ParametersAttachment* NodeController::getGainSlopeAttachment (AnalyzerWidgetBase& node)
+{
+}
+
+void NodeController::repositionNodes()
+{
+}
+
+void NodeController::repositionBands()
 {
 }
 
@@ -184,4 +496,25 @@ void NodeController::notifyOnClearSelection()
     listeners.call ([] (NodeListener& l) { //
         l.clearSelection();
     });
+}
+
+void NodeController::refreshWidgets()
+{
+}
+
+void NodeController::hideAllBands()
+{
+    for (auto& band : bands)
+    {
+        band->setVisible (false);
+        band->displayAsSelected (false);
+    }
+}
+
+void NodeController::deselectAllNodes()
+{
+    for (auto& node : nodes)
+    {
+        node->displayAsSelected (false);
+    }
 }

@@ -6,23 +6,18 @@
 #include "utils/AllParamsListener.h"
 #include "utils/ChainHelpers.h"
 #include <JuceHeader.h>
+#include <tuple>
 
-struct CustomConstrainer : juce::Rectangle<int>
+struct CustomConstrainer : juce::ComponentBoundsConstrainer
 {
-    CustomConstrainer (juce::Rectangle<int> bounds) : juce::RectangleConstrainer (bounds)
+    void setLimits (const juce::Rectangle<int>& limits)
     {
+        boundsLimit = limits;
     }
 
-    juce::Rectangle<int> getBoundsForRectangle (const juce::Rectangle<int>& originalBounds,
-                                                const juce::Rectangle<int>& /*proposedBounds*/,
-                                                bool /*isStretchingTop*/,
-                                                bool /*isStretchingLeft*/,
-                                                bool /*isStretchingBottom*/,
-                                                bool /*isStretchingRight*/) override
-    {
-        return originalBounds;
-    }
+    juce::Rectangle<int> boundsLimit;
 };
+
 struct NodeController : AnalyzerBase
 {
     using APVTS = juce::AudioProcessorValueTreeState;
@@ -66,13 +61,59 @@ private:
 
     std::unique_ptr<AllParamsListener> allParamsListener;
 
+    juce::Rectangle<int> analyzerNodeArea;
+
     juce::ListenerList<NodeListener> listeners;
 
-    AnalyzerWidgetBase getComponentForMouseEvent (const juce::MouseEvent& e);
+    juce::Point<int> clickPosition;
+    float dbLevelOnClick { 0.f };
+
+    bool qControlActive { false };
+
+    enum class ComponentType
+    {
+        NODE,
+        BAND,
+        Q,
+        CONTROLLER,
+        INVALID,
+        NUM_TYPES
+    };
+
+    struct WidgetType
+    {
+        ComponentType type;
+        std::tuple<AnalyzerNode*, AnalyzerBand*, AnalyzerQControl*, NodeController*> component;
+
+        enum Indices
+        {
+            NODE,
+            BAND,
+            Q,
+            CONTROLLER
+        };
+    };
+
+    ChainPositions chainPosition;
+    Channel channel;
+
+    WidgetType getComponentForMouseEvent (const juce::MouseEvent& e);
+    size_t getNodeIndex (AnalyzerWidgetBase& node);
+
+    ParametersAttachment* getFreqAttachment (AnalyzerWidgetBase& node);
+    ParametersAttachment* getQualityAttachment (AnalyzerWidgetBase& node);
+    ParametersAttachment* getGainSlopeAttachment (AnalyzerWidgetBase& node);
+
+    void repositionNodes();
+    void repositionBands();
+
     void notifyOnBandSelection (AnalyzerWidgetBase* widget);
     void notifyOnBandMouseOver (AnalyzerWidgetBase* widget);
     void notifyOnClearSelection();
 
     void refreshWidgets();
+    void hideAllBands();
+    void deselectAllNodes();
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (NodeController)
 };
