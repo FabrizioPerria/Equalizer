@@ -54,6 +54,10 @@
               file="Source/ui/MeterComponent.cpp"/>
         <FILE id="L9RxGF" name="MeterComponent.h" compile="0" resource="0"
               file="Source/ui/MeterComponent.h"/>
+        <FILE id="ksNZ52" name="NodeController.cpp" compile="1" resource="0"
+              file="Source/ui/NodeController.cpp"/>
+        <FILE id="AAu8kd" name="NodeController.h" compile="0" resource="0"
+              file="Source/ui/NodeController.h"/>
         <FILE id="iNFQTe" name="ResponseCurveComponent.cpp" compile="1" resource="0"
               file="Source/ui/ResponseCurveComponent.cpp"/>
         <FILE id="QiIiaE" name="ResponseCurveComponent.h" compile="0" resource="0"
