@@ -8,7 +8,6 @@
 
 #include "PluginEditor.h"
 #include "PluginProcessor.h"
-#include "utils/AnalyzerProperties.h"
 #include "utils/MeterConstants.h"
 
 //==============================================================================
@@ -19,6 +18,7 @@ EqualizerAudioProcessorEditor::EqualizerAudioProcessorEditor (EqualizerAudioProc
     setSize (800, 600);
 
     addAndMakeVisible (inputMeter);
+
     addAndMakeVisible (outputMeter);
 
     addAndMakeVisible (eqParamContainer);
@@ -84,7 +84,7 @@ void EqualizerAudioProcessorEditor::resized()
 
     pluginBounds.reduce (0, pluginMargin);
     spectrumAnalyzer.setBounds (pluginBounds);
-    responseCurve.setBounds(pluginBounds);
+    responseCurve.setBounds (pluginBounds);
 }
 
 void EqualizerAudioProcessorEditor::timerCallback()

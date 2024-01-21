@@ -105,15 +105,27 @@ private:
     ParametersAttachment* getGainSlopeAttachment (AnalyzerWidgetBase& node);
 
     void repositionNodes();
+    void repositionNode (AnalyzerWidgetBase& node, float freq, float gainOrSlope);
     void repositionBands();
+
+    void repositionQControls();
+
+    bool nodeNeedsUpdate (AnalyzerWidgetBase& node, float freq, float gainOrSlope);
 
     void notifyOnBandSelection (AnalyzerWidgetBase* widget);
     void notifyOnBandMouseOver (AnalyzerWidgetBase* widget);
     void notifyOnClearSelection();
 
+    void reorderWidgets();
     void refreshWidgets();
     void hideAllBands();
     void deselectAllNodes();
+
+    void createAnalyzerNodeArea();
+
+    void updateNodesVisibility();
+
+    void rebuildNodeSelectionBoundingBox();
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (NodeController)
 };

@@ -11,10 +11,8 @@
 #include "data/MeterValues.h"
 #include "utils/ChainHelpers.h"
 #include "utils/EqParam.h"
-#include "utils/FFTDataGenerator.h"
 #include "utils/FilterParam.h"
 #include "utils/FilterType.h"
-#include "utils/GlobalDefinitions.h"
 #include "utils/MidSideProcessor.h"
 #include "utils/SingleChannelSampleFifo.h"
 #include <JuceHeader.h>

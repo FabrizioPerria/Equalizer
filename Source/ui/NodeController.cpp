@@ -471,9 +471,35 @@ ParametersAttachment* NodeController::getGainSlopeAttachment (AnalyzerWidgetBase
 
 void NodeController::repositionNodes()
 {
+    for (auto& node : nodes)
+    {
+        auto freqAttachment = getFreqAttachment (*node);
+        auto gainOrSlopeAttachment = getGainSlopeAttachment (*node);
+
+        auto freq = freqAttachment->getDenormalizedValue();
+        auto gainOrSlope = gainOrSlopeAttachment->getDenormalizedValue();
+
+        repositionNode (*node, freq, gainOrSlope);
+    }
+}
+
+void repositionNode (AnalyzerWidgetBase& node, float freq, float gainOrSlope)
+{
 }
 
 void NodeController::repositionBands()
+{
+    for (auto& band : bands)
+    {
+        //TODO
+    }
+}
+
+void NodeController::repositionQControls()
+{
+}
+
+bool nodeNeedsUpdate (AnalyzerWidgetBase& node, float freq, float gainOrSlope)
 {
 }
 
@@ -498,8 +524,18 @@ void NodeController::notifyOnClearSelection()
     });
 }
 
+void NodeController::reorderWidgets()
+{
+}
+
 void NodeController::refreshWidgets()
 {
+    repositionNodes();
+    updateNodesVisibility();
+    repositionBands();
+    rebuildNodeSelectionBoundingBox();
+    repositionQControls();
+    reorderWidgets();
 }
 
 void NodeController::hideAllBands()
@@ -517,4 +553,16 @@ void NodeController::deselectAllNodes()
     {
         node->displayAsSelected (false);
     }
+}
+
+void NodeController::createAnalyzerNodeArea()
+{
+}
+
+void NodeController::updateNodesVisibility()
+{
+}
+
+void NodeController::rebuildNodeSelectionBoundingBox()
+{
 }
