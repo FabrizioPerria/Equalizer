@@ -30,6 +30,9 @@ EqualizerAudioProcessorEditor::EqualizerAudioProcessorEditor (EqualizerAudioProc
     addAndMakeVisible (spectrumAnalyzer);
     addAndMakeVisible (responseCurve);
 
+    addAndMakeVisible (nodeController);
+    nodeController.addListener (&eqParamContainer);
+
     audioProcessor.addSampleRateListener (this);
 
     startTimerHz (FRAMES_PER_SECOND);
@@ -38,6 +41,7 @@ EqualizerAudioProcessorEditor::EqualizerAudioProcessorEditor (EqualizerAudioProc
 EqualizerAudioProcessorEditor::~EqualizerAudioProcessorEditor()
 {
     audioProcessor.removeSampleRateListener (this);
+    nodeController.removeListener (&eqParamContainer);
 }
 
 //==============================================================================
@@ -85,6 +89,7 @@ void EqualizerAudioProcessorEditor::resized()
     pluginBounds.reduce (0, pluginMargin);
     spectrumAnalyzer.setBounds (pluginBounds);
     responseCurve.setBounds (pluginBounds);
+    nodeController.setBounds (pluginBounds);
 }
 
 void EqualizerAudioProcessorEditor::timerCallback()
