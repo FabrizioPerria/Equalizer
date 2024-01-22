@@ -10,35 +10,36 @@ inline bool isCutFilter (ChainPositions chainPosition)
 
 NodeController::NodeController (APVTS& apv) : apvts (apv)
 {
+    const int numPositions = 8;
     for (auto channel : { Channel::LEFT, Channel::RIGHT })
     {
-        int i = 0;
-        for (auto& node : nodes)
+        for (int i = 0; i < numPositions; ++i)
         {
-            auto chainPosition = static_cast<ChainPositions> (i);
-            node = std::make_unique<AnalyzerNode> (chainPosition, channel);
-            addMouseListener (this, false);
+            auto idx = static_cast<size_t>(channel) * numPositions + i;
+            auto pos = static_cast<ChainPositions> (i);
+            
+            auto& node = nodes[idx];
+            node = std::make_unique<AnalyzerNode> (pos, channel);
+            node->addMouseListener (this, false);
             addChildComponent (node.get());
 
-            auto& band = bands[i];
-            band = std::make_unique<AnalyzerBand> (chainPosition, channel);
-            addMouseListener (this, false);
+            auto& band = bands[idx];
+            band = std::make_unique<AnalyzerBand> (pos, channel);
+            band->addMouseListener (this, false);
             addChildComponent (band.get());
 
-            auto& freqAttachment = freqAttachments[i];
+            auto& freqAttachment = freqAttachments[idx];
             auto freqName = FilterInfo::getParameterName (i, channel, FilterInfo::FilterParam::FREQUENCY);
             freqAttachment = std::make_unique<ParametersAttachment> (*apvts.getParameter (freqName), nullptr);
 
-            auto& qualityAttachment = qualityAttachments[i];
+            auto& qualityAttachment = qualityAttachments[idx];
             auto qualityName = FilterInfo::getParameterName (i, channel, FilterInfo::FilterParam::Q);
             qualityAttachment = std::make_unique<ParametersAttachment> (*apvts.getParameter (qualityName), nullptr);
 
-            auto& gainOrSlope = gainSlopeAttachments[i];
-            auto gainOrSlopeName = isCutFilter (chainPosition) ? FilterInfo::getParameterName (i, channel, FilterInfo::FilterParam::SLOPE)
+            auto& gainOrSlopeAttachment = gainSlopeAttachments[idx];
+            auto gainOrSlopeName = isCutFilter (pos) ? FilterInfo::getParameterName (i, channel, FilterInfo::FilterParam::SLOPE)
                                                                : FilterInfo::getParameterName (i, channel, FilterInfo::FilterParam::GAIN);
-            gainOrSlope = std::make_unique<ParametersAttachment> (*apvts.getParameter (gainOrSlopeName), nullptr);
-
-            ++i;
+            gainOrSlopeAttachment = std::make_unique<ParametersAttachment> (*apvts.getParameter (gainOrSlopeName), nullptr);
         }
     }
 
@@ -100,6 +101,8 @@ void NodeController::mouseDown (const juce::MouseEvent& e)
             /* controller: do nothing, notify listeners [DONE] */
             break;
         }
+        case ComponentType::INVALID:
+        case ComponentType::NUM_TYPES:
         default:
             jassertfalse;
     }
@@ -216,34 +219,34 @@ void NodeController::mouseDrag (const juce::MouseEvent& e)
         case ComponentType::NODE:
         {
             auto* node = std::get<WidgetType::Indices::NODE> (widgetType.component);
-            dragger.dragComponent (node, e, &constrainer);
-
-            double normalizedX = static_cast<double> ((node->getBounds().getCentreX() - fftBoundingBox.getX()) / fftBoundingBox.getWidth());
-            auto frequency = juce::mapToLog10 (normalizedX, 20.0, 20000.0);
-            getFreqAttachment (*node)->setValueAsPartOfGesture (frequency);
-
-            if (isCutFilter (node->getChainPosition()))
-            {
-                const int numSlopes = 8;
-                int y = node->getBounds().getCentreY() - fftBoundingBox.getY();
-                int division = fftBoundingBox.getHeight() / (numSlopes + 1);
-
-                int index = y / division;
-                getGainSlopeAttachment (*node)->setValueAsPartOfGesture (static_cast<float> (numSlopes - index));
-            }
-            else
-            {
-                auto gain = juce::jmap (static_cast<float> (node->getBounds().getCentreY()),
-                                        static_cast<float> (fftBoundingBox.getBottom()),
-                                        static_cast<float> (fftBoundingBox.getY()),
-                                        RESPONSE_CURVE_MIN_DB,
-                                        RESPONSE_CURVE_MAX_DB);
-
-                gain = juce::jlimit (RESPONSE_CURVE_MIN_DB, RESPONSE_CURVE_MAX_DB, gain); // TODO: are these right??
-                getGainSlopeAttachment (*node)->setValueAsPartOfGesture (gain);
-            }
-
-            notifyOnBandSelection (node);
+            /* dragger.dragComponent (node, e, &constrainer); */
+            /**/
+            /* double normalizedX = static_cast<double> ((node->getBounds().getCentreX() - fftBoundingBox.getX()) / fftBoundingBox.getWidth()); */
+            /* auto frequency = juce::mapToLog10 (normalizedX, 20.0, 20000.0); */
+            /* getFreqAttachment (*node)->setValueAsPartOfGesture (frequency); */
+            /**/
+            /* if (isCutFilter (node->getChainPosition())) */
+            /* { */
+            /*     const int numSlopes = 8; */
+            /*     int y = node->getBounds().getCentreY() - fftBoundingBox.getY(); */
+            /*     int division = fftBoundingBox.getHeight() / (numSlopes + 1); */
+            /**/
+            /*     int index = y / division; */
+            /*     getGainSlopeAttachment (*node)->setValueAsPartOfGesture (static_cast<float> (numSlopes - index)); */
+            /* } */
+            /* else */
+            /* { */
+            /*     auto gain = juce::jmap (static_cast<float> (node->getBounds().getCentreY()), */
+            /*                             static_cast<float> (fftBoundingBox.getBottom()), */
+            /*                             static_cast<float> (fftBoundingBox.getY()), */
+            /*                             RESPONSE_CURVE_MIN_DB, */
+            /*                             RESPONSE_CURVE_MAX_DB); */
+            /**/
+            /*     gain = juce::jlimit (RESPONSE_CURVE_MIN_DB, RESPONSE_CURVE_MAX_DB, gain); // TODO: are these right?? */
+            /*     getGainSlopeAttachment (*node)->setValueAsPartOfGesture (gain); */
+            /* } */
+            /**/
+            /* notifyOnBandSelection (node); */
 
             break;
         }
@@ -277,6 +280,10 @@ void NodeController::mouseDrag (const juce::MouseEvent& e)
             /* controller: do nothing, notify listeners [DONE] */
             break;
         }
+        case ComponentType::INVALID:
+        case ComponentType::NUM_TYPES:
+        default:
+            jassertfalse;
     }
 }
 
@@ -324,6 +331,10 @@ void NodeController::mouseEnter (const juce::MouseEvent& e)
             /* controller: un-highlight everything, notify listeners [DONE] */
             break;
         }
+        case ComponentType::INVALID:
+        case ComponentType::NUM_TYPES:
+        default:
+            jassertfalse;
     }
 }
 
@@ -371,6 +382,10 @@ void NodeController::mouseExit (const juce::MouseEvent& e)
             /* controller: un-highlight everything, notify listeners [DONE] */
             break;
         }
+        case ComponentType::INVALID:
+        case ComponentType::NUM_TYPES:
+        default:
+            jassertfalse;
     }
 }
 
@@ -418,6 +433,10 @@ void NodeController::mouseDoubleClick (const juce::MouseEvent& e)
             /* controller: do nothing */
             break;
         }
+        case ComponentType::INVALID:
+        case ComponentType::NUM_TYPES:
+        default:
+            jassertfalse;
     }
 }
 
@@ -455,52 +474,45 @@ NodeController::WidgetType NodeController::getComponentForMouseEvent (const juce
 
 size_t NodeController::getNodeIndex (AnalyzerWidgetBase& node)
 {
+    return 0;
 }
 
 ParametersAttachment* NodeController::getFreqAttachment (AnalyzerWidgetBase& node)
 {
+    return nullptr;
 }
 
 ParametersAttachment* NodeController::getQualityAttachment (AnalyzerWidgetBase& node)
 {
+    return nullptr;
+
 }
 
 ParametersAttachment* NodeController::getGainSlopeAttachment (AnalyzerWidgetBase& node)
 {
+    return nullptr;
+
 }
 
 void NodeController::repositionNodes()
 {
-    for (auto& node : nodes)
-    {
-        auto freqAttachment = getFreqAttachment (*node);
-        auto gainOrSlopeAttachment = getGainSlopeAttachment (*node);
-
-        auto freq = freqAttachment->getDenormalizedValue();
-        auto gainOrSlope = gainOrSlopeAttachment->getDenormalizedValue();
-
-        repositionNode (*node, freq, gainOrSlope);
-    }
 }
 
-void repositionNode (AnalyzerWidgetBase& node, float freq, float gainOrSlope)
+void NodeController::repositionNode (AnalyzerWidgetBase& node, float freq, float gainOrSlope)
 {
 }
 
 void NodeController::repositionBands()
 {
-    for (auto& band : bands)
-    {
-        //TODO
-    }
 }
 
 void NodeController::repositionQControls()
 {
 }
 
-bool nodeNeedsUpdate (AnalyzerWidgetBase& node, float freq, float gainOrSlope)
+bool NodeController::nodeNeedsUpdate (AnalyzerWidgetBase& node, float freq, float gainOrSlope)
 {
+    return false;
 }
 
 void NodeController::notifyOnBandSelection (AnalyzerWidgetBase* widget)

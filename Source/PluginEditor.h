@@ -13,6 +13,7 @@
 #include "ui/ControlsComponent.h"
 #include "ui/EqParamContainer.h"
 #include "ui/GlobalBypassButton.h"
+#include "ui/NodeController.h"
 #include "ui/ResponseCurveComponent.h"
 #include "ui/SpectrumAnalyzer.h"
 #include "ui/StereoMeterComponent.h"
@@ -75,6 +76,7 @@ private:
                                                                   audioProcessor.apvts };
 
     ResponseCurveComponent responseCurve { audioProcessor };
+    NodeController nodeController { audioProcessor.apvts };
 
 #if USE_TEST_SIGNAL
     int counter { 0 };
