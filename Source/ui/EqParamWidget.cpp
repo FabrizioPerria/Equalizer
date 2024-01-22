@@ -204,3 +204,24 @@ void EqParamWidget::setEnabled (bool shouldBeEnabled)
     qualitySlider.setEnabled (shouldBeEnabled);
     slopeOrGainSlider->setEnabled (shouldBeEnabled);
 }
+
+void EqParamWidget::clearBand()
+{
+    selected = false;
+    refreshSliders (currentChannelSelected);
+}
+
+void EqParamWidget::selectBand (Channel ch)
+{
+    selected = true;
+    if (currentChannelSelected == ch)
+    {
+        refreshSliders (ch);
+    }
+    else
+    {
+        currentChannelSelected = ch;
+        auto& toggleButton = ch == Channel::LEFT ? leftMidButton : rightSideButton;
+        toggleButton.setToggleState (true, juce::NotificationType::sendNotification);
+    }
+}

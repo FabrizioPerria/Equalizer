@@ -60,6 +60,7 @@ NodeController::NodeController (APVTS& apv) : apvts (apv)
 
 void NodeController::mouseDown (const juce::MouseEvent& e)
 {
+    DBG("[MOUSE_DOWN]" + e.originalComponent->getName());
     auto widgetType = getComponentForMouseEvent (e);
 
     switch (widgetType.type)
@@ -110,6 +111,7 @@ void NodeController::mouseDown (const juce::MouseEvent& e)
 
 void NodeController::mouseMove (const juce::MouseEvent& e)
 {
+    DBG("[MOUSE_MOVE]" + e.originalComponent->getName());
     auto widgetType = getComponentForMouseEvent (e);
 
     switch (widgetType.type)
@@ -162,6 +164,7 @@ void NodeController::mouseMove (const juce::MouseEvent& e)
 
 void NodeController::mouseUp (const juce::MouseEvent& e)
 {
+    DBG("[MOUSE_UP]" + e.originalComponent->getName());
     auto widgetType = getComponentForMouseEvent (e);
     switch (widgetType.type)
     {
@@ -213,6 +216,7 @@ void NodeController::mouseUp (const juce::MouseEvent& e)
 
 void NodeController::mouseDrag (const juce::MouseEvent& e)
 {
+    DBG("[MOUSE_DRAG]" + e.originalComponent->getName());
     auto widgetType = getComponentForMouseEvent (e);
     switch (widgetType.type)
     {
@@ -289,6 +293,7 @@ void NodeController::mouseDrag (const juce::MouseEvent& e)
 
 void NodeController::mouseEnter (const juce::MouseEvent& e)
 {
+    DBG("[MOUSE_ENTER]" + e.originalComponent->getName());
     auto widgetType = getComponentForMouseEvent (e);
     switch (widgetType.type)
     {
@@ -340,6 +345,7 @@ void NodeController::mouseEnter (const juce::MouseEvent& e)
 
 void NodeController::mouseExit (const juce::MouseEvent& e)
 {
+    DBG("[MOUSE_EXIT]" + e.originalComponent->getName());
     auto widgetType = getComponentForMouseEvent (e);
     switch (widgetType.type)
     {
@@ -391,6 +397,8 @@ void NodeController::mouseExit (const juce::MouseEvent& e)
 
 void NodeController::mouseDoubleClick (const juce::MouseEvent& e)
 {
+    DBG("[MOUSE_D_CLICK]" + e.originalComponent->getName());
+
     auto widgetType = getComponentForMouseEvent (e);
     switch (widgetType.type)
     {

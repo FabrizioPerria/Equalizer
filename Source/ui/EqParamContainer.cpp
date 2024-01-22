@@ -2,28 +2,20 @@
 
 EqParamContainer::EqParamContainer (juce::AudioProcessorValueTreeState& apvtsToUse) : apvts (apvtsToUse)
 {
-    addAndMakeVisible (lowcutWidget);
-    addAndMakeVisible (lowShelfWidget);
-    addAndMakeVisible (peakWidget1);
-    addAndMakeVisible (peakWidget2);
-    addAndMakeVisible (peakWidget3);
-    addAndMakeVisible (peakWidget4);
-    addAndMakeVisible (highShelfWidget);
-    addAndMakeVisible (highCutWidget);
+    for (auto& widget : widgets)
+    {
+        addAndMakeVisible (widget);
+    }
 }
 
 void EqParamContainer::resized()
 {
     auto eqParamContainerBounds = getLocalBounds();
     auto eqParamWidgetWidth = eqParamContainerBounds.getWidth() / 8;
-    lowcutWidget.setBounds (eqParamContainerBounds.removeFromLeft (eqParamWidgetWidth));
-    lowShelfWidget.setBounds (eqParamContainerBounds.removeFromLeft (eqParamWidgetWidth));
-    peakWidget1.setBounds (eqParamContainerBounds.removeFromLeft (eqParamWidgetWidth));
-    peakWidget2.setBounds (eqParamContainerBounds.removeFromLeft (eqParamWidgetWidth));
-    peakWidget3.setBounds (eqParamContainerBounds.removeFromLeft (eqParamWidgetWidth));
-    peakWidget4.setBounds (eqParamContainerBounds.removeFromLeft (eqParamWidgetWidth));
-    highShelfWidget.setBounds (eqParamContainerBounds.removeFromLeft (eqParamWidgetWidth));
-    highCutWidget.setBounds (eqParamContainerBounds.removeFromLeft (eqParamWidgetWidth));
+    for (auto& widget : widgets)
+    {
+        widget.setBounds (eqParamContainerBounds.removeFromLeft (eqParamWidgetWidth));
+    }
 }
 
 void EqParamContainer::paintOverChildren (juce::Graphics& g)
@@ -57,5 +49,25 @@ void EqParamContainer::paintOverChildren (juce::Graphics& g)
                     eqParamWidgetBounds.getRight(),
                     eqParamWidgetBounds.getBottom(),
                     1);
+    }
+}
+
+void EqParamContainer::bandMouseOver (ChainPositions position, Channel channel)
+{
+    clearSelection();
+    widgets.at (static_cast<int> (position)).selectBand (channel);
+}
+
+void EqParamContainer::bandSelected (ChainPositions position, Channel channel)
+{
+    clearSelection();
+    widgets.at (static_cast<int> (position)).selectBand (channel);
+}
+
+void EqParamContainer::clearSelection()
+{
+    for (auto& widget : widgets)
+    {
+        widget.clearBand();
     }
 }

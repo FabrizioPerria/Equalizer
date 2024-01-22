@@ -45,7 +45,12 @@ struct EqParamWidget : juce::Component
 
     void setEnabled (bool shouldBeEnabled);
 
+    void clearBand();
+    void selectBand (Channel channel);
+
 private:
+    bool selected { false };
+
     void refreshButtons (EqMode dspMode);
     void refreshSliders (Channel channel);
     void setupBypassButton (juce::TextButton& button);
