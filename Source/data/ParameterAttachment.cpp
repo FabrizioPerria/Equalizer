@@ -33,6 +33,7 @@ void ParametersAttachment::setValueAsCompleteGesture (float newDenormalisedValue
                                      endGesture();
                                  });
 }
+
 void ParametersAttachment::beginGesture()
 {
     if (undoManager != nullptr)
@@ -58,17 +59,17 @@ void ParametersAttachment::resetToDefaultValue()
 
 juce::String ParametersAttachment::getName() const
 {
-    return ""; //TODO: implement
+    return "";
 }
 
 float ParametersAttachment::getDenormalizedValue() const
 {
-    return parameter.getValue(); //TODO: implement
+    return parameter.convertFrom0to1 (parameter.getValue());
 }
 
 juce::RangedAudioParameter& ParametersAttachment::getParameter()
 {
-    return parameter; //TODO: implement
+    return parameter;
 }
 
 float ParametersAttachment::normalise (float f) const
@@ -93,6 +94,7 @@ void ParametersAttachment::parameterValueChanged (int, float newValue)
 void ParametersAttachment::parameterGestureChanged (int, bool)
 {
 }
+
 void ParametersAttachment::timerCallback()
 {
     if (parameterChanged.compareAndSetBool (false, true))

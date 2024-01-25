@@ -19,10 +19,12 @@ struct AnalyzerWidgetBase : juce::Component
         g.setColour (isSelected ? juce::Colours::red : juce::Colours::blue);
         g.fillEllipse (getLocalBounds().toFloat());
     }
+
     ChainPositions getChainPosition() const
     {
         return chainPosition;
     }
+
     Channel getChannel() const
     {
         return channel;
@@ -45,14 +47,14 @@ struct AnalyzerBand : AnalyzerWidgetBase
 
     juce::Colour getColor (ChainPositions cp, Channel ch) const
     {
-        auto numBands = static_cast<float> (std::numeric_limits<ChainPositions>::max());
+        auto numBands = 8;
         float bandPosition = static_cast<float> (cp) / numBands;
         switch (ch)
         {
             case Channel::LEFT:
-                return juce::Colour::fromHSV (juce::jmap (bandPosition, 0.1f, 0.4f), 0.8f, 1.0f, 1.0f);
+                return juce::Colour::fromHSV (juce::jmap (bandPosition, 0.0f, 1.0f), 0.8f, 1.0f, 1.0f);
             case Channel::RIGHT:
-                return juce::Colour::fromHSV (juce::jmap (bandPosition, 0.5f, 0.8f), 0.8f, 1.0f, 1.0f);
+                return juce::Colour::fromHSV (juce::jmap (bandPosition, 0.0f, 1.0f), 0.4f, 1.0f, 1.0f);
         }
     }
 
@@ -70,20 +72,25 @@ struct AnalyzerNode : AnalyzerWidgetBase
     {
         setSize (8, 8);
     }
+
     juce::Rectangle<int> mouseOverBounds, qualityBounds;
+
     float getFrequency() const
     {
         return frequency;
     }
+
     float getGainOrSlope() const
     {
         return gainOrSlope;
     }
+
     /** returns true if the frequency was updated */
     bool updateFrequency (float f)
     {
         return update (frequency, f);
     }
+
     /** returns true if the gain/slope was updated */
     bool updateGainOrSlope (float g)
     {

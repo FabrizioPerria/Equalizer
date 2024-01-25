@@ -5,6 +5,7 @@
 #include "ui/AnalyzerWidgets.h"
 #include "utils/AllParamsListener.h"
 #include "utils/ChainHelpers.h"
+#include "utils/FilterParam.h"
 #include <JuceHeader.h>
 #include <tuple>
 
@@ -13,6 +14,28 @@ struct CustomConstrainer : juce::ComponentBoundsConstrainer
     void setLimits (const juce::Rectangle<int>& limits)
     {
         boundsLimit = limits;
+    }
+
+    void checkBounds (juce::Rectangle<int>& bounds,
+                      const juce::Rectangle<int>& /* old */,
+                      const juce::Rectangle<int>& /* limits */,
+                      bool /* isStretchingTop */,
+                      bool /* isStretchingLeft */,
+                      bool /* isStretchingBottom */,
+                      bool /* isStretchingRight */) override
+    {
+        auto centre = bounds.getCentre();
+
+        if (centre.getY() < boundsLimit.getY())
+            centre.setY (boundsLimit.getY());
+        if (centre.getY() > boundsLimit.getBottom())
+            centre.setY (boundsLimit.getBottom());
+        if (centre.getX() > boundsLimit.getRight())
+            centre.setX (boundsLimit.getRight());
+        if (centre.getX() < boundsLimit.getX())
+            centre.setX (boundsLimit.getX());
+
+        bounds.setCentre (centre);
     }
 
     juce::Rectangle<int> boundsLimit;
@@ -97,6 +120,9 @@ private:
     ChainPositions chainPosition;
     Channel channel;
 
+    float leftCornerForQ (float freq, float q);
+    float rightCornerForQ (float freq, float q);
+
     WidgetType getComponentForMouseEvent (const juce::MouseEvent& e);
     size_t getNodeIndex (AnalyzerWidgetBase& node);
 
@@ -104,13 +130,21 @@ private:
     ParametersAttachment* getQualityAttachment (AnalyzerWidgetBase& node);
     ParametersAttachment* getGainSlopeAttachment (AnalyzerWidgetBase& node);
 
+    struct NodeWithBounds
+    {
+        AnalyzerWidgetBase* node = nullptr;
+        juce::Rectangle<int> bounds = {};
+    };
+
+    std::array<NodeWithBounds, 16> nodeSelectionBoundingBoxes;
+
     void repositionNodes();
-    void repositionNode (AnalyzerWidgetBase& node, float freq, float gainOrSlope);
+    void repositionNode (AnalyzerNode& node, float freq, float gainOrSlope);
     void repositionBands();
 
     void repositionQControls();
 
-    bool nodeNeedsUpdate (AnalyzerWidgetBase& node, float freq, float gainOrSlope);
+    bool nodeNeedsUpdate (AnalyzerNode& node, float freq, float gainOrSlope);
 
     void notifyOnBandSelection (AnalyzerWidgetBase* widget);
     void notifyOnBandMouseOver (AnalyzerWidgetBase* widget);
@@ -124,6 +158,23 @@ private:
     void createAnalyzerNodeArea();
 
     void updateNodesVisibility();
+
+    template <typename WidgetType>
+    void updateVisibilities (WidgetType& container, int num)
+    {
+        for (auto& widget : container)
+            widget->setVisible (false);
+
+        for (size_t i = 0; i < num; ++i)
+        {
+            auto* widget = static_cast<AnalyzerWidgetBase*> (container[i].get());
+            widget->setVisible (false);
+            auto bypassParam = apvts.getParameter (FilterInfo::getParameterName (static_cast<int> (widget->getChainPosition()),
+                                                                                 widget->getChannel(),
+                                                                                 FilterInfo::FilterParam::BYPASS));
+            widget->setVisible (bypassParam->getValue() < 0.5f);
+        }
+    }
 
     void rebuildNodeSelectionBoundingBox();
 
