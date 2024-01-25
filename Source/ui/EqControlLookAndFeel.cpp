@@ -75,7 +75,7 @@ void EqControlsLookAndFeel::drawLinearSlider (juce::Graphics& g,
         g.setColour (juce::Colour { 0x33, 0x33, 0x33 });
         g.fillRect (bounds.withWidth (relativeSliderPos));
 
-        g.setColour (juce::Colours::white);
+        g.setColour (slider.findColour (juce::Slider::textBoxOutlineColourId));
         g.setFont (12.0f);
         g.drawFittedText (text, bounds.toNearestInt(), juce::Justification::centred, true);
     }

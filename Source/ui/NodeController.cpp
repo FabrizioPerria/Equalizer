@@ -1,5 +1,4 @@
 #include "ui/NodeController.h"
-#include "data/FilterLink.h"
 #include "data/ParameterAttachment.h"
 #include "ui/AnalyzerBase.h"
 #include "utils/EqParam.h"
@@ -13,7 +12,6 @@ inline bool isCutFilter (ChainPositions chainPosition)
 
 NodeController::NodeController (APVTS& apv) : apvts (apv)
 {
-    //DONE
     const int numPositions = 8;
     for (auto ch : { Channel::LEFT, Channel::RIGHT })
     {
@@ -65,7 +63,6 @@ NodeController::NodeController (APVTS& apv) : apvts (apv)
 
 void NodeController::mouseDown (const juce::MouseEvent& e)
 {
-    //done
     auto widgetType = getComponentForMouseEvent (e);
 
     switch (widgetType.type)
@@ -164,7 +161,6 @@ void NodeController::mouseDown (const juce::MouseEvent& e)
 
 void NodeController::mouseMove (const juce::MouseEvent& e)
 {
-    //done
     auto widgetType = getComponentForMouseEvent (e);
 
     switch (widgetType.type)
@@ -282,7 +278,6 @@ void NodeController::mouseMove (const juce::MouseEvent& e)
 
 void NodeController::mouseUp (const juce::MouseEvent& e)
 {
-    //done
     deselectAllNodes();
     hideAllBands();
 
@@ -383,7 +378,6 @@ void NodeController::mouseDrag (const juce::MouseEvent& e)
         case ComponentType::NODE:
         {
             DBG ("NodeController::mouseDrag: NODE");
-            //done
             auto* node = std::get<WidgetType::Indices::NODE> (widgetType.component);
             dragger.dragComponent (node, e, &constrainer);
 
@@ -447,7 +441,6 @@ void NodeController::mouseDrag (const juce::MouseEvent& e)
 
 void NodeController::mouseEnter (const juce::MouseEvent& e)
 {
-    //done
     auto widgetType = getComponentForMouseEvent (e);
     switch (widgetType.type)
     {
@@ -576,13 +569,11 @@ void NodeController::mouseDoubleClick (const juce::MouseEvent& e)
 
 void NodeController::addListener (NodeListener* listener)
 {
-    //DONE
     listeners.add (listener);
 }
 
 void NodeController::removeListener (NodeListener* listener)
 {
-    //DONE
     listeners.remove (listener);
 }
 
@@ -595,21 +586,18 @@ void NodeController::resized()
 
 float NodeController::leftCornerForQ (float freq, float q)
 {
-    //DONE
     // lower cutoff frequency for the bandpass filter represented by the peak filter
     return freq * (std::sqrt (1.0f + 1.0f / (4.0f * q * q)) - 1.0f / (2.0f * q));
 }
 
 float NodeController::rightCornerForQ (float freq, float q)
 {
-    //DONE
     // upper cutoff frequency for the bandpass filter represented by the peak filter
     return freq * (std::sqrt (1.0f + 1.0f / (4.0f * q * q)) + 1.0f / (2.0f * q));
 }
 
 NodeController::WidgetType NodeController::getComponentForMouseEvent (const juce::MouseEvent& e)
 {
-    //DONE
     if (auto* node = dynamic_cast<AnalyzerNode*> (e.eventComponent))
         return { ComponentType::NODE, { node, nullptr, nullptr, nullptr } };
 
@@ -628,14 +616,12 @@ NodeController::WidgetType NodeController::getComponentForMouseEvent (const juce
 
 size_t NodeController::getNodeIndex (AnalyzerWidgetBase& node)
 {
-    //DONE
     return node.getChannel() == Channel::LEFT ? static_cast<size_t> (node.getChainPosition())
                                               : static_cast<size_t> (node.getChainPosition()) + 8;
 }
 
 ParametersAttachment* NodeController::getFreqAttachment (AnalyzerWidgetBase& node)
 {
-    //DONE
     int chIndex = static_cast<int> (node.getChannel()) * 8;
     ChainPositions cp = node.getChainPosition();
     size_t filterNum = static_cast<size_t> (cp);
@@ -645,7 +631,6 @@ ParametersAttachment* NodeController::getFreqAttachment (AnalyzerWidgetBase& nod
 
 ParametersAttachment* NodeController::getQualityAttachment (AnalyzerWidgetBase& node)
 {
-    //DONE
     int chIndex = static_cast<int> (node.getChannel()) * 8;
     ChainPositions cp = node.getChainPosition();
     size_t filterNum = static_cast<size_t> (cp);
@@ -655,7 +640,6 @@ ParametersAttachment* NodeController::getQualityAttachment (AnalyzerWidgetBase& 
 
 ParametersAttachment* NodeController::getGainSlopeAttachment (AnalyzerWidgetBase& node)
 {
-    //DONE
     int chIndex = static_cast<int> (node.getChannel()) * 8;
     ChainPositions cp = node.getChainPosition();
     size_t filterNum = static_cast<size_t> (cp);
@@ -665,7 +649,6 @@ ParametersAttachment* NodeController::getGainSlopeAttachment (AnalyzerWidgetBase
 
 void NodeController::repositionNodes()
 {
-    //done
     for (auto& node : nodes)
     {
         auto* freqAttachment = getFreqAttachment (*node);
@@ -681,9 +664,8 @@ void NodeController::repositionNodes()
     }
 }
 
-void NodeController::repositionNode (AnalyzerNode& node, float freq, float gainOrSlope)
+void NodeController::repositionNode (AnalyzerNode& node, float freq, float /*gainOrSlope*/)
 {
-    //done
     int x = fftBoundingBox.getX() + juce::mapFromLog10 (freq, 20.0f, 20000.0f) * fftBoundingBox.getWidth();
     int y = 0;
     auto* param = getGainSlopeAttachment (node);
@@ -706,7 +688,6 @@ void NodeController::repositionNode (AnalyzerNode& node, float freq, float gainO
 
 void NodeController::repositionBands()
 {
-    //done
     juce::Rectangle<int> bounds;
     auto w = analyzerNodeArea.getWidth();
     auto b = analyzerNodeArea.getBottom();
@@ -721,7 +702,6 @@ void NodeController::repositionBands()
         auto fLeft = leftCornerForQ (f, q);
         auto fLeftX = x + juce::mapFromLog10 (fLeft, 20.0f, 20000.0f) * w;
 
-        /* auto fRight = f * f / fLeft; */
         auto fRight = rightCornerForQ (f, q);
         auto fRightX = x + juce::mapFromLog10 (fRight, 20.0f, 20000.0f) * w;
 
@@ -736,7 +716,6 @@ void NodeController::repositionBands()
 
 void NodeController::repositionQControls()
 {
-    //DONE
     auto idx = getNodeIndex (leftQControl);
     auto* band = bands[idx].get();
 
@@ -746,13 +725,11 @@ void NodeController::repositionQControls()
 
 bool NodeController::nodeNeedsUpdate (AnalyzerNode& node, float freq, float gainOrSlope)
 {
-    //done
     return node.updateFrequency (freq) || node.updateGainOrSlope (gainOrSlope);
 }
 
 void NodeController::notifyOnBandSelection (AnalyzerWidgetBase* widget)
 {
-    //done
     listeners.call ([widget] (NodeListener& l) { //
         l.bandSelected (widget->getChainPosition(), widget->getChannel());
     });
@@ -760,7 +737,6 @@ void NodeController::notifyOnBandSelection (AnalyzerWidgetBase* widget)
 
 void NodeController::notifyOnBandMouseOver (AnalyzerWidgetBase* widget)
 {
-    // done
     listeners.call ([widget] (NodeListener& l) { //
         l.bandMouseOver (widget->getChainPosition(), widget->getChannel());
     });
@@ -768,7 +744,6 @@ void NodeController::notifyOnBandMouseOver (AnalyzerWidgetBase* widget)
 
 void NodeController::notifyOnClearSelection()
 {
-    //done
     listeners.call ([] (NodeListener& l) { //
         l.clearSelection();
     });
@@ -776,7 +751,6 @@ void NodeController::notifyOnClearSelection()
 
 void NodeController::reorderWidgets()
 {
-    //done
     for (auto& n : nodes)
     {
         n->toFront (true);
@@ -787,7 +761,6 @@ void NodeController::reorderWidgets()
 
 void NodeController::refreshWidgets()
 {
-    //DONE
     repositionNodes();
     updateNodesVisibility();
     repositionBands();
@@ -798,7 +771,6 @@ void NodeController::refreshWidgets()
 
 void NodeController::hideAllBands()
 {
-    //done
     for (auto& band : bands)
     {
         band->setVisible (false);
@@ -808,7 +780,6 @@ void NodeController::hideAllBands()
 
 void NodeController::deselectAllNodes()
 {
-    //done
     for (auto& node : nodes)
     {
         node->displayAsSelected (false);
@@ -827,15 +798,14 @@ void NodeController::createAnalyzerNodeArea()
 
 void NodeController::updateNodesVisibility()
 {
-    //done
-    auto numNodes = static_cast<EqMode> (apvts.getParameter ("eq_mode")->getValue()) == EqMode::STEREO ? nodes.size() / 2 : nodes.size();
+    auto eqMode = static_cast<EqMode> (apvts.getRawParameterValue ("eq_mode")->load());
+    auto numNodes = eqMode == EqMode::STEREO ? nodes.size() / 2 : nodes.size();
 
     updateVisibilities (nodes, numNodes);
 }
 
 void NodeController::rebuildNodeSelectionBoundingBox()
 {
-    //done
     for (auto& n : nodeSelectionBoundingBoxes)
     {
         n.node = nullptr;

@@ -188,6 +188,12 @@ void EqParamWidget::refreshSliders (Channel channel)
         auto bypassName = FilterInfo::getParameterName (filterIndexInChain, channel, FilterInfo::FilterParam::BYPASS);
         auto bypassValue = apvts.getRawParameterValue (bypassName)->load() > 0.5f;
         setEnabled (! bypassValue);
+
+        auto colour = bypassValue ? juce::Colours::grey : (selected ? juce::Colours::limegreen : juce::Colours::white);
+
+        slopeOrGainSlider->setColour (juce::Slider::textBoxOutlineColourId, colour);
+        qualitySlider.setColour (juce::Slider::textBoxOutlineColourId, colour);
+        frequencySlider.setColour (juce::Slider::textBoxOutlineColourId, colour);
     }
 }
 
