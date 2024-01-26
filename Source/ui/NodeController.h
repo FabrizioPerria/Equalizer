@@ -11,13 +11,14 @@
 
 struct CustomConstrainer : juce::ComponentBoundsConstrainer
 {
-    void setLimits (const juce::Rectangle<int>& limits)
+    void setLimits (const juce::Rectangle<int>& limits, bool isNode)
     {
         boundsLimit = limits;
+        isNodeLimit = isNode;
     }
 
     void checkBounds (juce::Rectangle<int>& bounds,
-                      const juce::Rectangle<int>& /* old */,
+                      const juce::Rectangle<int>& old,
                       const juce::Rectangle<int>& /* limits */,
                       bool /* isStretchingTop */,
                       bool /* isStretchingLeft */,
@@ -26,19 +27,27 @@ struct CustomConstrainer : juce::ComponentBoundsConstrainer
     {
         auto centre = bounds.getCentre();
 
-        if (centre.getY() < boundsLimit.getY())
-            centre.setY (boundsLimit.getY());
-        if (centre.getY() > boundsLimit.getBottom())
-            centre.setY (boundsLimit.getBottom());
         if (centre.getX() > boundsLimit.getRight())
             centre.setX (boundsLimit.getRight());
         if (centre.getX() < boundsLimit.getX())
             centre.setX (boundsLimit.getX());
 
+        if (! isNodeLimit)
+        {
+            centre.setY (old.getCentre().getY());
+        }
+        else
+        {
+            if (centre.getY() < boundsLimit.getY())
+                centre.setY (boundsLimit.getY());
+            if (centre.getY() > boundsLimit.getBottom())
+                centre.setY (boundsLimit.getBottom());
+        }
         bounds.setCentre (centre);
     }
 
     juce::Rectangle<int> boundsLimit;
+    bool isNodeLimit { false };
 };
 
 struct NodeController : AnalyzerBase
@@ -66,6 +75,8 @@ struct NodeController : AnalyzerBase
     void removeListener (NodeListener* listener);
 
     void resized() override;
+
+    void resetAllParameters();
 
 private:
     APVTS& apvts;

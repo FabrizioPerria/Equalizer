@@ -1,6 +1,7 @@
 #include "ui/NodeController.h"
 #include "data/ParameterAttachment.h"
 #include "ui/AnalyzerBase.h"
+#include "ui/AnalyzerWidgets.h"
 #include "utils/EqParam.h"
 #include "utils/FilterParam.h"
 #include <JuceHeader.h>
@@ -71,7 +72,7 @@ void NodeController::mouseDown (const juce::MouseEvent& e)
         {
             DBG ("NodeController::mouseDown: NODE");
             auto* node = std::get<WidgetType::NODE> (widgetType.component);
-            constrainer.setLimits (analyzerNodeArea);
+            constrainer.setLimits (analyzerNodeArea, true);
 
             dragger.startDraggingComponent (node, e);
             getFreqAttachment (*node)->beginGesture();
@@ -88,7 +89,8 @@ void NodeController::mouseDown (const juce::MouseEvent& e)
 
             auto bandHalfWidth = band->getWidth() / 2;
             constrainer.setLimits (analyzerNodeArea.withX (analyzerNodeArea.getX() - bandHalfWidth)
-                                       .withWidth (analyzerNodeArea.getWidth() + bandHalfWidth * 2));
+                                       .withWidth (analyzerNodeArea.getWidth() + bandHalfWidth * 2),
+                                   true);
 
             dragger.startDraggingComponent (band, e);
             getFreqAttachment (*band)->beginGesture();
@@ -117,27 +119,25 @@ void NodeController::mouseDown (const juce::MouseEvent& e)
             auto centerFreq = getFreqAttachment (*q)->getDenormalizedValue();
             auto qRange = getQualityAttachment (*q)->getParameter().getNormalisableRange().getRange();
 
-            auto qStart = qRange.getStart();
-            auto qEnd = qRange.getEnd();
             if (q == &leftQControl)
             {
-                auto fLeft = leftCornerForQ (centerFreq, qStart);
+                auto fLeft = leftCornerForQ (centerFreq, qRange.getStart());
                 auto fLeftX1 = x + juce::mapFromLog10 (fLeft, 20.0f, 20000.0f) * w;
 
-                fLeft = leftCornerForQ (centerFreq, qEnd);
+                fLeft = leftCornerForQ (centerFreq, qRange.getEnd());
                 auto fLeftX2 = x + juce::mapFromLog10 (fLeft, 20.0f, 20000.0f) * w;
 
-                constrainer.setLimits (analyzerNodeArea.withX (fLeftX1).withRight (fLeftX2));
+                constrainer.setLimits (analyzerNodeArea.withX (fLeftX1).withRight (fLeftX2), false);
             }
             else
             {
-                auto fRight = rightCornerForQ (centerFreq, qStart);
+                auto fRight = rightCornerForQ (centerFreq, qRange.getEnd());
                 auto fRightX1 = x + juce::mapFromLog10 (fRight, 20.0f, 20000.0f) * w;
 
-                fRight = rightCornerForQ (centerFreq, qEnd);
+                fRight = rightCornerForQ (centerFreq, qRange.getStart());
                 auto fRightX2 = x + juce::mapFromLog10 (fRight, 20.0f, 20000.0f) * w;
 
-                constrainer.setLimits (analyzerNodeArea.withX (fRightX1).withRight (fRightX2));
+                constrainer.setLimits (analyzerNodeArea.withX (fRightX1).withRight (fRightX2), false);
             }
 
             getQualityAttachment (*q)->beginGesture();
@@ -167,7 +167,7 @@ void NodeController::mouseMove (const juce::MouseEvent& e)
     {
         case ComponentType::NODE:
         {
-            DBG ("NodeController::mouseMove: NODE");
+            /* DBG ("NodeController::mouseMove: NODE"); */
             auto* node = std::get<WidgetType::NODE> (widgetType.component);
             deselectAllNodes();
             hideAllBands();
@@ -197,7 +197,7 @@ void NodeController::mouseMove (const juce::MouseEvent& e)
         }
         case ComponentType::BAND:
         {
-            DBG ("NodeController::mouseMove: BAND");
+            //DBG ("NodeController::mouseMove: BAND");
             auto* band = std::get<WidgetType::BAND> (widgetType.component);
             deselectAllNodes();
             hideAllBands();
@@ -228,7 +228,7 @@ void NodeController::mouseMove (const juce::MouseEvent& e)
         }
         case ComponentType::Q:
         {
-            DBG ("NodeController::mouseMove: Q");
+            /* DBG ("NodeController::mouseMove: Q"); */
             deselectAllNodes();
             hideAllBands();
 
@@ -250,7 +250,8 @@ void NodeController::mouseMove (const juce::MouseEvent& e)
         }
         case ComponentType::CONTROLLER:
         {
-            DBG ("NodeController::mouseMove: CONTROLLER");
+            /* DBG ("NodeController::mouseMove: CONTROLLER"); */
+            deselectAllNodes();
             leftQControl.setVisible (false);
             rightQControl.setVisible (false);
 
@@ -259,10 +260,12 @@ void NodeController::mouseMove (const juce::MouseEvent& e)
                 if (n.bounds.contains (e.getEventRelativeTo (this).getPosition()))
                 {
                     jassert (n.node != nullptr);
-                    bands[getNodeIndex (*n.node)]->setVisible (true);
+                    auto band = bands[getNodeIndex (*n.node)].get();
+                    band->setVisible (true);
+                    band->displayAsSelected (true);
                     n.node->displayAsSelected (true);
                     n.node->toFront (true);
-                    notifyOnBandMouseOver (n.node);
+                    notifyOnBandMouseOver (band);
                     break;
                 }
             }
@@ -280,6 +283,26 @@ void NodeController::mouseUp (const juce::MouseEvent& e)
 {
     deselectAllNodes();
     hideAllBands();
+
+    auto enableQControl = [&] (AnalyzerBand* band)
+    {
+        auto pos = band->getChainPosition();
+        leftQControl.setChainPosition (pos);
+        rightQControl.setChainPosition (pos);
+
+        auto ch = band->getChannel();
+        leftQControl.setChannel (ch);
+        rightQControl.setChannel (ch);
+
+        leftQControl.setBounds (band->getX(), band->getY(), 2, band->getHeight());
+        rightQControl.setBounds (band->getRight() - 1, band->getY(), 2, band->getHeight());
+        leftQControl.setVisible (true);
+        rightQControl.setVisible (true);
+        leftQControl.toFront (true);
+        rightQControl.toFront (true);
+
+        qControlActive = true;
+    };
 
     auto widgetType = getComponentForMouseEvent (e);
     switch (widgetType.type)
@@ -301,23 +324,7 @@ void NodeController::mouseUp (const juce::MouseEvent& e)
             getFreqAttachment (*node)->endGesture();
             getGainSlopeAttachment (*node)->endGesture();
 
-            auto pos = node->getChainPosition();
-            leftQControl.setChainPosition (pos);
-            rightQControl.setChainPosition (pos);
-
-            auto ch = node->getChannel();
-            leftQControl.setChannel (ch);
-            rightQControl.setChannel (ch);
-
-            leftQControl.setBounds (band->getX(), band->getY(), 2, band->getHeight());
-            rightQControl.setBounds (band->getRight() - 1, band->getY(), 2, band->getHeight());
-            leftQControl.setVisible (true);
-            rightQControl.setVisible (true);
-            leftQControl.toFront (false);
-            rightQControl.toFront (false);
-
-            qControlActive = true;
-
+            enableQControl (band);
             notifyOnBandMouseOver (node);
 
             break;
@@ -337,6 +344,7 @@ void NodeController::mouseUp (const juce::MouseEvent& e)
             getFreqAttachment (*band)->endGesture();
             getGainSlopeAttachment (*band)->endGesture();
 
+            enableQControl (band);
             notifyOnBandMouseOver (band);
 
             break;
@@ -415,21 +423,45 @@ void NodeController::mouseDrag (const juce::MouseEvent& e)
         case ComponentType::BAND:
         {
             DBG ("NodeController::mouseDrag: BAND");
-            /* auto* band = std::get<WidgetType::BAND> (widgetType.component); */
-            /* dragger.dragComponent (band, e, &constrainer); */
+            auto* band = std::get<WidgetType::BAND> (widgetType.component);
+
+            notifyOnBandSelection (band);
             break;
         }
         case ComponentType::Q:
         {
             DBG ("NodeController::mouseDrag: Q");
-            /* auto* q = std::get<WidgetType::Q> (widgetType.component); */
-            /* dragger.dragComponent (q, e, &constrainer); */
+            auto* q = std::get<WidgetType::Q> (widgetType.component);
+            dragger.dragComponent (q, e, &constrainer);
+
+            auto idx = getNodeIndex (leftQControl);
+            nodes[idx]->displayAsSelected (true);
+
+            auto currentBand = bands[idx].get();
+            currentBand->displayAsSelected (true);
+            currentBand->setVisible (true);
+
+            auto qFromBandWidth = [] (float width)
+            {
+                auto invQ = 2 * std::sinh (std::log (2.0) / 2.0 * width);
+                return invQ > 0 ? 1.0 / invQ : 10.0;
+            };
+            auto bandBounds = currentBand->getBounds();
+            auto newWidth = std::abs (bandBounds.getCentreX() - q->getBounds().getCentreX()) * 2.0f;
+            auto bandWidth = newWidth / fftBoundingBox.getWidth() * std::log2 (20000.0f / 20.0f);
+            getQualityAttachment (*q)->setValueAsPartOfGesture (qFromBandWidth (bandWidth));
+
+            repositionBands();
+
+            notifyOnBandSelection (q);
             break;
         }
         case ComponentType::CONTROLLER:
         {
             DBG ("NodeController::mouseDrag: Controller");
-            /* auto* controller = std::get<WidgetType::CONTROLLER> (widgetType.component); */
+            deselectAllNodes();
+            hideAllBands();
+            notifyOnClearSelection();
             break;
         }
         case ComponentType::INVALID:
@@ -489,6 +521,10 @@ void NodeController::mouseEnter (const juce::MouseEvent& e)
         case ComponentType::CONTROLLER:
         {
             DBG ("NodeController::mouseEnter: CONTROLLER");
+            if (qControlActive)
+            {
+                qControlActive = false;
+            }
             deselectAllNodes();
             hideAllBands();
             notifyOnClearSelection();
@@ -503,68 +539,88 @@ void NodeController::mouseEnter (const juce::MouseEvent& e)
 
 void NodeController::mouseExit (const juce::MouseEvent& e)
 {
-    /* auto widgetType = getComponentForMouseEvent (e); */
-    /* switch (widgetType.type) */
-    /* { */
-    /*     case ComponentType::NODE: */
-    /*     { */
-    /*         auto* node = std::get<WidgetType::Indices::NODE> (widgetType.component); */
-    /**/
-    /*         break; */
-    /*     } */
-    /*     case ComponentType::BAND: */
-    /*     { */
-    /*         auto* band = std::get<WidgetType::BAND> (widgetType.component); */
-    /*         break; */
-    /*     } */
-    /*     case ComponentType::Q: */
-    /*     { */
-    /*         auto* q = std::get<WidgetType::Q> (widgetType.component); */
-    /*         break; */
-    /*     } */
-    /*     case ComponentType::CONTROLLER: */
-    /*     { */
-    /*         auto* controller = std::get<WidgetType::CONTROLLER> (widgetType.component); */
-    /*         break; */
-    /*     } */
-    /*     case ComponentType::INVALID: */
-    /*     case ComponentType::NUM_TYPES: */
-    /*     default: */
-    /*         jassertfalse; */
-    /* } */
+    auto widgetType = getComponentForMouseEvent (e);
+    switch (widgetType.type)
+    {
+        case ComponentType::NODE:
+        {
+            auto* node = std::get<WidgetType::Indices::NODE> (widgetType.component);
+            node->displayAsSelected (false);
+            notifyOnClearSelection();
+            break;
+        }
+        case ComponentType::BAND:
+        {
+            auto* band = std::get<WidgetType::BAND> (widgetType.component);
+            band->displayAsSelected (false);
+            if (qControlActive)
+            {
+                qControlActive = false;
+            }
+
+            notifyOnClearSelection();
+
+            break;
+        }
+        case ComponentType::Q:
+        {
+            auto* q = std::get<WidgetType::Q> (widgetType.component);
+            q->displayAsSelected (false);
+            break;
+        }
+        case ComponentType::CONTROLLER:
+        {
+            if (qControlActive)
+            {
+                qControlActive = false;
+            }
+            deselectAllNodes();
+            hideAllBands();
+            notifyOnClearSelection();
+            break;
+        }
+        case ComponentType::INVALID:
+        case ComponentType::NUM_TYPES:
+        default:
+            jassertfalse;
+    }
 }
 
 void NodeController::mouseDoubleClick (const juce::MouseEvent& e)
 {
-    /* auto widgetType = getComponentForMouseEvent (e); */
-    /* switch (widgetType.type) */
-    /* { */
-    /*     case ComponentType::NODE: */
-    /*     { */
-    /*         auto* node = std::get<WidgetType::Indices::NODE> (widgetType.component); */
-    /**/
-    /*         break; */
-    /*     } */
-    /*     case ComponentType::BAND: */
-    /*     { */
-    /*         auto* band = std::get<WidgetType::BAND> (widgetType.component); */
-    /*         break; */
-    /*     } */
-    /*     case ComponentType::Q: */
-    /*     { */
-    /*         auto* q = std::get<WidgetType::Q> (widgetType.component); */
-    /*         break; */
-    /*     } */
-    /*     case ComponentType::CONTROLLER: */
-    /*     { */
-    /*         auto* controller = std::get<WidgetType::CONTROLLER> (widgetType.component); */
-    /*         break; */
-    /*     } */
-    /*     case ComponentType::INVALID: */
-    /*     case ComponentType::NUM_TYPES: */
-    /*     default: */
-    /*         jassertfalse; */
-    /* } */
+    auto widgetType = getComponentForMouseEvent (e);
+    switch (widgetType.type)
+    {
+        case ComponentType::NODE:
+        {
+            auto* node = std::get<WidgetType::Indices::NODE> (widgetType.component);
+            getFreqAttachment (*node)->resetToDefaultValue();
+            getGainSlopeAttachment (*node)->resetToDefaultValue();
+
+            break;
+        }
+        case ComponentType::BAND:
+        {
+            break;
+        }
+        case ComponentType::Q:
+        {
+            auto* q = std::get<WidgetType::Q> (widgetType.component);
+            if (qControlActive)
+            {
+                getQualityAttachment (*q)->resetToDefaultValue();
+            }
+            break;
+        }
+        case ComponentType::CONTROLLER:
+        {
+            break;
+        }
+        case ComponentType::INVALID:
+        case ComponentType::NUM_TYPES:
+        default:
+            jassertfalse;
+    }
 }
 
 void NodeController::addListener (NodeListener* listener)
@@ -846,5 +902,21 @@ void NodeController::rebuildNodeSelectionBoundingBox()
 
         previous = rect;
         nodeSelectionBoundingBoxes[i].bounds = rect;
+    }
+}
+
+void NodeController::resetAllParameters()
+{
+    for (auto& frequencyParam : freqAttachments)
+    {
+        frequencyParam->resetToDefaultValue();
+    }
+    for (auto& gainParams : gainSlopeAttachments)
+    {
+        gainParams->resetToDefaultValue();
+    }
+    for (auto& qualityParam : qualityAttachments)
+    {
+        qualityParam->resetToDefaultValue();
     }
 }

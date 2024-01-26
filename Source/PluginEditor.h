@@ -66,7 +66,6 @@ private:
 
     GlobalBypassButton globalBypassButton { audioProcessor };
     BypassButtonContainer bypassButtonContainer { audioProcessor.apvts };
-    ControlsComponent controls { audioProcessor.apvts };
 
     const int pluginMargin { 5 };
 
@@ -77,6 +76,7 @@ private:
 
     ResponseCurveComponent responseCurve { audioProcessor };
     NodeController nodeController { audioProcessor.apvts };
+    ControlsComponent controls { audioProcessor.apvts, nodeController };
 
 #if USE_TEST_SIGNAL
     int counter { 0 };

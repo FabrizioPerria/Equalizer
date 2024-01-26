@@ -2,12 +2,13 @@
 
 #include "ui/AnalyzerControls.h"
 #include "ui/KnobWithLabels.h"
+#include "ui/NodeController.h"
 #include "ui/VerticalSwitch.h"
 #include <JuceHeader.h>
 
 struct ControlsComponent : juce::Component
 {
-    ControlsComponent (juce::AudioProcessorValueTreeState& apv) : apvts { apv }
+    ControlsComponent (juce::AudioProcessorValueTreeState& apv, NodeController& controller) : apvts { apv }, nodeController { controller }
     {
         addAndMakeVisible (analyzerControls);
         addAndMakeVisible (inputGainKnob);
@@ -24,6 +25,9 @@ struct ControlsComponent : juce::Component
         eqModeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (apvts, "eq_mode", eqMode);
 
         addAndMakeVisible (analyzerControls);
+
+        addAndMakeVisible (resetButton);
+        resetButton.onClick = [&] { nodeController.resetAllParameters(); };
 
         inputGainKnob.labels.add ("-18");
         inputGainKnob.labels.add ("+18");
@@ -57,6 +61,9 @@ struct ControlsComponent : juce::Component
 
         bounds.removeFromLeft (10);
 
+        auto resetButtonBounds = bounds.removeFromLeft (resetButtonSize);
+        resetButton.setBounds (resetButtonBounds);
+
         auto outputGainKnobBounds = bounds.removeFromRight (gainSize);
         outputGainKnob.setBounds (outputGainKnobBounds);
     }
@@ -88,9 +95,14 @@ private:
     VerticalSwitch eqMode { "EQ Mode" };
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> eqModeAttachment;
 
+    juce::TextButton resetButton { "Reset Eq" };
+
     int gainSize = 80;
     int eqModeSize = 80;
+    int resetButtonSize = 80;
     int analyzerControlsSize = 400;
+
+    NodeController& nodeController;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ControlsComponent)
 };

@@ -54,12 +54,13 @@ void ParametersAttachment::endGesture()
 
 void ParametersAttachment::resetToDefaultValue()
 {
-    //TODO: implement
+    auto defaultValue = parameter.getDefaultValue();
+    parameter.setValueNotifyingHost (defaultValue);
 }
 
 juce::String ParametersAttachment::getName() const
 {
-    return "";
+    return parameter.getName (100);
 }
 
 float ParametersAttachment::getDenormalizedValue() const
