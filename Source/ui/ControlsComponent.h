@@ -59,13 +59,17 @@ struct ControlsComponent : juce::Component
         auto analyzerControlsBounds = bounds.removeFromLeft (analyzerControlsSize);
         analyzerControls.setBounds (analyzerControlsBounds);
 
-        bounds.removeFromLeft (10);
-
-        auto resetButtonBounds = bounds.removeFromLeft (resetButtonSize);
-        resetButton.setBounds (resetButtonBounds);
+        bounds.removeFromLeft (5);
 
         auto outputGainKnobBounds = bounds.removeFromRight (gainSize);
         outputGainKnob.setBounds (outputGainKnobBounds);
+
+        int centerX = bounds.getCentreX();
+        int centerY = bounds.getCentreY();
+
+        resetButton.setSize (resetButtonSize, resetButtonSize / 2);
+
+        resetButton.setCentrePosition (centerX, centerY);
     }
 
     void paint (juce::Graphics& g) override
