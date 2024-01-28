@@ -13,6 +13,7 @@
 #include "ui/ControlsComponent.h"
 #include "ui/EqParamContainer.h"
 #include "ui/GlobalBypassButton.h"
+#include "ui/NodeController.h"
 #include "ui/ResponseCurveComponent.h"
 #include "ui/SpectrumAnalyzer.h"
 #include "ui/StereoMeterComponent.h"
@@ -65,7 +66,6 @@ private:
 
     GlobalBypassButton globalBypassButton { audioProcessor };
     BypassButtonContainer bypassButtonContainer { audioProcessor.apvts };
-    ControlsComponent controls { audioProcessor.apvts };
 
     const int pluginMargin { 5 };
 
@@ -75,6 +75,8 @@ private:
                                                                   audioProcessor.apvts };
 
     ResponseCurveComponent responseCurve { audioProcessor };
+    NodeController nodeController { audioProcessor.apvts };
+    ControlsComponent controls { audioProcessor.apvts, nodeController };
 
 #if USE_TEST_SIGNAL
     int counter { 0 };

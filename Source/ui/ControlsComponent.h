@@ -2,12 +2,13 @@
 
 #include "ui/AnalyzerControls.h"
 #include "ui/KnobWithLabels.h"
+#include "ui/NodeController.h"
 #include "ui/VerticalSwitch.h"
 #include <JuceHeader.h>
 
 struct ControlsComponent : juce::Component
 {
-    ControlsComponent (juce::AudioProcessorValueTreeState& apv) : apvts { apv }
+    ControlsComponent (juce::AudioProcessorValueTreeState& apv, NodeController& controller) : apvts { apv }, nodeController { controller }
     {
         addAndMakeVisible (analyzerControls);
         addAndMakeVisible (inputGainKnob);
@@ -24,6 +25,9 @@ struct ControlsComponent : juce::Component
         eqModeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (apvts, "eq_mode", eqMode);
 
         addAndMakeVisible (analyzerControls);
+
+        addAndMakeVisible (resetButton);
+        resetButton.onClick = [&] { nodeController.resetAllParameters(); };
 
         inputGainKnob.labels.add ("-18");
         inputGainKnob.labels.add ("+18");
@@ -55,10 +59,17 @@ struct ControlsComponent : juce::Component
         auto analyzerControlsBounds = bounds.removeFromLeft (analyzerControlsSize);
         analyzerControls.setBounds (analyzerControlsBounds);
 
-        bounds.removeFromLeft (10);
+        bounds.removeFromLeft (5);
 
         auto outputGainKnobBounds = bounds.removeFromRight (gainSize);
         outputGainKnob.setBounds (outputGainKnobBounds);
+
+        int centerX = bounds.getCentreX();
+        int centerY = bounds.getCentreY();
+
+        resetButton.setSize (resetButtonSize, resetButtonSize / 2);
+
+        resetButton.setCentrePosition (centerX, centerY);
     }
 
     void paint (juce::Graphics& g) override
@@ -88,9 +99,14 @@ private:
     VerticalSwitch eqMode { "EQ Mode" };
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> eqModeAttachment;
 
+    juce::TextButton resetButton { "Reset Eq" };
+
     int gainSize = 80;
     int eqModeSize = 80;
+    int resetButtonSize = 80;
     int analyzerControlsSize = 400;
+
+    NodeController& nodeController;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ControlsComponent)
 };

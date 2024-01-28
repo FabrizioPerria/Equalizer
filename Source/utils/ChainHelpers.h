@@ -185,4 +185,42 @@ inline void initializeChains (MonoChain& leftChain, MonoChain& rightChain, doubl
     rightChain.reset();
 }
 
+inline float getDefaultValueForParameter (ChainPositions position, FilterInfo::FilterParam filterParam)
+{
+    const std::map<ChainPositions, float> frequencyDefaults { { ChainPositions::LOWCUT, 20.f },       //
+                                                              { ChainPositions::LOWSHELF, 50.f },     //
+                                                              { ChainPositions::PEAK1, 100.f },       //
+                                                              { ChainPositions::PEAK2, 500.f },       //
+                                                              { ChainPositions::PEAK3, 2000.f },      //
+                                                              { ChainPositions::PEAK4, 5000.f },      //
+                                                              { ChainPositions::HIGHSHELF, 10000.f }, //
+                                                              { ChainPositions::HIGHCUT, 20000.f } };
+
+    const std::map<ChainPositions, float> qDefaults { { ChainPositions::LOWCUT, 0.707f },  //
+                                                      { ChainPositions::LOWSHELF, 1.0f },  //
+                                                      { ChainPositions::PEAK1, 1.0f },     //
+                                                      { ChainPositions::PEAK2, 1.0f },     //
+                                                      { ChainPositions::PEAK3, 1.0f },     //
+                                                      { ChainPositions::PEAK4, 1.0f },     //
+                                                      { ChainPositions::HIGHSHELF, 1.0f }, //
+                                                      { ChainPositions::HIGHCUT, 0.707f } };
+
+    switch (filterParam)
+    {
+        case FilterInfo::FilterParam::FREQUENCY:
+            return frequencyDefaults.at (position);
+        case FilterInfo::FilterParam::Q:
+            return qDefaults.at (position);
+        case FilterInfo::FilterParam::GAIN:
+            return 0.0f;
+        case FilterInfo::FilterParam::SLOPE:
+            return 0.0f;
+        case FilterInfo::FilterParam::BYPASS:
+            return 0.0f;
+        case FilterInfo::FilterParam::FILTER_TYPE:
+        default:
+            jassertfalse;
+            return 0.f;
+    }
+}
 } // namespace ChainHelpers

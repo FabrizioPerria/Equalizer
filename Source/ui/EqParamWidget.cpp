@@ -188,6 +188,12 @@ void EqParamWidget::refreshSliders (Channel channel)
         auto bypassName = FilterInfo::getParameterName (filterIndexInChain, channel, FilterInfo::FilterParam::BYPASS);
         auto bypassValue = apvts.getRawParameterValue (bypassName)->load() > 0.5f;
         setEnabled (! bypassValue);
+
+        auto colour = bypassValue ? juce::Colours::grey : (selected ? juce::Colours::limegreen : juce::Colours::white);
+
+        slopeOrGainSlider->setColour (juce::Slider::textBoxOutlineColourId, colour);
+        qualitySlider.setColour (juce::Slider::textBoxOutlineColourId, colour);
+        frequencySlider.setColour (juce::Slider::textBoxOutlineColourId, colour);
     }
 }
 
@@ -203,4 +209,25 @@ void EqParamWidget::setEnabled (bool shouldBeEnabled)
     frequencySlider.setEnabled (shouldBeEnabled);
     qualitySlider.setEnabled (shouldBeEnabled);
     slopeOrGainSlider->setEnabled (shouldBeEnabled);
+}
+
+void EqParamWidget::clearBand()
+{
+    selected = false;
+    refreshSliders (currentChannelSelected);
+}
+
+void EqParamWidget::selectBand (Channel ch)
+{
+    selected = true;
+    if (currentChannelSelected == ch)
+    {
+        refreshSliders (ch);
+    }
+    else
+    {
+        currentChannelSelected = ch;
+        auto& toggleButton = ch == Channel::LEFT ? leftMidButton : rightSideButton;
+        toggleButton.setToggleState (true, juce::NotificationType::sendNotification);
+    }
 }

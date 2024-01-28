@@ -11,10 +11,8 @@
 #include "data/MeterValues.h"
 #include "utils/ChainHelpers.h"
 #include "utils/EqParam.h"
-#include "utils/FFTDataGenerator.h"
 #include "utils/FilterParam.h"
 #include "utils/FilterType.h"
-#include "utils/GlobalDefinitions.h"
 #include "utils/MidSideProcessor.h"
 #include "utils/SingleChannelSampleFifo.h"
 #include <JuceHeader.h>
@@ -104,33 +102,34 @@ private:
     template <ChainPositions FilterPosition>
     static void addFilterParameterToLayout (juce::AudioProcessorValueTreeState::ParameterLayout& layout, bool isCutFilter)
     {
+        auto getDefault = ChainHelpers::getDefaultValueForParameter;
         for (auto audioChannel : { Channel::LEFT, Channel::RIGHT })
         {
             auto index = static_cast<int> (FilterPosition);
             auto name = FilterInfo::getParameterName (index, audioChannel, FilterInfo::FilterParam::BYPASS);
             layout.add (std::make_unique<juce::AudioParameterBool> (juce::ParameterID { name, 1 }, //
                                                                     name,
-                                                                    false));
+                                                                    getDefault (FilterPosition, FilterInfo::FilterParam::BYPASS)));
 
             name = FilterInfo::getParameterName (index, audioChannel, FilterInfo::FilterParam::FREQUENCY);
             auto range = juce::NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.25f);
             layout.add (std::make_unique<juce::AudioParameterFloat> (juce::ParameterID { name, 1 }, //
                                                                      name,
                                                                      range,
-                                                                     20.0f));
+                                                                     getDefault (FilterPosition, FilterInfo::FilterParam::FREQUENCY)));
 
             name = FilterInfo::getParameterName (index, audioChannel, FilterInfo::FilterParam::Q);
             layout.add (std::make_unique<juce::AudioParameterFloat> (juce::ParameterID { name, 1 },
                                                                      name,
                                                                      juce::NormalisableRange<float> (0.1f, 10.0f, 0.01f),
-                                                                     0.71f));
+                                                                     getDefault (FilterPosition, FilterInfo::FilterParam::Q)));
             if (isCutFilter)
             {
                 name = FilterInfo::getParameterName (index, audioChannel, FilterInfo::FilterParam::SLOPE);
                 layout.add (std::make_unique<juce::AudioParameterChoice> (juce::ParameterID { name, 1 }, //
                                                                           name,
                                                                           getSlopeNames(),
-                                                                          0));
+                                                                          getDefault (FilterPosition, FilterInfo::FilterParam::SLOPE)));
             }
             else
             {
@@ -138,7 +137,7 @@ private:
                 layout.add (std::make_unique<juce::AudioParameterFloat> (juce::ParameterID { name, 1 },
                                                                          name,
                                                                          juce::NormalisableRange<float> (-24.0f, 24.0f, 0.1f),
-                                                                         0.0f));
+                                                                         getDefault (FilterPosition, FilterInfo::FilterParam::GAIN)));
             }
         }
     }
