@@ -5,7 +5,8 @@ While I wrote the code and developed the implementation myself, the conceptual f
 
 ## Demo
 
-[Demo](https://youtu.be/vIoWw_m-XiA)
+[![IMAGE ALT TEXT](http://img.youtube.com/vi/vIoWw_m-XiA/0.jpg)](https://youtu.be/vIoWw_m-XiA)
+
 ## Description
 
 Highly interactive 8-band parametric equalizer plugin built with the Juce framework that is compatible with any DAW that supports VST or AU
