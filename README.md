@@ -7,6 +7,8 @@ While I wrote the code and developed the implementation myself, the conceptual f
 
 [![IMAGE ALT TEXT](http://img.youtube.com/vi/vIoWw_m-XiA/0.jpg)](https://youtu.be/vIoWw_m-XiA)
 
+<iframe width="560" height="315" src="https://www.youtube.com/embed/vIoWw_m-XiA?si=T2QV0jUEguEYfeZ6" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+
 ## Description
 
 Highly interactive 8-band parametric equalizer plugin built with the Juce framework that is compatible with any DAW that supports VST or AU
