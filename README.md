@@ -5,7 +5,7 @@ While I wrote the code and developed the implementation myself, the conceptual f
 
 ## Demo
 
-[Youtube Video](https://www.youtube.com/watch?v=vIoWw_m-XiA)
+[Youtube Video](https://www.youtube.com/watch?v=vIoWw_m-XiA)  
 [![IMAGE ALT TEXT](http://img.youtube.com/vi/vIoWw_m-XiA/0.jpg)](https://youtu.be/vIoWw_m-XiA)
 
 ## Description
